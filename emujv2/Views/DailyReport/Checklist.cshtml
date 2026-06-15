@@ -1,0 +1,448 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var statusColors = new Dictionary<string, string>
+    {
+        { "zero-values", "#ffb819" },
+        { "success",     "#0e9039" },
+        { "weekend",     "#cccfd1" },
+        { "no-entry",    "#951e3a" }
+    };
+}
+
+<style>
+    /* Design setup for dashboard matrix grid */
+    #tableRep {
+        border-collapse: collapse !important;
+        width: 100%;
+    }
+
+        #tableRep th, #tableRep td {
+            border: 1px solid #c0c0c0 !important;
+            text-align: center;
+            vertical-align: middle !important;
+            padding: 6px 8px !important;
+            font-size: 12px;
+        }
+
+        #tableRep th {
+            min-width: 38px;
+        }
+
+    .bg-light-orange {
+        background-color: #f7e1b5 !important; /* Soft gold heading matrix */
+        color: #2b2b2b !important;
+    }
+
+    .bg-matrix-green {
+        background-color: #007e33 !important; /* Rich green status block */
+    }
+
+    .bg-matrix-red {
+        background-color: #7b0000 !important; /* Maroon block for unsubmitted */
+    }
+
+    .bg-matrix-weekend {
+        background-color: #cccccc !important; /* Grey shading for weekends */
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .status-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+    }
+
+    .legend-box {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        border-radius: 3px;
+        margin-right: 8px;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+</style>
+
+<div class="app-content main-content">
+    <div class="side-app">
+        <div class="container-fluid main-container">
+
+            <div class="page-header">
+                <div class="page-leftheader">
+                    <h4 class="page-title">Checklist</h4>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3 m-0">
+                        <div class="row">
+                            <div class="col-5">
+                                <label class="mt-3 form-label">Year</label>
+                                <select id="ddlYear" class="form-control form-select select2">
+                                    <option value="">Select Year</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <label class="mt-3 form-label">Month</label>
+                                <select id="ddlMonth" class="form-control form-select select2">
+                                    <option value="">Select Month</option>
+                                    <option value="01">January</option>
+                                    <option value="02">February</option>
+                                    <option value="03">March</option>
+                                    <option value="04">April</option>
+                                    <option value="05">May</option>
+                                    <option value="06">June</option>
+                                    <option value="07">July</option>
+                                    <option value="08">August</option>
+                                    <option value="09">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <label class="mt-3 form-label text-white">.</label>
+                                <button id="btnSearch" class="btn btn-primary">Search</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="col-lg-12">
+                                    <div class="table-responsive table-lg">
+                                        <table id="tableRep" class="table table-striped table-bordered text-nowrap hover">
+                                            <thead></thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div style="margin: 15px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
+                                    <h5 style="margin-top: 0; margin-bottom: 10px; font-size: 14px; color: #555;">Status Legend</h5>
+
+                                    <div class="status-legend">
+                                        <div class="legend-item" style="cursor: pointer;" title="Submitted">
+                                            <span class="legend-box" style="background-color: @statusColors["zero-values"]"></span>
+                                            <span>Submitted</span>
+                                        </div>
+
+                                        <div class="legend-item" style="cursor: pointer;" title="Received">
+                                            <span class="legend-box" style="background-color: @statusColors["success"]"></span>
+                                            <span>Completed</span>
+                                        </div>
+
+                                        <div class="legend-item" title="Weekend">
+                                            <span class="legend-box" style="background-color: @statusColors["weekend"]"></span>
+                                            <span>Weekend</span>
+                                        </div>
+
+                                        <div class="legend-item" title="Not Received">
+                                            <span class="legend-box" style="background-color: @statusColors["no-entry"]"></span>
+                                            <span>Not Recieved</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/assets/scripts/semua.js"></script>
+    <script src="~/assets/scripts/dashboard.js"></script>
+    <script src="~/assets/plugins/morris/morris.min.js"></script>
+    <script src="~/assets/plugins/raphael/raphael.min.js"></script>
+    <script src="~/assets/plugins/select2/select2.min.js"></script>
+    <script src="~/assets/plugins/daterangepicker/daterangepicker.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            checkSess();
+            checkStore();
+
+            if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "4" || localStorage.getItem("lvlI") === "6") {
+                $("#content").hide();
+            }
+            else {
+                $("#content").show();
+            }
+
+            $("#ddlYear, #ddlMonth").on('change', function () {
+                localStorage.removeItem("selHar");
+                localStorage.removeItem("selHarE");
+            });
+
+            $('#btnSearch').on('click', function () {
+
+                var selectedYear = $("#ddlYear").val();
+                var selectedMonth = $("#ddlMonth").val();
+
+                if (selectedYear == "" || selectedMonth == "") {
+                    alert("Please select both Year and Month.");
+                    return;
+                }
+
+                var sdate = selectedYear + '-' + selectedMonth + '-01';
+
+                var totalDays = new Date(selectedYear, parseInt(selectedMonth), 0).getDate();
+                var edate = selectedYear + '-' + selectedMonth + '-' + (totalDays < 10 ? '0' + totalDays : totalDays);
+
+                localStorage.setItem("selHar", sdate);
+                localStorage.setItem("selHarE", edate);
+
+                listReports(sdate, edate);
+
+                if (typeof salertSave === "function") {
+                    salertSave('Searching for: ' + sdate + ' to ' + edate);
+                }
+            });
+        });
+
+        function listReports(sdate, edate) {
+            var year = sdate.split('-')[0];
+            var month = sdate.split('-')[1].padStart(2, '0');
+            var totalDays = new Date(year, parseInt(month), 0).getDate();
+            var daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+            var monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+            var currentMonthName = monthNames[parseInt(month) - 1] + " " + year;
+
+            $.ajax({
+                url: linkDepan + "GetCheckList?SDate=" + sdate + "&Edate=" + edate,
+                type: 'GET',
+                dataType: 'json',
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    $.fn.dataTable.ext.errMode = 'throw';
+
+                    if ($.fn.dataTable.isDataTable('#tableRep')) {
+                        $('#tableRep').DataTable().destroy();
+                    }
+                    $('#tableRep thead').empty();
+                    $('#tableRep tbody').empty();
+                    $('#tableRep tfoot').remove();
+
+                    // --- Styled 3-Layer Header Generation ---
+                    let theadHtml = '<tr>';
+                    theadHtml += '<th colspan="3" class="align-middle text-center font-weight-bold" style="background-color: #ffffff !important; color: #1e3a8a !important; font-size: 13px; background-image: none !important;"></th>';
+                    theadHtml += `<th colspan="${totalDays}" class="text-center font-weight-bold text-uppercase align-middle" style="letter-spacing: 0.5px; font-size: 13px; background-color: #ffffff !important; color: #1e3a8a !important; background-image: none !important;">${currentMonthName}</th>`;
+                    theadHtml += '</tr>';
+
+                    theadHtml += '<tr>';
+                    theadHtml += '<th rowspan="2" class="align-middle text-center font-weight-bold" style="background-color: #ffffff !important; color: #1e3a8a !important; font-size: 13px; min-width: 130px;">WILAYAH</th>';
+                    theadHtml += '<th rowspan="2" class="align-middle text-center font-weight-bold" style="background-color: #ffffff !important; color: #1e3a8a !important; font-size: 13px; min-width: 160px;">KMUJ</th>';
+                    theadHtml += '<th rowspan="2" class="align-middle text-center font-weight-bold" style="background-color: #ffffff !important; color: #1e3a8a !important; font-size: 13px; min-width: 160px;">MUJ</th>';
+
+                    for (var d = 1; d <= totalDays; d++) {
+                        var dateObj = new Date(year, parseInt(month) - 1, d);
+                        var dayName = daysOfWeek[dateObj.getDay()];
+                        theadHtml += `<th class="font-weight-bold text-center text-uppercase" style="font-size: 11px; min-width: 35px; background-color: #ffffff !important; color: #1e3a8a !important; background-image: none !important;">${dayName}</th>`;
+                    }
+                    theadHtml += '</tr>';
+
+                    theadHtml += '<tr>';
+                    for (var d = 1; d <= totalDays; d++) {
+                        var dayStr = d.toString().padStart(2, '0');
+                        theadHtml += `<th class="font-weight-bold text-center" style="background-color: #ffffff !important; color: #1e3a8a !important; font-size: 13px;">${dayStr}</th>`;
+                    }
+                    theadHtml += '</tr>';
+
+                    $('#tableRep thead').html(theadHtml);
+
+                    var columnDefs = [
+                        { data: "wilayah" },
+                        { data: "kmuj" },
+                        { data: "muj" }
+                    ];
+
+                    for (var d = 1; d <= totalDays; d++) {
+                        columnDefs.push({
+                            data: "day_" + d,
+                            className: "text-center align-middle p-0",
+                            render: function (cellData, type, rowData) {
+                                return ' ';
+                            }
+                        });
+                    }
+
+                    $("#content").show();
+
+                    var structuredData = {};
+                    $.each(data, function (index, item) {
+                        var uWilayah = item.Wilayah ? item.Wilayah.toString().toUpperCase().trim() : "";
+                        var uKmuj = item.KMUJ ? item.KMUJ.toString().toUpperCase().trim() : "";
+                        var uMuj = item.MUJ ? item.MUJ.toString().toUpperCase().trim() : "";
+
+                        if (!structuredData[uWilayah]) structuredData[uWilayah] = {};
+                        if (!structuredData[uWilayah][uKmuj]) structuredData[uWilayah][uKmuj] = {};
+                        if (!structuredData[uWilayah][uKmuj][uMuj]) structuredData[uWilayah][uKmuj][uMuj] = [];
+
+                        structuredData[uWilayah][uKmuj][uMuj].push(item);
+                    });
+
+                    var flatTableRows = [];
+                    Object.keys(structuredData).forEach(function (wilayah) {
+                        Object.keys(structuredData[wilayah]).forEach(function (kmuj) {
+                            Object.keys(structuredData[wilayah][kmuj]).forEach(function (muj) {
+                                var records = structuredData[wilayah][kmuj][muj];
+
+                                var rowObject = {
+                                    wilayah: wilayah,
+                                    kmuj: kmuj,
+                                    muj: muj
+                                };
+
+                                for (var d = 1; d <= totalDays; d++) {
+                                    var dateObj = new Date(year, parseInt(month) - 1, d);
+                                    var isWeekend = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+                                    var currentCellTimestamp = dateObj.setHours(0, 0, 0, 0);
+
+                                    var matchedRecord = records.find(function (r) {
+                                        if (!r.daily_date) return false;
+                                        var recordTimestamp = new Date(r.daily_date).setHours(0, 0, 0, 0);
+                                        return recordTimestamp === currentCellTimestamp;
+                                    });
+
+                                    var locationHeader = "Wilayah: " + wilayah + " | KMUJ: " + kmuj + " | MUJ: " + muj;
+
+                                    if (matchedRecord) {
+                                        var dp = parseInt(matchedRecord.Work_DP) || 0;
+                                        var up = parseInt(matchedRecord.Work_UP) || 0;
+                                        var pl = parseInt(matchedRecord.Work_PL) || 0;
+                                        var tooltipText = locationHeader + " \nReport: " + matchedRecord.rpt_code + " \nDP: " + dp + " | UP: " + up + " | PL: " + pl;
+
+                                        if (dp === 0 && up === 0 && pl === 0) {
+                                            rowObject["day_" + d] = { status: 'zero-values', tooltip: tooltipText };
+                                        } else {
+                                            rowObject["day_" + d] = { status: 'success', tooltip: tooltipText };
+                                        }
+                                    } else {
+                                        var emptyStatusText = isWeekend ? 'Weekend' : 'No Entry';
+                                        var tooltipText = locationHeader + " \nStatus: " + emptyStatusText;
+                                        rowObject["day_" + d] = { status: isWeekend ? 'weekend' : 'no-entry', tooltip: tooltipText };
+                                    }
+                                }
+                                flatTableRows.push(rowObject);
+                            });
+                        });
+                    });
+
+                    $('#tableRep').addClass('table table-bordered').DataTable({
+                        dom: '<"selected-values"fB>rtip',
+                        buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+                        data: flatTableRows,
+                        columns: columnDefs,
+                        responsive: true,
+                        autoWidth: false,
+                        paging: false,
+                        ordering: false,
+                        "createdRow": function (row, rowData, rowIndex) {
+                            $('td', row).addClass('text-nowrap align-middle text-center');
+
+                            for (var d = 1; d <= totalDays; d++) {
+                                var cellData = rowData["day_" + d];
+                                var $td = $('td', row).eq(2 + d);
+
+                                if (cellData) {
+                                    $td.attr('title', cellData.tooltip);
+
+                                    if (cellData.status === 'zero-values') {
+                                        $td.css('background-color', '#ffb819').addClass('cursor-pointer');
+                                    } else if (cellData.status === 'success') {
+                                        $td.css('background-color', '#0e9039').addClass('cursor-pointer');
+                                    } else if (cellData.status === 'weekend') {
+                                        $td.css('background-color', '#cccfd1');
+                                    } else if (cellData.status === 'no-entry') {
+                                        $td.css('background-color', '#951e3a');
+                                    }
+                                }
+                            }
+                        },
+                        "drawCallback": function (settings) {
+                            var api = this.api();
+                            var rows = api.rows({ page: 'current' }).nodes();
+
+                            // --- STEP 1: Merge and Color Column 0 (WILAYAH) ---
+                            var lastWilayah = null;
+                            var startWilayahCell = null;
+                            var wilayahSpan = 1;
+                            var wilayahColorFlag = false;
+
+                            api.column(0, { page: 'current' }).data().each(function (text, i) {
+                                var currentCell = $(rows[i]).find('td').eq(0);
+
+                                if (lastWilayah === text) {
+                                    wilayahSpan++;
+                                    currentCell.hide();
+                                    if (startWilayahCell) startWilayahCell.attr('rowspan', wilayahSpan);
+                                } else {
+                                    lastWilayah = text;
+                                    startWilayahCell = currentCell;
+                                    wilayahSpan = 1;
+                                    startWilayahCell.attr('rowspan', wilayahSpan);
+                                    wilayahColorFlag = !wilayahColorFlag; // Toggle color flag for the next Wilayah group
+                                }
+
+                                // Apply a subtle clean alternating shade to the entire group block
+                                var bgColor = wilayahColorFlag ? '#f8fafc' : '#ffffff';
+                                if (startWilayahCell) startWilayahCell.css('background-color', bgColor);
+                            });
+
+                            // --- STEP 2: Merge and Color Column 1 (KMUJ) ---
+                            var lastKmuj = null;
+                            var startKmujCell = null;
+                            var kmujSpan = 1;
+                            var kmujColorFlag = false;
+
+                            api.column(1, { page: 'current' }).data().each(function (text, i) {
+                                var currentCell = $(rows[i]).find('td').eq(1);
+                                var currentWilayah = api.cell(i, 0).data();
+                                var previousWilayah = i > 0 ? api.cell(i - 1, 0).data() : null;
+
+                                if (lastKmuj === text && currentWilayah === previousWilayah) {
+                                    kmujSpan++;
+                                    currentCell.hide();
+                                    if (startKmujCell) startKmujCell.attr('rowspan', kmujSpan);
+                                } else {
+                                    lastKmuj = text;
+                                    startKmujCell = currentCell;
+                                    kmujSpan = 1;
+                                    startKmujCell.attr('rowspan', kmujSpan);
+                                    kmujColorFlag = !kmujColorFlag; // Toggle color flag for the next KMUJ group
+                                }
+
+                                // Apply alternating backgrounds to KMUJ blocks
+                                var bgColor = kmujColorFlag ? '#f1f5f9' : '#ffffff';
+                                if (startKmujCell) startKmujCell.css('background-color', bgColor);
+                            });
+                        }
+                    });
+                },
+                error: function (xhr) {
+                    if (typeof swarning === "function") { swarning(); }
+                    else { alert("Error fetching checklist matrix data."); }
+                }
+            });
+        }
+
+
+
+    </script>
+}

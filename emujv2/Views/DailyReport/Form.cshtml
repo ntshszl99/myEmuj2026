@@ -1,0 +1,1218 @@
+﻿@{
+    ViewBag.Title = "Daily Form";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="app-content main-content">
+    <div class="side-app">
+        <div class="container-fluid main-container">
+
+            <!--Page header-->
+            <div class="page-header">
+                <div class="page-leftheader">
+                    <h4 class="page-title">Update R1 Form</h4>
+                    <div class="row align-items-center">
+                        <div class="col-4 text-left">
+                            <h5 class="mb-0">Report ID:</h5>
+                        </div>
+                        <div class="col-6">
+                            <input readonly id="rptcode" type="text" class="text-success form-control text-left bg-transparent border-0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!--End Page header-->
+
+            <div class="" id="content">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3 m-0">
+                            <div class="row">
+                                <div class="col-3">
+                                    <label class="mt-5 form-label"><strong>Region</strong></label>
+                                    <input readonly id="region" type="text" class="form-control text-left bg-transparent border-0" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label"><strong>KMUJ</strong></label>
+                                    <input readonly id="kmuj" type="text" class="form-control text-left bg-transparent border-0" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label"><strong>Section</strong></label>
+                                    <input readonly id="section" type="text" class="form-control text-left bg-transparent border-0" required="required">
+                                </div>
+                                <div></div>
+                                <div class="col-6">
+                                    <label class="mt-5 form-label">Gang</label>
+                                    <select id="gang" type="text" class="form-control form-select select2" multiple required="required">
+                                        <option value="-0">Select Gang</option>
+                                    </select>
+                                </div>
+                                <div class="mb-5 col-3">
+                                    <label class="mt-5 form-label">No. of Staff (Valid)</label>
+                                    <input readonly id="gangno" type="text" class="form-control">
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="table-responsive table-lg">
+                                        <table id="tableRep" class="table table-striped table-bordered text-nowrap">
+                                            <thead>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div></div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Work Date</label>
+                                    <input type="text" id="datepicker" class="form-control" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Line</label>
+                                    <select id="linecond" class="form-control form-select select2" required="required">
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Category</label>
+                                    <select id="category" class="form-control form-select select2" required="required">
+                                    </select>
+                                </div>
+                                <div id="catEmer" class="col-3" style='display:none;'>
+                                    <label class="mt-5 form-label">Category</label>
+                                    <select id="catdet" class="form-control form-select select2">
+                                    </select>
+                                </div>
+                                <div></div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Work Type</label>
+                                    <select id="worktype" class="form-control form-select select2" required="required">
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Total</label>
+                                    <input id="total" type="text" class="form-control" placeholder="Total" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Unit</label>
+                                    <input id="unit" class="form-control" placeholder="Unit" readonly>
+                                </div>
+                                <div></div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Effected KM (Start)</label>
+                                    <input type="number" id="startKM" class="form-control" placeholder="Start KM" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Effected KM (End)</label>
+                                    <input type="number" id="endKM" class="form-control" placeholder="End KM" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Effected KM (meter)</label>
+                                    <input readonly type="text" id="totalKM" class="form-control" placeholder="Total KM">
+                                </div>
+                                <div></div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Time Start </label>
+                                    <input type="time" id="startTime" class="form-control" placeholder="Start Time" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Time End</label>
+                                    <input type="time" id="endTime" class="form-control" placeholder="End Time" required="required">
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-5 form-label">Time Taken</label>
+                                    <input type="text" id="totalTime" class="form-control" readonly>
+                                </div>
+                                <div></div>
+                                <div class="col-3">
+                                    <div class="mb-3 mt-5">
+                                        <div class="form-label">Work at Station?</div>
+                                        <div class="custom-controls-stacked">
+                                            <label class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" name="station_option" id="id_radio1" value="Yes" required="required">
+                                                <span class="custom-control-label">Yes</span>
+                                            </label>
+                                            <label class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input" name="station_option" id="id_radio2" value="No" required="required">
+                                                <span class="custom-control-label">No</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="station" class="col-3" style="display:none;">
+                                    <label class="mt-5 form-label">Station</label>
+                                    <select id="stationn" class="form-control form-select select2">
+                                        <option value="">.: Select Station :.</option>
+                                    </select>
+                                </div>
+                                <div class="col-xl-12">
+                                    <label class="mt-5 form-label">Additional Information</label>
+                                    <textarea class="mb-5 form-control" id="addnotes" placeholder="Textarea" rows="3"></textarea>
+                                </div>
+                                <div id="point" class="col-3" style="display:none;">
+                                    <label class="mt-5 form-label">Point No.</label>
+                                    <input type="text" id="stPoint" class="form-control" placeholder="Station's Point">
+                                </div>
+                                <div class="d-flex justify-content-center">
+                                    <button type="button" class='btn btn-light center m-1' onclick="window.location.href='R1FormList'">Back</button>
+                                    <button type="button" id="submitNew" class='btn btn-success center m-1'>Update Form</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="" id="contentOthers">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3 m-0">
+                        <div class="row">
+                            <div class="card-body">
+                                <h4 class="text-muted">Alert</h4>
+                                <p class="text-muted">Sorry, no data found.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDetails" tabindex="-1" aria-labelledby="modalUpdateLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-body text-center p-4">
+                        <i class="fe fe-check-circle text-success lh-1 mg-t-20 d-inline-block" style="font-size: 5em;"></i>
+                        <h3 class="text-success">Confirm Action</h3>
+                        <p class="mg-b-20 mg-x-20">Are you sure to update this data?</p>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-label">Staff ID</div>
+                                    <input readonly id="staffID" type="text" class="form-control text-center bg-transparent border-0">
+                                </div>
+                                <div class="col-12">
+                                    <div class="mt-5 form-label">Staff Name</div>
+                                    <input readonly id="staffname" type="text" class="form-control text-center bg-transparent border-0">
+                                </div>
+                                <div class="col-12">
+                                    <div class="mt-5 form-label">Department</div>
+                                    <input readonly id="dept" type="text" class="form-control text-center bg-transparent border-0">
+                                </div>
+                                <div class="col-12">
+                                    <div class="mt-5 form-label">Designation</div>
+                                    <input readonly id="position" type="text" class="form-control text-center bg-transparent border-0">
+                                </div>
+                                <div class="mb-5"></div>
+                                <div class="card-body bg-success-transparent-2">
+                                    <div class="mb-0 m-0">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="form-label">Update Status</div>
+                                                <select id="cuti" class="form-control form-select select2" required="required">
+                                                    <option value="-0">.: Select Reason :.</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="submitUpdate" class="btn btn-success mb-5" type="button">Update</button>
+                        <button class="btn btn-light mb-5" data-bs-dismiss="modal" aria-label="Close" type="button">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/assets/scripts/semua.js"></script>
+    <script src="~/assets/scripts/dashboard.js"></script>
+    <script src="~/assets/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="~/assets/plugins/select2/select2.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            checkSess();
+            listGang();
+            listGangPax();
+            listLnCondition();
+            listCategory();
+            listCuti();
+            listWorkType();
+            listCatDetails();
+            listWorkUnit();
+            listLocation();
+            listReports();
+
+            //CHECK USER LEVEL
+            //user level == 1 & 5
+            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
+                $("#contentAdmin").show();
+                $("#contentNormal").hide();
+                $("#contentOthers").hide();
+            }
+
+            //userlevel == 4
+            else if ((localStorage.getItem("lvlI") === "4") || (localStorage.getItem("lvlI") === "3")) {
+                $("#contentNormal").show();
+                $("#contentAdmin").hide();
+                $("#contentOthers").hide();
+            }
+
+            //not authorized user
+            else {
+                $("#contentAdmin").hide();
+                $("#contentNormal").hide();
+            }
+
+
+            //automatic show gang pax when select gang
+            $("#gang").on('change', function () {
+      
+                var kmj = $("#kmuj").val();
+                localStorage.setItem("selKmj", kmj); 
+
+                var scn = $("#section").val(); 
+                localStorage.setItem("selScn", scn); 
+           
+                var gng = $("#gang option:selected").text();
+                localStorage.setItem("selGng", gng); 
+
+                listGangPax(kmj, scn, gng);
+                listReports(kmj, scn, gng);
+
+            });
+
+            //uppercase first letter
+            $('#addnotes').on('input', function () {
+                let value = this.value;
+                if (value.length > 0) {
+                    this.value = value.charAt(0).toUpperCase() + value.slice(1);
+                }
+            });
+
+
+            //automatic show workunit when select worktype
+            $("#worktype").on('change', function () {
+                wrk = $("#worktype option:selected").text();
+                localStorage.setItem("selWrk", wrk, this.value);
+                listWorkUnit(localStorage.getItem("selWrk", this.value));
+            });
+
+            //show/hide work catergory - emegergency
+            $("#category").on('change', function () {
+                if ($("#category option:selected").val() == '1') {
+                    $("#catEmer").show();
+                }
+                else {
+                    $("#catEmer").hide();
+                }
+            });
+
+            //auto calculate totalkm
+            $('#startKM, #endKM').on('change', function () {
+                validateKM();
+            });
+
+            //auto calculate totaltime
+            $('#startTime, #endTime').on('change', function () {
+                validateTime();
+            });
+
+            // Handle click events on radio buttons
+            $('input[name="station_option"]').on('change', function () {
+                if ($(this).val() === 'Yes') {
+                    $('#station').show();
+                    $('#point').show();
+                } else {
+                    $('#station').hide();
+                    $('#point').hide();
+                    // Optional: clear values when switching to No
+                    $('#stationn').val('').trigger('change');
+                    $('#stPoint').val('');
+                }
+            });
+
+            $("#datepicker").datepicker({
+                singleDatePicker: true,
+                showDropdowns: true,
+                minYear: 2021,
+                maxDate: new Date(),
+            });
+
+            //modal user details & delete user
+            $('#modalDetails').on('show.bs.modal', function (e) {
+                var ids = $(e.relatedTarget).data('id');
+                $(this).data('id', ids);
+                console.log('read ' + ids);
+                stfDetails(ids);
+            });
+
+            //button submit update user
+            $("#submitUpdate").click(function () {
+                var ids = $('#modalDetails').data('id');
+                console.log('read ' + ids);
+                updateUser(ids);
+            });
+
+          
+            function getQueryParameter(name) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(name);
+            }
+
+            // Get the 'id' parameter
+            const id = getQueryParameter('id');
+            const gang = getQueryParameter('gang');
+            const gangno = getQueryParameter('gangno');
+            console.log('ID from URL:', id);
+
+
+            $('#submitNew').click(function () {
+                console.log("Submit button clicked");
+                if (validateForm()) {
+                    console.log("Form is valid, proceeding with submission...");
+                    submitForm();
+                    submitAttendance();
+                    submitAttendanceNo();
+                } else {
+                    console.log("Form is invalid, not submitting.");
+                }
+            });
+
+            if (id) {
+                rptDetails(id);
+            }
+
+
+        });
+
+        function stfDetails(ids) {
+            var staffID = $(".staffID" + ids).html();
+            $.ajax({
+                url: linkDepan + "GetGangDetails?StaffId=" + ids,
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    $('#staffID, #staffID2').val(data[0].staff_no);
+                    $('#staffname, #staffname2').val(data[0].staff_name);
+                    $('#dept, #dept2').val(data[0].section_id);
+                    $('#position, #position2').val(data[0].position);
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        //update hal user
+        function updateUser(ids) {
+            var data = {
+                Userid: ids,
+                StatusCuti: $('#cuti').val(),
+            };
+
+            console.log("Updating user:", ids);
+            console.log("Status Cuti:", $("#cuti option:selected").val());
+
+            $.ajax({
+                url: linkDepan + "UpdateGangDetails",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    var data;
+                    try {
+                        data = JSON.parse(response);
+                    } catch (error) {
+                        console.error("Error parsing JSON:", error);
+                        swarning();
+                        return;
+                    }
+                    if (data && data.status === "00") {
+                        $('#modalDetails').modal('hide');
+                        swal.fire('Success!', 'User details have been updated.', 'success');
+                        $('#modalDetails').modal('hide');
+
+                    } else {
+                        $('#modalDetails').modal('hide');
+                        swarning();
+                    }
+                    if (localStorage.getItem("lvlI") === "1") {
+                        listReports(localStorage.getItem("selKmj"),
+                            localStorage.getItem("selScn"),
+                            localStorage.getItem("selGng"));
+                    } else if (["2", "3", "4", "5", "6"].includes(localStorage.getItem("lvlI"))) {
+                        var formData = gatherFormData();
+                        var Workers = formData.Workers;
+
+                        var kmj = $("#kmuj").val();  
+                        localStorage.setItem("selKmj", kmj);  
+
+                        var scn = $("#section").val();  
+                        localStorage.setItem("selScn", scn); 
+
+                        var gng = $("#gang option:selected").text();
+                        localStorage.setItem("selGng", gng);
+
+                        listGangPax(kmj, scn, gng);  
+                        listReports(kmj, scn, gng); 
+                    }
+                }
+            },
+            );
+        }
+
+        function validateKM() {
+            const startKM = parseFloat($('#startKM').val());
+            const endKM = parseFloat($('#endKM').val());
+            var linecond = $("#linecond option:selected").text();
+            localStorage.setItem("selLine", linecond);
+
+            if (isNaN(startKM) || isNaN(endKM)) {
+                $('#totalKM').val('');
+                return;
+            }
+
+            const totalKM = (endKM - startKM).toFixed(3);
+
+            if (linecond === "UpLine") {
+                if (startKM > endKM) {
+                    $('#totalKM').val(totalKM);
+                }
+                else {
+                    Swal.fire('Invalid KM Range', 'End KM must be smaller than Start KM.', 'warning');
+                    $('#totalKM').val('');
+                }
+            } else if (linecond === "DownLine") {
+                if (startKM < endKM) {
+                    $('#totalKM').val(totalKM);
+                }
+                else {
+
+                    Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
+                    $('#totalKM').val('');
+                }
+            } else if (endKM < startKM) {
+                Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
+                $('#totalKM').val('');
+            }
+            else $('#totalKM').val(totalKM);
+        }
+
+        function validateTime() {
+            const startTime = $('#startTime').val();
+            const endTime = $('#endTime').val();
+
+            const start = new Date(`1970-01-01T${startTime}:00`);
+            const end = new Date(`1970-01-01T${endTime}:00`);
+
+            let diff = (end - start) / 1000 / 60;
+
+            if (diff < 0) {
+                diff += 24 * 60;
+            }
+
+            const hours = Math.floor(diff / 60);
+            const minutes = diff % 60;
+
+            const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            $('#totalTime').val(formattedTime);
+
+        }
+
+        function validateForm() {
+            let isValid = true;
+            let requiredFields = [
+                '#region', '#kmuj', '#section', '#datepicker',
+                '#linecond', '#category', '#worktype', '#total',
+                '#startKM', '#endKM', '#startTime', '#endTime'
+            ];
+
+            requiredFields.forEach(function (field) {
+                if ($(field).val() === '' || $(field).val() === '-0') {
+                    isValid = false;
+                    $(field).addClass('is-invalid');
+                } else {
+                    $(field).removeClass('is-invalid');
+                }
+            });
+
+            let gangValue = $('#gang').val();
+            if (!gangValue || gangValue.length === 0 || gangValue.includes('-0')) {
+                isValid = false;
+                $('#gang').addClass('is-invalid');
+            } else {
+                $('#gang').removeClass('is-invalid');
+            }
+
+            const stationOption = $('input[name="station_option"]:checked').val();
+            if (!stationOption) {
+                isValid = false;
+                $('#id_radio1').addClass('is-invalid');
+                $('#id_radio2').addClass('is-invalid');
+            } else {
+                $('#id_radio1').removeClass('is-invalid');
+                $('#id_radio2').removeClass('is-invalid');
+            }
+
+            if (!isValid) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Please fill all required fields.',
+                    confirmButtonText: 'OK'
+                });
+            }
+
+            return isValid;
+        }
+
+        //show gang pax based on gang type 
+        function listGangPax(kmuj, section, gang) {
+            if (typeof gang === "string") {
+                gang = gang.split(/(?<=\d)(?=Gang)/);
+            }
+
+            if (Array.isArray(gang)) {
+                var gangString = gang.join(",");
+
+                $.ajax({
+                    url: linkDepan + "GetGangPax",
+                    data: {
+                        Kmuj: kmuj,
+                        Section: section,
+                        Gang: gangString
+                    },
+                    dataType: "json",
+                    beforeSend: function (request) {
+                        request.setRequestHeader("Token", localStorage.getItem('main'));
+                    },
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            $('#gangno').val(data[0].count);
+                        } else {
+                            $('#gangno').val('0 pax');
+                        }
+                    },
+                    error: function (error) {
+                        $('#gangno').val("");
+                    }
+                });
+            } else {
+                return;
+            }
+        }
+
+        function rptDetails(ids) {
+            var reportno = $(".reportno" + ids).html();
+            $.ajax({
+                url: linkDepan + "GetAllFormDetails?RptCode=" + ids,
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (!data || data.length === 0) return;
+
+                    $('#rptcode').val(data[0].rpt_code);
+                    $('#region').val(data[0].region_name);
+                    $('#kmuj').val(data[0].kmuj_name);
+                    $('#section').val(data[0].section_name);
+
+                    if (data[0].Gang) {
+                        var gangValues = data[0].Gang.replace('Gang ', '').split(',');
+                        $('#gang').val(gangValues).trigger('change');
+                    }
+
+                    $('#pax').val(data[0].daily_workers);
+
+                    if (data[0].daily_date) {
+                        var dateObj = new Date(data[0].daily_date);
+                        // 'en-GB' format naturally defaults to dd/mm/yyyy
+                        var formattedDate = dateObj.toLocaleDateString('en-GB');
+
+                        $('#datepicker').val(formattedDate);
+                    }
+
+                    $('#linecond').val(data[0].daily_condition).trigger('change');
+                    $('#category').val(data[0].daily_category).trigger('change');
+                    $('#worktype').val(data[0].daily_worktype).trigger('change');
+                    $('#catdet').val(data[0].category_details).trigger('change');
+
+                    $('#total').val(data[0].daily_total);
+                    $('#unit').val(data[0].daily_unit);
+                    $('#startKM').val(data[0].effect_kmfrom);
+                    $('#endKM').val(data[0].effect_kmto);
+                    $('#totalKM').val(data[0].effect_kmtotal);
+
+                    $('#startTime').val(data[0].daily_timestart);
+                    $('#endTime').val(data[0].daily_timelast);
+                    $('#totalTime').val(data[0].daily_timetaken);
+                    $('#addnotes').val(data[0].daily_additional);
+
+                    var stationVal = (data[0].station && data[0].station.trim() !== "") ? data[0].station : "No";
+                    $('input[name="station_option"][value="' + stationVal + '"]').prop('checked', true);
+                    if (stationVal === 'Yes') {
+                        $('#station').show();
+                        $('#point').show();
+                        $('#stationn').val(data[0].station).trigger('change');
+                        $('#stPoint').val(data[0].station_point);
+                    } else {
+                        $('#station').hide();
+                        $('#point').hide();
+                        $('#stationn').val('').trigger('change');
+                        $('#stPoint').val('');
+                    }
+
+                    // Debug block strings
+                    console.log('gang2:', $('#gang').val());
+                    console.log('kmuj2:', $('#kmuj').val());
+                    console.log('section2:', $('#section').val());
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        function listGang() {
+            $.ajax({
+                url: linkDepan + "GangList",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.id + "'>" + value.gang + "</option>";
+                        });
+                        $('#gang').append(auxArr.join(''));
+                    } else {
+                        $("#gang").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        //show workunit after select worktype
+        function listWorkUnit(workunit) {
+            $.ajax({
+                url: linkDepan + "GetWorkUnit?WorkUnit=" + workunit,
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        $('#unit').val(data[0].unit);
+                    }
+                },
+            });
+        }
+
+        function listLnCondition() {
+            $.ajax({
+                url: linkDepan + "GetLineConditionList",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.cond_id + "'>" + value.cond_name + "</option>";
+                        });
+                        $('#linecond').append(auxArr.join(''));
+                    } else {
+                        $("#linecond").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        function listCategory() {
+            $.ajax({
+                url: linkDepan + "GetCategory",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.category_id + "'>" + value.category_name + "</option>";
+                        });
+                        $('#category').append(auxArr.join(''));
+                    } else {
+                        $("#category").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        function listCatDetails() {
+            $.ajax({
+                url: linkDepan + "GetCategoryDetails",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.id + "'>" + value.details + "</option>";
+                        });
+                        $('#catdet').append(auxArr.join(''));
+                    } else {
+                        $("#catdet").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        function listWorkType() {
+            $.ajax({
+                url: linkDepan + "GetWorkType",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.id + "'>" + value.work_name + "</option>";
+                        });
+                        $('#worktype').append(auxArr.join(''));
+                    } else {
+                        $("#worktype").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        function listLocation() {
+            $.ajax({
+                url: linkDepan + "GetLocation",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.LCN_CODE + "'>" + value.LCN_NAME + "</option>";
+                        });
+                        $('#stationn').append(auxArr.join(''));
+                    } else {
+                        $("#stationn").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        function listReports(kmuj, section, gang) {
+            if (typeof gang === "string") {
+                gang = gang.split(/(?<=\d)(?=Gang)/);
+            }
+            if (Array.isArray(gang) && gang.length > 0) {
+                var gangString = gang.join(",");
+                $.ajax({
+                    url: linkDepan + "GetGListNormal?Kmuj=" + kmuj + "&Section=" + section + "&Gang=" + gangString,
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {},
+                    beforeSend: function (request) {
+                        request.setRequestHeader("Token", localStorage.getItem('main'));
+                    },
+                    success: function (response) {
+                        var counter = 1, countStf = 0, countID = 0;
+                        try {
+                            // Log the response to inspect it
+                            console.log("Server Response:", response);
+
+                            // Initialize DataTable with the correct column definitions
+                            var counter = 1;
+                            $.fn.dataTable.ext.errMode = 'throw';
+                            if ($.fn.dataTable.isDataTable('#tableRep')) {
+                                $('#tableRep').DataTable().destroy();
+                                $('#tableRep').empty(); // Clear the table contents
+                            }
+                            $('#tableRep').DataTable({
+                                responsive: true,
+                                data: response,
+                                columns: [
+                                    { data: "Emplid" },
+                                    { data: "Emplid" },
+                                    { data: "Nama" },
+                                    { data: "JobGrade" },
+                                    { data: "JobDesc" },
+                                    { data: "Gang" },
+                                    { data: "cuti_name" },
+                                    { data: "Emplid" },
+                                ],
+                                columnDefs: [
+                                    {
+                                        targets: -1,
+                                        title: "Actions",
+                                        render: function (data, type, full, meta) {
+                                            countStf++;
+                                            /*return '<a href="..' + data + '" id="BviewRes" class="btn btn-primary"><i class="fe fe-edit font-16"></i>';*/
+                                            return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>'
+
+                                        },
+                                    },
+                                    {
+                                        targets: -2,
+                                        title: "Status",
+                                        render: function (data, type, full, meta) {
+                                            var status = '';
+                                            if (data == 'VALID') {
+                                                status = '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a></p>';
+                                            } else {
+                                                status = '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a></p>';
+                                            }
+                                            return status;
+                                        },
+                                    },
+                                    {
+                                        targets: -3,
+                                        title: "Gang",
+                                        render: function (data, type, full, meta) {
+                                            return data;
+                                        },
+                                    },
+                                    {
+                                        targets: -4,
+                                        title: "Position",
+                                        render: function (data, type, full, meta) {
+                                            return data;
+                                        },
+                                    },
+                                    {
+                                        targets: -5,
+                                        title: "Grade",
+                                        render: function (data, type, full, meta) {
+                                            return data;
+                                        },
+                                    },
+                                    {
+                                        targets: -6,
+                                        title: "Name",
+                                        render: function (data, type, full, meta) {
+                                            return data;
+                                        },
+                                    },
+                                    {
+                                        targets: -7,
+                                        title: "Staff ID",
+                                        render: function (data, type, full, meta) {
+                                            return data;
+                                        },
+                                    },
+                                    {
+                                        targets: -8,
+                                        title: "No",
+                                        render: function (data, type, full, meta) {
+                                            return counter++;
+                                        }
+                                    }
+                                ],
+                                createdRow: function (row, data, dataIndex) {
+                                    $('td', row).addClass('text-nowrap align-middle');
+                                }
+                            });
+                        } catch (error) {
+                            console.error("Error parsing JSON:", error);
+                            if ($.fn.dataTable.isDataTable('#tableRep')) {
+                                $('#tableRep').DataTable().destroy();
+                                $('#tableRep').empty(); // Clear the table contents
+                            }
+
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX request failed:", textStatus, errorThrown);
+                        if ($.fn.dataTable.isDataTable('#tableRep')) {
+                            $('#tableRep').DataTable().destroy();
+                            $('#tableRep').empty(); // Clear the table contents
+                        }
+
+                    }
+                });
+            }
+        }
+
+        function gatherFormData() {
+            var UpdBy = localStorage.getItem('usrI');
+            var Region = localStorage.getItem('regID');
+            var Kmuj = localStorage.getItem('kmujVal');
+            var Section = localStorage.getItem('scnVal');
+            var gangValues = $("#gang").val();
+            var gangArray = gangValues;
+
+            var formattedDate = moment($('#datepicker').val(), 'MM/DD/YYYY').format('DD/MM/YYYY');
+
+            var attValues = $("#tableRep").DataTable().rows().data().toArray();
+            var AttId = attValues.map(function (item) {
+                return item.Emplid;
+            });
+            var workers = $('#gangno').val().replace(/\D/g, '');
+
+            var formData = {
+                RptCode: $('#rptcode').val(),
+                UpdBy: UpdBy,
+                Region: Region,
+                Kmuj: Kmuj,
+                Section: Section,
+                Gang: gangArray,
+                Date: formattedDate,
+                AttId: AttId, 
+                WorkType: $('#worktype').val(),
+                Total: $('#total').val(),
+                TotalUnit: $('#unit').val(),
+                TimeStart: $('#startTime').val(),
+                TimeLast: $('#endTime').val(),
+                Category: $('#category').val(),
+                Condition: $('#linecond').val(),
+                Adds: $('#addnotes').val(),
+                TimeTaken: $('#totalTime').val(),
+                KMFrom: $('#startKM').val(),
+                KMTo: $('#endKM').val(),
+                KMTotal: $('#totalKM').val(),
+                Station: $('#stationn').val(),
+                SPoint: $('#stPoint').val(),
+                CatDetails: $('#catdet').val(),
+                Temp: $('#temp').val(),
+                Workers: workers,
+            };
+
+            console.log("FormData:", formData);
+            return formData;
+        }
+
+        function submitForm(id) {
+            var formData = gatherFormData();
+            $.ajax({
+                url: linkDepan + "UpdateForm",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData), // Serialize the form data to JSON
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    var data;
+                    try {
+                        data = JSON.parse(response);
+                    } catch (error) {
+                        console.error("Error parsing JSON:", error);
+                        swarning();
+                        return;
+                    }
+                    if (data && data.status === "00") {
+                        swal.fire({
+                            title: 'Success!',
+                            text: 'Form details have been updated.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Redirect to the previous page
+                            window.history.back();
+                            window.location.reload();
+                        });
+                    } else {
+                        swarning();
+                    }
+                    if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "6") {
+                        $("#content").hide();
+                        $("#contentOthers").show();
+                    } else {
+                        $("#content").show();
+                        $("#contentOthers").hide();
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX request failed:", textStatus, errorThrown);
+                    swarning();
+                }
+            });
+        }
+
+        function submitAttendance(gang, id) {
+            var formData = gatherFormData();
+            var gang = formData.gang; // Extract gang data from formData
+            console.log("FormData untuk submitAttendance:", formData);
+            $.ajax({
+                url: linkDepan + "updateDailyAttendList?Gang=" + gang + "&RptCode?=" + id,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData), // Serialize the form data to JSON
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    var data;
+                    try {
+                        data = JSON.parse(response);
+                    } catch (error) {
+                        console.error("Error parsing JSON:", error);
+                        swarning();
+                        return;
+                    }
+                    if (data && data.status === "00") {
+                      
+                    } else {
+                        swarning();
+                    }
+                    if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "6") {
+                        $("#content").hide();
+                        $("#contentOthers").show();
+                    } else {
+                        $("#content").show();
+                        $("#contentOthers").hide();
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX request failed:", textStatus, errorThrown);
+                    swarning();
+                }
+            });
+        }
+
+        function submitAttendanceNo(gang, id) {
+            var formData = gatherFormData();
+            var gang = formData.gang; // Extract gang data from formData
+            $.ajax({
+                url: linkDepan + "updateDailyAttendListNo?Gang=" + gang + "&RptCode?=" + id,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData), // Serialize the form data to JSON
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    var data;
+                    try {
+                        data = JSON.parse(response);
+                    } catch (error) {
+                        console.error("Error parsing JSON:", error);
+                        swarning();
+                        return;
+                    }
+                    if (data && data.status === "00") {
+                
+                    } else {
+                        swarning();
+                    }
+                    if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "6") {
+                        $("#content").hide();
+                        $("#contentOthers").show();
+                    } else {
+                        $("#content").show();
+                        $("#contentOthers").hide();
+                    }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX request failed:", textStatus, errorThrown);
+                    swarning();
+                }
+            });
+        }
+
+
+        function listCuti() {
+            $.ajax({
+                url: linkDepan + "GetCutiList",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.cuti_code + "'>" + value.cuti_name + "</option>";
+                        });
+                        $('#cuti').append(auxArr.join(''));
+                    } else {
+                        $("#cuti").addClass(" is-invalid");
+
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+    </script>
+}
+
+
+
+
+
+
+

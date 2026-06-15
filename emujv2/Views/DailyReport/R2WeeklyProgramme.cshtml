@@ -1,0 +1,530 @@
+﻿
+@{
+    ViewBag.Title = "R2WeeklyProgramme";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="app-content main-content">
+    <div class="side-app">
+        <div class="container-fluid main-container">
+            <!--Page header-->
+            <div class="page-header">
+                <div class="page-leftheader">
+                    <h4 class="page-title">Weekly Programme (R2)</h4>
+                </div>
+            </div>
+            <div class="" id="contentAdmin">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3 m-0">
+                            <div class="row">
+                                <div class="col-4">
+                                    <label class="mt-3 form-label">KMUJ</label>
+                                    <select id="kmuj" class="form-control form-select select2">
+                                        <option value="-0">Select KMUJ</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <label class="mt-3 form-label">Section</label>
+                                    <select id="section" class="form-control form-select select2">
+                                        <option value="-0">Select Section</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <label class="mt-3 form-label">Date (From - To)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" id="txtDate" name="txtDate" required="required" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <label class="mt-3 form-label text-white">.</label>
+                                    <button id="btnSearch" class="btn btn-primary">Search</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="col-lg-12">
+                                        <div class="col-4">
+                                            <div id="selectedValues" class="mb-3"></div>
+                                        </div>
+
+                                        <div class="table-responsive table-lg">
+                                            <table id="tableRep" class="table table-bordered text-nowrap hover">
+                                                <thead></thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+
+                                        <table class="table table-bordered table-striped mt-5" id="summarySectionTable">
+                                            <thead>
+                                                <tr class="table-warning font-weight-bold">
+                                                    <th colspan="3" class="text-left">SUMMARY CALCULATIONS</th>
+                                                </tr>
+                                                <tr class="text-center">
+                                                    <th scope="col" style="width: 50%;">Description</th>
+                                                    <th scope="col" style="width: 25%;">Value</th>
+                                                    <th scope="col" style="width: 25%;">Percentage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Total Man-Hours for the Gangs</td>
+                                                    <td><span id="totalHours"></span> Mhrs</td>
+                                                    <td>-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>On Track Works</td>
+                                                    <td><span id="totalOnTrackWorks"></span> Mhrs</td>
+                                                    <td><span id="perOnTrack"></span> % Mhrs</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Off Track Works</td>
+                                                    <td><span id="totalOffTrackWorks"></span> Mhrs</td>
+                                                    <td><span id="perOffTrack"></span> % Mhrs</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Others</td>
+                                                    <td><span id="totalSpecificCategories"></span> Mhrs</td>
+                                                    <td><span id="perOthers"></span> % Mhrs</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total</td>
+                                                    <td><span id="veryLastTotal"></span> %</td>
+                                                    <td>-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Inspected by RE / CPWI on</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="~/assets/scripts/dashboard.js"></script>
+    <script src="~/assets/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="~/assets/plugins/select2/select2.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            checkSess();
+            listSection();
+            listKMUJ(); 1
+
+
+            $('#txtDate').daterangepicker({
+                autoUpdateInput: false,
+                singleDatePicker: true,
+                minYear: 2021,
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
+                var newEndDate = moment(picker.startDate).add(7, 'days');
+                $(this).data('daterangepicker').setEndDate(newEndDate);
+
+                var sdate = picker.startDate.format('YYYY/MM/DD');
+                var edate = newEndDate.format('YYYY/MM/DD');
+
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
+
+                localStorage.setItem("selHar", sdate);
+                localStorage.setItem("selHarE", edate);
+            });
+
+            $("#kmuj, #section").on('change', function () {
+                localStorage.removeItem("selHar");
+                localStorage.removeItem("selHarE");
+                $('#txtDate').val('');
+
+                var drp = $('#txtDate').data('daterangepicker');
+                drp.setStartDate(moment());
+                drp.setEndDate(moment());
+            });
+
+            $('#btnSearch').on('click', function () {
+                var kmj = $("#kmuj option:selected").text();
+                var scn = $("#section option:selected").text();
+
+                localStorage.setItem("selKmj", kmj);
+                localStorage.setItem("selScn", scn);
+
+                var sdate = localStorage.getItem("selHar") || "";
+                var edate = localStorage.getItem("selHarE") || "";
+
+                // Run the report
+                listReports(kmj, scn, sdate, edate);
+
+                if (sdate !== "") {
+                    salertSave('Searching for: ' + sdate + ' to ' + edate);
+                } else {
+                    salertSave('Searching all dates for ' + rgn);
+                }
+            });
+
+
+        });
+
+        function listSection() {
+            $.ajax({
+                url: linkDepan + "GetSectionList",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.section_id + "'>" + value.section_name + "</option>";
+                        });
+                        $('#section').append(auxArr.join(''));
+                    } else {
+                        $("#section").addClass(" is-invalid");
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () { }
+            });
+        }
+
+        function listKMUJ() {
+            $.ajax({
+                url: linkDepan + "KMUJList",
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    if (data.length >= 1) {
+                        auxArr = [];
+                        $.each(data, function (index, value) {
+                            auxArr[index] = "<option value='" + value.kmuj_id + "'>" + value.kmuj_name + "</option>";
+                        });
+                        $('#kmuj').append(auxArr.join(''));
+                    } else {
+                        $("#kmuj").addClass(" is-invalid");
+                    }
+                },
+                error: function (xhr) {
+                    swarning();
+                },
+                complete: function () { }
+            });
+        }
+
+        function listReports(kmuj, section, sdate, edate) {
+            $.ajax({
+                url: linkDepan + "GetKerja?&Kmuj=" + kmuj + "&Section=" + section + "&SDate=" + sdate + "&Edate=" + edate,
+                type: 'GET',
+                dataType: 'json',
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    console.log("Raw Data Received:", data);
+
+                    if (!data || !Array.isArray(data) || !data.length) {
+                        console.error('No valid data returned from the server.');
+                        return;
+                    }
+
+                    let finalData = [];
+                    let uniqueDates = new Set();
+
+                    // Sanitize variables for safe file naming (removes slashes from dates)
+                    let safeSdate = sdate.replace(/\//g, '-');
+                    let safeEdate = edate.replace(/\//g, '-');
+                    let dynamicFileName = `Annexure 20.7 – Weekly Programme (R2) ${kmuj} ${section} ${safeSdate} to ${safeEdate}`;
+
+                    // 1. Process Raw Data and Apply Multipliers
+                    data.forEach(item => {
+                        let row = {
+                            work_cat_id: item.work_cat_id,
+                            work_cat_name: item.work_cat_name,
+                            work_name: item.work_name,
+                            TotalTime: 0
+                        };
+
+                        Object.keys(item).forEach(dateKey => {
+                            if (!["work_cat_id", "work_cat_name", "work_name", "TotalTime"].includes(dateKey)) {
+                                let rawValue = parseFloat(item[dateKey]) || 0;
+                                let calculatedValue = 0;
+
+                                if (rawValue > 0) {
+                                    const parts = dateKey.split('/');
+                                    const dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+                                    const dayOfWeek = dateObj.getDay();
+
+                                    let multiplier = (dayOfWeek >= 1 && dayOfWeek <= 4) ? 8.75 : 6;
+                                    calculatedValue = rawValue * multiplier;
+                                }
+
+                                row[dateKey] = (calculatedValue === 0) ? '' : calculatedValue.toFixed(2);
+                                row.TotalTime += calculatedValue;
+                                uniqueDates.add(dateKey);
+                            }
+                        });
+
+                        row.TotalTime = row.TotalTime.toFixed(2);
+                        finalData.push(row);
+                    });
+
+                    // 2. Sort Dates Chronologically for Table Columns
+                    let sortedDates = Array.from(uniqueDates).sort((a, b) => {
+                        const partsA = a.split('/');
+                        const partsB = b.split('/');
+                        return new Date(partsA[2], partsA[1] - 1, partsA[0]) - new Date(partsB[2], partsB[1] - 1, partsB[0]);
+                    });
+
+                    // 3. Calculate Global Summaries Before Modifying Array Structure
+                    let othersCategories = [11, 12, 14, 15, 16, 17];
+                    let totalManHoursForGangs = finalData.reduce((sum, row) => sum + parseFloat(row.TotalTime || 0), 0);
+
+                    let offTrackWorksTotal = finalData.reduce((sum, row) => {
+                        return (Number(row.work_cat_id) === 5) ? sum + (parseFloat(row.TotalTime) || 0) : sum;
+                    }, 0);
+
+                    let totalOthers = finalData.reduce((sum, row) => {
+                        return (othersCategories.includes(Number(row.work_cat_id))) ? sum + (parseFloat(row.TotalTime) || 0) : sum;
+                    }, 0);
+
+                    let totalOnTrackWorks = finalData.reduce((sum, row) => {
+                        let id = Number(row.work_cat_id);
+                        return (id !== 5 && !othersCategories.includes(id)) ? sum + (parseFloat(row.TotalTime) || 0) : sum;
+                    }, 0);
+
+                    // Percentages Formatting
+                    let perOnTrack = (totalManHoursForGangs > 0) ? ((totalOnTrackWorks / totalManHoursForGangs) * 100).toFixed(2) : "0.00";
+                    let perOffTrack = (totalManHoursForGangs > 0) ? ((offTrackWorksTotal / totalManHoursForGangs) * 100).toFixed(2) : "0.00";
+                    let perOthers = (totalManHoursForGangs > 0) ? ((totalOthers / totalManHoursForGangs) * 100).toFixed(2) : "0.00";
+
+                    // 4. Generate & Append Table Main Bottom Summary Row
+                    let totalRow = { work_cat_id: '', work_cat_name: 'TOTAL', work_name: '', TotalTime: totalManHoursForGangs.toFixed(2) };
+                    sortedDates.forEach(date => {
+                        let dateSum = finalData.reduce((sum, row) => sum + (parseFloat(row[date]) || 0), 0);
+                        totalRow[date] = dateSum === 0 ? '' : dateSum.toFixed(2);
+                    });
+                    finalData.push(totalRow);
+
+                    // Update DOM Node Labels
+                    const updateText = (id, val) => { if (document.getElementById(id)) document.getElementById(id).innerText = val; };
+                    updateText("totalHours", totalManHoursForGangs.toFixed(2));
+                    updateText("totalOnTrackWorks", totalOnTrackWorks.toFixed(2));
+                    updateText("perOnTrack", perOnTrack);
+                    updateText("totalOffTrackWorks", offTrackWorksTotal.toFixed(2));
+                    updateText("perOffTrack", perOffTrack);
+                    updateText("totalSpecificCategories", totalOthers.toFixed(2));
+                    updateText("perOthers", perOthers);
+                    updateText("veryLastTotal", "100.00");
+
+                    // 5. Setup DataTable Column Schemas
+                    let columns = [
+                        { data: "work_cat_id", title: "NO", className: "text-center" },
+                        { data: "work_cat_name", title: "CATEGORY" },
+                        { data: "work_name", title: "WORK DESCRIPTION" }
+                    ];
+
+                    sortedDates.forEach(date => {
+                        columns.push({
+                            data: date,
+                            title: date,
+                            className: "text-center",
+                            render: function (data) {
+                                return (data == 0 || data === "0.00" || data === "") ? "" : data;
+                            }
+                        });
+                    });
+
+                    columns.push({
+                        data: "TotalTime",
+                        title: "GRAND TOTAL",
+                        className: "text-center",
+                        render: function (data) {
+                            return (data == 0 || data === "0.00" || data === "") ? "" : data;
+                        }
+                    });
+
+                    // 6. Initialize DataTables Object Instance
+                    if ($.fn.DataTable.isDataTable('#tableRep')) {
+                        $('#tableRep').DataTable().clear().destroy();
+                    }
+
+                    $('#tableRep').DataTable({
+                        ordering: false,
+                        paging: false,
+                        dom: 'Bfrtip',
+                        responsive: true,
+                        data: finalData,
+                        columns: columns,
+                        buttons: [
+                            {
+                                extend: 'csv',
+                                filename: dynamicFileName,
+                                customize: function (csv) {
+                                    var summaryCsv =
+                                        '\n"SUMMARY CALCULATIONS",,\n' +
+                                        '"Description","Value","Percentage"\n' +
+                                        '"Total Man-Hours for the Gangs","' + totalManHoursForGangs.toFixed(2) + ' Mhrs","-"\n' +
+                                        '"On Track Works","' + totalOnTrackWorks.toFixed(2) + ' Mhrs","' + perOnTrack + '% Mhrs"\n' +
+                                        '"Off Track Works","' + offTrackWorksTotal.toFixed(2) + ' Mhrs","' + perOffTrack + '% Mhrs"\n' +
+                                        '"Others","' + totalOthers.toFixed(2) + ' Mhrs","' + perOthers + '% Mhrs"\n' +
+                                        '"Total","100.00 %","-"\n' +
+                                        '"Inspected by RE / CPWI on","-","-"\n';
+                                    return csv + summaryCsv;
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                filename: dynamicFileName,
+                                title: 'Work Report Summary',
+                                customize: function (xlsx) {
+                                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+                                    var lastRowIdx = parseInt($('row', sheet).last().attr('r')) || $('row', sheet).length;
+
+                                    function getExcelColumnLetter(colIndex) {
+                                        let letter = '';
+                                        while (colIndex >= 0) {
+                                            letter = String.fromCharCode((colIndex % 26) + 65) + letter;
+                                            colIndex = Math.floor(colIndex / 26) - 1;
+                                        }
+                                        return letter;
+                                    }
+
+                                    function createExcelRow(rowIndex, cellValues) {
+                                        var rowEl = sheet.createElement('row');
+                                        rowEl.setAttribute('r', rowIndex);
+
+                                        cellValues.forEach(function (text, colIndex) {
+                                            var cellEl = sheet.createElement('c');
+                                            var cellRef = getExcelColumnLetter(colIndex) + rowIndex;
+
+                                            cellEl.setAttribute('r', cellRef);
+                                            cellEl.setAttribute('t', 'inlineStr');
+
+                                            var isEl = sheet.createElement('is');
+                                            var tEl = sheet.createElement('t');
+                                            tEl.textContent = text === null || text === undefined ? '' : text;
+
+                                            isEl.appendChild(tEl);
+                                            cellEl.appendChild(isEl);
+                                            rowEl.appendChild(cellEl);
+                                        });
+
+                                        return rowEl;
+                                    }
+
+                                    var summaryDataset = [
+                                        ['SUMMARY CALCULATIONS', '', ''],
+                                        ['Description', 'Value', 'Percentage'],
+                                        ['Total Man-Hours for the Gangs', totalManHoursForGangs.toFixed(2) + ' Mhrs', '-'],
+                                        ['On Track Works', totalOnTrackWorks.toFixed(2) + ' Mhrs', perOnTrack + '% Mhrs'],
+                                        ['Off Track Works', offTrackWorksTotal.toFixed(2) + ' Mhrs', perOffTrack + '% Mhrs'],
+                                        ['Others', totalOthers.toFixed(2) + ' Mhrs', perOthers + '% Mhrs'],
+                                        ['Total', '100.00 %', '-'],
+                                        ['Inspected by RE / CPWI on', '-', '-']
+                                    ];
+
+                                    var startRow = lastRowIdx + 2;
+                                    summaryDataset.forEach(function (rowDataValues, offset) {
+                                        var currentExcelRowNode = createExcelRow(startRow + offset, rowDataValues);
+                                        $('sheetData', sheet).append(currentExcelRowNode);
+                                    });
+                                }
+                            },
+                            {
+                                extend: 'pdf',
+                                filename: dynamicFileName,
+                                customize: function (doc) {
+                                    doc.content.push({
+                                        text: 'Summary Calculations',
+                                        style: 'subheader',
+                                        margin: [0, 25, 0, 10]
+                                    });
+                                    doc.content.push({
+                                        table: {
+                                            headerRows: 1,
+                                            widths: ['*', 'auto', 'auto'],
+                                            body: [
+                                                [{ text: 'Description', bold: true }, { text: 'Value', bold: true }, { text: 'Percentage', bold: true }],
+                                                ['Total Man-Hours for the Gangs', totalManHoursForGangs.toFixed(2) + ' Mhrs', '-'],
+                                                ['On Track Works', totalOnTrackWorks.toFixed(2) + ' Mhrs', perOnTrack + '% Mhrs'],
+                                                ['Off Track Works', offTrackWorksTotal.toFixed(2) + ' Mhrs', perOffTrack + '% Mhrs'],
+                                                ['Others', totalOthers.toFixed(2) + ' Mhrs', perOthers + '% Mhrs'],
+                                                ['Total', '100.00 %', '-'],
+                                                ['Inspected by RE / CPWI on', '-', '-']
+                                            ]
+                                        },
+                                        layout: 'lightHorizontalLines'
+                                    });
+                                }
+                            }
+                        ],
+                        rowCallback: function (row, data, index) {
+                            const categoryCell = $('td', row).eq(1);
+                            const noCell = $('td', row).eq(0);
+
+                            if (index < finalData.length - 1) {
+                                if (index === 0 || (finalData[index - 1] && finalData[index].work_cat_name !== finalData[index - 1].work_cat_name)) {
+                                    let rs = 1;
+                                    for (let i = index + 1; i < finalData.length - 1; i++) {
+                                        if (finalData[i] && finalData[i].work_cat_name === data.work_cat_name) rs++;
+                                    }
+                                    categoryCell.attr('rowspan', rs).css({ 'vertical-align': 'middle', 'background-color': '#f9f9f9' });
+                                } else {
+                                    categoryCell.hide();
+                                }
+
+                                if (index === 0 || (finalData[index - 1] && finalData[index].work_cat_id !== finalData[index - 1].work_cat_id)) {
+                                    let rs = 1;
+                                    for (let i = index + 1; i < finalData.length - 1; i++) {
+                                        if (finalData[i] && finalData[i].work_cat_id === data.work_cat_id) rs++;
+                                    }
+                                    noCell.attr('rowspan', rs).css({ 'vertical-align': 'middle', 'text-align': 'center' });
+                                } else {
+                                    noCell.hide();
+                                }
+                            }
+
+                            if (data.work_cat_name === 'TOTAL') {
+                                $(row).css('font-weight', 'bold').addClass('table-info');
+                                categoryCell.show().attr('colspan', 2).css('text-align', 'center');
+                                noCell.hide();
+                            }
+                        }
+                    });
+                },
+                error: function (xhr) {
+                    console.error("Error fetching data:", xhr);
+                }
+            });
+        }
+
+
+
+    </script>
+    }
+
+
+
+
+
+
+
+
