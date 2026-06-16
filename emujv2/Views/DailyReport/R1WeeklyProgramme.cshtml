@@ -118,8 +118,6 @@
                                                     <h6>C.T - Yearly Leave</h6>
                                                     <h6>T.H - Not Present</h6>
                                                     <h6>S - Sick</h6>
-                                                    <h6>BK - Training</h6>
-                                                    <h6>CTR - Unrecorded Leave</h6>
                                                 </div>
                                             </div>
                                             <div class="col-6">
@@ -149,6 +147,21 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid" id="contentOthers">
+                <div class="card border-0 shadow-sm ">
+                    <div class="card-body p-4 text-center mt-5 mb-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle p-3 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+                                <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06c-.01.006-.017.01-.023.013a.17.17 0 0 1-.054.015H1.515a.17.17 0 0 1-.054-.015 1 1 0 0 1-.023-.013.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L8.244 2.073a.15.15 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z" />
+                                <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+                            </svg>
+                        </div>
+
+                        <h4 class="fw-bold text-dark mb-2">Access Denied</h4>
+                        <p class="text-secondary mb-0">Sorry, you do not have permission to view this section.</p>
                     </div>
                 </div>
             </div>
@@ -228,24 +241,29 @@
             });
 
 
-            $('#tableRep').on('click', '.toggle-icon-work', function () {
-                var cell = $(this);
-                var currentText = cell.text().trim();
-                if (currentText === '') {
-                    cell.text('CA');
-                } else if (currentText === 'CA') {
-                    cell.text('CT');
-                } else if (currentText === 'CT') {
-                    cell.text('TH');
-                } else if (currentText === 'TH') {
-                    cell.text('S');
-                } else if (currentText === 'S') {
-                    cell.text('BK');
-                } else if (currentText === 'BK') {
-                    cell.text('CTR');
-                } else if (currentText === 'CTR') {
-                    cell.text('');
-                }
+            // Use event delegation for dynamic DataTable content
+            $('#tableRep').on('click', '.attendance-toggle', function (e) {
+                e.preventDefault();
+                var btn = $(this);
+                var span = btn.find('.attendance-text');
+                var currentText = span.text().trim();
+
+                // Define the cycle order
+                const cycle = ['', 'CT', 'TH', 'S'];
+
+                // Determine next state
+                var currentIndex = cycle.indexOf(currentText);
+                var nextValue = cycle[(currentIndex + 1) % cycle.length];
+
+                // Update UI
+                span.text(nextValue);
+
+                // Call your auto-save function
+                autoSaveStaffAttendance(
+                    btn.data('emplid'),
+                    btn.data('date'),
+                    nextValue
+                );
             });
 
             $('#tableRep').on('click', '.workplan-toggle', function () {
@@ -333,8 +351,10 @@
                 StaffNo: emplid,
                 Date: workDate,
                 WorkName: workName,
-                PlanCode: planCode
+                PlanCode: planCode,
+                UpdBy: localStorage.getItem('usrI')
             };
+            console.log(payload);
 
             // AJAX 1: Update ONLY the individual staff record
             $.ajax({
@@ -347,6 +367,31 @@
                 },
                 success: function (response) {
                     console.log(`Individual Saved: ${emplid} -> ${planCode}`);
+                }
+            });
+        }
+
+        function autoSaveStaffAttendance(emplid, workDate, cutiCode) {
+            let payload = {
+                StaffNo: emplid,
+                Date: workDate,
+                CutiCode: cutiCode, // Maps directly to your codes (CA, CT, TH, etc.)
+                UpdBy: localStorage.getItem('usrI')
+            };
+
+            $.ajax({
+                url: linkDepan + "UpdateStaffLeave", // Ensure this matches your API route
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    console.log(`Attendance Saved: ${emplid} on ${workDate} as ${cutiCode}`);
+                },
+                error: function () {
+                    alert("Failed to save attendance.");
                 }
             });
         }
@@ -446,6 +491,7 @@
                     thead += '</tr>';
                     $('#tableRep thead').html(thead);
 
+                    // Statistics initializers
                     let attStats = { valid: Array(7).fill(0), al: Array(7).fill(0), mc: Array(7).fill(0), ab: Array(7).fill(0) };
                     let workStats = {};
                     uniquework_name.forEach(name => { workStats[name] = { dp: Array(7).fill(0), up: Array(7).fill(0) }; });
@@ -480,11 +526,18 @@
                                 if (workStats[item.work_name]) workStats[item.work_name][rawCode][dayIndex]++;
                             }
                             if (!trackedDailyAttendance[trackingKey]) {
-                                const l = item.leaveType_id ? String(item.leaveType_id).toLowerCase().trim() : "";
-                                if (l === "valid" || l === "") attStats.valid[dayIndex]++;
-                                else if (l === "al") attStats.al[dayIndex]++;
-                                else if (l === "mc") attStats.mc[dayIndex]++;
-                                else if (l === "ab") attStats.ab[dayIndex]++;
+                                const l = item.leaveType_id ? String(item.leaveType_id).toLowerCase().trim() : "valid";
+
+                                if (l === "al" || l === "ct") {
+                                    attStats.al[dayIndex]++;
+                                } else if (l === "mc" || l === "s") {
+                                    attStats.mc[dayIndex]++;
+                                } else if (l === "ab" || l === "th") {
+                                    attStats.ab[dayIndex]++;
+                                } else {
+                                    attStats.valid[dayIndex]++;
+                                }
+
                                 trackedDailyAttendance[trackingKey] = true;
                             }
                         }
@@ -498,14 +551,45 @@
                             let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
                             let dayInfo = groupedData[staffNo].attendance_data[d];
                             let displayValue = "";
+                            let leaveTypeTracking = "valid";
+                            let isClickable = false; // Default tracking flag
+
                             if (dayInfo) {
-                                const leave = dayInfo.leave ? String(dayInfo.leave).toLowerCase().trim() : "";
-                                if (leave === "al") displayValue = "CT";
-                                else if (leave === "mc") displayValue = "S";
-                                else if (leave === "ab") displayValue = "TH";
-                                else if (leave !== "" && leave !== "valid") displayValue = dayInfo.leave.toUpperCase();
+                                isClickable = true; // Record verified in database context
+                                const leave = dayInfo.leave ? String(dayInfo.leave).toLowerCase().trim() : "valid";
+
+                                if (leave === "al" || leave === "ct") {
+                                    displayValue = "CT";
+                                    leaveTypeTracking = "al";
+                                } else if (leave === "mc" || leave === "s") {
+                                    displayValue = "S";
+                                    leaveTypeTracking = "mc";
+                                } else if (leave === "ab" || leave === "th") {
+                                    displayValue = "TH";
+                                    leaveTypeTracking = "ab";
+                                } else if (leave === "ca") {
+                                    displayValue = "CA";
+                                    leaveTypeTracking = "valid";
+                                } else if (leave !== "" && leave !== "valid") {
+                                    displayValue = dayInfo.leave.toUpperCase();
+                                    leaveTypeTracking = "valid";
+                                }
                             }
-                            tbody += `<td><span>${displayValue}</span></td>`;
+
+                            // Dynamically append properties based on record existence check
+                            let disabledAttr = isClickable ? "" : 'disabled="disabled"';
+                            let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65;";
+
+                            tbody += `<td>
+                                <a class="btn attendance-toggle" 
+                                   data-emplid="${staffNo}" 
+                                   data-date="${d}" 
+                                   data-leavetype="${leaveTypeTracking}"
+                                   ${disabledAttr}
+                                   style="display:block; ${cursorStyle}">
+                                   <span class="attendance-text">${displayValue}</span>
+                                </a>
+                            </td>`;
                         }
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
@@ -531,15 +615,14 @@
                         { label: 'TOTAL ABSENT', attKey: 'ab', type: 'leave' }
                     ];
 
-                    // --- FIXED: Kept all 3 structural cells but used helper classes to hide the internal vertical borders ---
                     footerMapping.forEach(rowConfig => {
                         tbody += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
                             `<td class="merged-style-left">${rowConfig.label}</td>` +
                             `<td class="merged-style-middle"></td>` +
                             `<td class="merged-style-right"></td>`;
 
-                        attStats[rowConfig.attKey].forEach(val => {
-                            tbody += `<td>${val === 0 ? '' : val}</td>`;
+                        attStats[rowConfig.attKey].forEach((val, i) => {
+                            tbody += `<td class="summary-att-cell" data-day="${i}" data-key="${rowConfig.attKey}">${val === 0 ? '' : val}</td>`;
                         });
 
                         uniquework_name.forEach(wn => {
@@ -555,7 +638,6 @@
                         tbody += '</tr>';
                     });
 
-                    // --- FIXED: Kept all 3 structural cells for ADDITIONAL INFO ---
                     tbody += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
                         `<td class="merged-style-left">ADDITIONAL INFO</td>` +
                         `<td class="merged-style-middle"></td>` +
@@ -573,7 +655,6 @@
 
                     $('#tableRep tbody').html(tbody);
 
-                    // Added style patches for .merged-style layout classes to hide interior borders completely
                     const whiteRowStylePatch = `
                 <style id="forceWhiteTableLayout">
                     #tableRep, #tableRep tbody tr, #tableRep tbody td, #tableRep tbody tr.summary-row td {
@@ -586,7 +667,6 @@
                         text-align: center !important;
                         vertical-align: middle !important;
                     }
-                    /* Border blending mechanics to create a flawless single column illusion */
                     .merged-style-left {
                         border-right: none !important;
                         text-align: left !important;
@@ -770,7 +850,6 @@
                         createdRow: function (row) {
                             if ($(row).hasClass('summary-row')) {
                                 $('td', row).css('background-color', '#ffffff');
-                                // Skip styling the custom visual cells to protect the border alignments
                                 $('td:gt(2)', row).addClass('text-nowrap align-middle text-center');
                             } else {
                                 $('td', row).addClass('text-nowrap align-middle text-center');
@@ -785,17 +864,63 @@
                     });
 
                     let metadataHtml = `
-                        <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
-                            <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
-                                <div style="text-align: right; padding-right: 15px;">
-                                    <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
-                                    <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
-                                </div>
-                            </div>
+                <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
+                    <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
+                        <div style="text-align: right; padding-right: 15px;">
+                            <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
+                            <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
                         </div>
-                    `;
+                    </div>
+                </div>
+            `;
                     $('.selected-values').after(metadataHtml);
 
+                    // ==========================================
+                    // 1. ATTENDANCE DYNAMIC TOGGLE HANDLER
+                    // ==========================================
+                    $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
+                        e.preventDefault();
+                        const $btn = $(this);
+
+                        // EXPLICIT GUARD: Block execution if cell has no mapped DB records
+                        if ($btn.attr('disabled')) {
+                            return false;
+                        }
+
+                        const $span = $btn.find('.attendance-text');
+                        const date = $btn.data('date');
+                        const empId = $btn.data('emplid');
+                        const dayIndex = moment(date).diff(startDate, 'days');
+                        const oldType = $btn.data('leavetype') || 'valid';
+
+                        let newType, newDisplay;
+                        if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
+                        else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
+                        else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
+                        else { newType = 'valid'; newDisplay = ''; }
+
+                        attStats[oldType][dayIndex]--;
+                        attStats[newType][dayIndex]++;
+
+                        $btn.data('leavetype', newType);
+                        $span.text(newDisplay);
+
+                        footerMapping.forEach(f => {
+                            let val = attStats[f.attKey][dayIndex];
+                            $(`.summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(val === 0 ? '' : val);
+                        });
+
+                        let dbCutiCode = "valid";
+                        if (newType === 'al') dbCutiCode = "CT";
+                        else if (newType === 'mc') dbCutiCode = "S";
+                        else if (newType === 'ab') dbCutiCode = "TH";
+
+                        autoSaveStaffAttendance(empId, date, dbCutiCode);
+                    });
+
+                    // ==========================================
+                    // 2. WORKPLAN TOGGLE HANDLER
+                    // ==========================================
                     $(document).off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
                         e.preventDefault();
                         const $btn = $(this); const $icon = $btn.find('i');
@@ -823,8 +948,7 @@
             });
         }
 
-
-
+     
 
     </script>
 }

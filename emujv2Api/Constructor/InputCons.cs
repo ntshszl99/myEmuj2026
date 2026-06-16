@@ -70,7 +70,8 @@ namespace emujv2Api.Constructor
         public string LeaveTypeId { get; set; }
         public string PlanCode { get; set; }
         public string RptCode { get; set; }
-
+        public string CutiCode { get; set; }
+        public string UpdBy { get; set; }
     }
 
     public class WorkPlanTotal
@@ -81,6 +82,7 @@ namespace emujv2Api.Constructor
         public string WorkUp { get; set; }
         public string WorkPl { get; set; }
         public string RptCode { get; set; }
+        public string UpdBy { get; set; }
 
     }
 

@@ -246,16 +246,62 @@ namespace emujv2Api.Controller
             string Salah = "";
             string Data = Token.ValidateToken(httpContextAccessor.HttpContext.Request.Headers["Token"], ref Salah);
             if (string.IsNullOrEmpty(Data))
+
             {
                 HttpContext.Response.StatusCode = 401;
                 return null;
             }
 
+            UserCons User = JsonConvert.DeserializeObject<UserCons>(Data);
+
+
             if (staffCons != null && !string.IsNullOrEmpty(staffCons.StaffNo))
             {
                 InsertUpdate ret = new InsertUpdate();
 
-                Salah = ret.UpdateWorkPlan(staffCons.StaffNo, staffCons.Date, staffCons.PlanCode);
+                Salah = ret.UpdateWorkPlan(staffCons.UpdBy, staffCons.StaffNo, staffCons.Date, staffCons.PlanCode);
+
+                if (Salah != "0")
+                {
+                    RetDat.status = "99";
+                    RetDat.StatusDetail = Salah;
+                    return JsonConvert.SerializeObject(RetDat);
+                }
+
+                RetDat.status = "00";
+                RetDat.StatusDetail = "Update Save.";
+                return JsonConvert.SerializeObject(RetDat);
+            }
+            else
+            {
+                RetDat.status = "99";
+                RetDat.StatusDetail = "Error: Staff data missing in request.";
+                return JsonConvert.SerializeObject(RetDat);
+            }
+        }
+
+
+        [HttpPost]
+        public string UpdateStaffLeave([FromBody] StaffInfo staffCons)
+        {
+            TokenFunc Token = new TokenFunc();
+            PublicCons RetDat = new PublicCons();
+            string Salah = "";
+            string Data = Token.ValidateToken(httpContextAccessor.HttpContext.Request.Headers["Token"], ref Salah);
+
+            if (string.IsNullOrEmpty(Data))
+            {
+                HttpContext.Response.StatusCode = 401;
+                return null;
+            }
+
+            UserCons User = JsonConvert.DeserializeObject<UserCons>(Data);
+
+            if (staffCons != null && !string.IsNullOrEmpty(staffCons.StaffNo) )
+            {
+                InsertUpdate ret = new InsertUpdate();
+
+                Salah = ret.UpdateStaffLeave(staffCons.UpdBy, staffCons.StaffNo, staffCons.Date, staffCons.CutiCode);
 
                 if (Salah != "0")
                 {

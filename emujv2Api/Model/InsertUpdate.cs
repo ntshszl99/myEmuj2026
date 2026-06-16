@@ -322,7 +322,7 @@ namespace emujv2Api.Model
             else { return "0"; }
         }
 
-        public string UpdateWorkPlan(string Userid, string WorkDate, string PlanCode)
+        public string UpdateWorkPlan(string UpdBy, string StaffNo, string WorkDate, string PlanCode)
         {
             StringBuilder SqlStr = new StringBuilder();
             DataTable Recc = new DataTable();
@@ -333,18 +333,48 @@ namespace emujv2Api.Model
 
             SqlStr.Append(" UPDATE work_plan ");
             SqlStr.Append(" SET work_plan_type_code = @PlanCode, ");
-            SqlStr.Append(" updated_at = GETDATE() ");
-            SqlStr.Append(" WHERE staff_no = @Userid ");
+            SqlStr.Append(" updated_at = GETDATE(), ");
+            SqlStr.Append(" updated_by = @UpdBy ");
+            SqlStr.Append(" WHERE staff_no = @StaffNo ");
             SqlStr.Append(" AND work_date = @WorkDate ");
 
             ParamTmp.Add("@PlanCode", PlanCode ?? (object)DBNull.Value);
-            ParamTmp.Add("@Userid", Userid);
+            ParamTmp.Add("@StaffNo", StaffNo);
+            ParamTmp.Add("@UpdBy", UpdBy);
             ParamTmp.Add("@WorkDate", WorkDate);
 
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             if (Salah != "") { return Salah; }
             else { return "0"; }
         }
+
+        public string UpdateStaffLeave(string UpdBy, string StaffNo, string WorkDate, string CutiCode)
+        {
+            StringBuilder SqlStr = new StringBuilder();
+            DataTable Recc = new DataTable();
+            MsSql DbCon = new MsSql();
+            string Salah = "";
+            CommonFunc Conn = new CommonFunc();
+            Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
+
+            SqlStr.Append(" UPDATE staff_leave ");
+            SqlStr.Append(" SET leaveType_id = @CutiCode, ");
+            SqlStr.Append(" updated_at = GETDATE(), ");
+            SqlStr.Append(" updated_by = @UpdBy ");
+            SqlStr.Append(" WHERE staff_no = @StaffNo ");
+            SqlStr.Append(" AND leave_date = @WorkDate ");
+
+            ParamTmp.Add("@CutiCode", CutiCode ?? (object)DBNull.Value);
+            ParamTmp.Add("@StaffNo", StaffNo);
+            ParamTmp.Add("@UpdBy", UpdBy);
+            ParamTmp.Add("@WorkDate", WorkDate);
+
+            Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
+            if (Salah != "") { return Salah; }
+            else { return "0"; }
+        }
+
+
 
         public string UpdateWorkPlanTotal(string Userid, List<WorkPlanTotal> workPlanList)
         {

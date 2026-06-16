@@ -1412,6 +1412,32 @@
   },
   {
     "ContainingType": "emujv2Api.Controller.WebApiController",
+    "Method": "UpdateStaffLeave",
+    "RelativePath": "api/WebApi/UpdateStaffLeave",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "staffCons",
+        "Type": "emujv2Api.Constructor.StaffInfo",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "UpdateUser",
     "RelativePath": "api/WebApi/UpdateUser",
     "HttpMethod": "POST",
