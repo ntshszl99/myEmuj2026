@@ -38,6 +38,23 @@
         white-space: normal !important;
         overflow: hidden;
     }
+
+    /* Fix background bleed issues across cloned elements */
+    .DTFC_LeftHeadWrapper th,
+    .DTFC_LeftBodyWrapper td,
+    table.dataTable th.dtfc-fixed-left,
+    table.dataTable td.dtfc-fixed-left {
+        background-color: #ffffff !important;
+        z-index: 5;
+    }
+
+    /* Maintain footer background consistency */
+    #footerData tr.footer-row td.dtfc-fixed-left {
+        background-color: #f9f9f9 !important;
+    }
+
+
+
 </style>
 
 <div class="app-content main-content">
@@ -141,10 +158,14 @@
 
 
 @section scripts{
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedcolumns.dataTables.min.css">sho
+    <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
     <script src="~/assets/scripts/dashboard.js"></script>
     <script src="~/assets/plugins/daterangepicker/daterangepicker.js"></script>
     <script src="~/assets/plugins/select2/select2.min.js"></script>
     <script type="text/javascript">
+
+
         $(document).ready(function () {
             checkSess();
             listSection();
@@ -251,10 +272,6 @@
         });
 
 
-    
-
-
-      
         function listSection() {
             $.ajax({
                 url: linkDepan + "GetSectionList",
@@ -339,7 +356,7 @@
             let uniqueDates = [];
 
             $('[data-date]').each(function () {
-                let date = $(this).attr('data-date'); 
+                let date = $(this).attr('data-date');
                 if (date && date.trim() !== "") {
                     date = date.trim();
                     if (uniqueDates.indexOf(date) === -1) {
@@ -377,6 +394,8 @@
             });
         }
 
+
+
         function listReports(kmuj, section, sdate, edate) {
             $.ajax({
                 url: linkDepan + "GetR1?Kmuj=" + kmuj + "&Section=" + section + "&SDate=" + sdate + "&Edate=" + edate,
@@ -395,7 +414,6 @@
                     $('#tableRep tbody').empty();
                     $('#tableRep tfoot').remove();
 
-                    // Safe parsing for both start and end dates
                     const startDate = moment(sdate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
                     const endDate = moment(edate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
                     const weekNumber = startDate.isValid() ? startDate.week() : "";
@@ -493,11 +511,11 @@
                             for (let i = 0; i < 7; i++) {
                                 let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
                                 if (groupedData[staffNo].work_data[wn] && groupedData[staffNo].work_data[wn].hasOwnProperty(d)) {
-                                    let currentCode = groupedData[staffNo].work_data[wn][d];
+                                    let currentCodeVal = groupedData[staffNo].work_data[wn][d];
                                     let iconClass = "fa-minus fa-rotate-90";
-                                    if (currentCode === "dp") iconClass = "fa-plus";
-                                    else if (currentCode === "up") iconClass = "fa-minus";
-                                    tbody += `<td><a class="btn workplan-toggle" data-emplid="${staffNo}" data-date="${d}" data-workname="${wn}" data-code="${currentCode}"><i class="fa ${iconClass}"></i></a></td>`;
+                                    if (currentCodeVal === "dp") iconClass = "fa-plus";
+                                    else if (currentCodeVal === "up") iconClass = "fa-minus";
+                                    tbody += `<td><a class="btn workplan-toggle" data-emplid="${staffNo}" data-date="${d}" data-workname="${wn}" data-code="${currentCodeVal}"><i class="fa ${iconClass}"></i></a></td>`;
                                 } else {
                                     tbody += `<td></td>`;
                                 }
@@ -505,60 +523,91 @@
                         });
                         tbody += `</tr>`;
                     }
-                    $('#tableRep tbody').html(tbody);
 
-                    function generateFooter() {
-                        let tfootContent = '';
-                        const footerMapping = [
-                            { label: 'TOTAL ATTENDANCE', attKey: 'valid' },
-                            { label: 'TOTAL YEARLY LEAVE', attKey: 'al' },
-                            { label: 'TOTAL SICK LEAVE', attKey: 'mc' },
-                            { label: 'TOTAL ABSENT', attKey: 'ab' }
-                        ];
-                        footerMapping.forEach(rowConfig => {
-                            tfootContent += `<tr class="footer-row" data-label="${rowConfig.label}" style="font-weight:bold; background-color:#f9f9f9;"><td colspan="3">${rowConfig.label}</td>`;
-                            attStats[rowConfig.attKey].forEach(val => { tfootContent += `<td class="text-center">${val === 0 ? '' : val}</td>`; });
-                            uniquework_name.forEach(wn => {
-                                for (let i = 0; i < 7; i++) {
-                                    let displayVal = "";
-                                    if (rowConfig.label === 'TOTAL ATTENDANCE') {
-                                        let total = (workStats[wn].dp[i] || 0) + (workStats[wn].up[i] || 0);
-                                        displayVal = total > 0 ? total : "";
-                                    }
-                                    tfootContent += `<td class="text-center total-cell" data-workname="${wn}" data-day="${i}">${displayVal}</td>`;
-                                }
-                            });
-                            tfootContent += '</tr>';
+                    const footerMapping = [
+                        { label: 'TOTAL ATTENDANCE', attKey: 'valid', type: 'attendance' },
+                        { label: 'TOTAL YEARLY LEAVE', attKey: 'al', type: 'leave' },
+                        { label: 'TOTAL SICK LEAVE', attKey: 'mc', type: 'leave' },
+                        { label: 'TOTAL ABSENT', attKey: 'ab', type: 'leave' }
+                    ];
+
+                    // --- FIXED: Kept all 3 structural cells but used helper classes to hide the internal vertical borders ---
+                    footerMapping.forEach(rowConfig => {
+                        tbody += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
+                            `<td class="merged-style-left">${rowConfig.label}</td>` +
+                            `<td class="merged-style-middle"></td>` +
+                            `<td class="merged-style-right"></td>`;
+
+                        attStats[rowConfig.attKey].forEach(val => {
+                            tbody += `<td>${val === 0 ? '' : val}</td>`;
                         });
-                        tfootContent += `<tr style="font-weight:bold;"><td colspan="3">ADDITIONAL INFO</td>`;
-                        for (let i = 0; i < 7; i++) { tfootContent += `<td></td>`; }
-                        uniquework_name.forEach((wn) => {
+
+                        uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
-                                let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
-                                let info = dailyAdditionalMap[`${d}_${wn}`] || "";
-                                tfootContent += `<td class="text-center"><div class="vertical-text">${info}</div></td>`;
+                                let displayVal = "";
+                                if (rowConfig.label === 'TOTAL ATTENDANCE') {
+                                    let total = (workStats[wn].dp[i] || 0) + (workStats[wn].up[i] || 0);
+                                    displayVal = total > 0 ? total : "";
+                                }
+                                tbody += `<td class="total-cell" data-rowtype="${rowConfig.type}" data-workname="${wn}" data-day="${i}">${displayVal}</td>`;
                             }
                         });
-                        tfootContent += '</tr>';
-                        return tfootContent;
-                    }
+                        tbody += '</tr>';
+                    });
 
-                    $('#tableRep').append('<tfoot id="footerData">' + generateFooter() + '</tfoot>');
+                    // --- FIXED: Kept all 3 structural cells for ADDITIONAL INFO ---
+                    tbody += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
+                        `<td class="merged-style-left">ADDITIONAL INFO</td>` +
+                        `<td class="merged-style-middle"></td>` +
+                        `<td class="merged-style-right"></td>`;
+
+                    for (let i = 0; i < 7; i++) { tbody += `<td></td>`; }
+                    uniquework_name.forEach((wn) => {
+                        for (let i = 0; i < 7; i++) {
+                            let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
+                            let info = dailyAdditionalMap[`${d}_${wn}`] || "";
+                            tbody += `<td><div class="vertical-text">${info}</div></td>`;
+                        }
+                    });
+                    tbody += '</tr>';
+
+                    $('#tableRep tbody').html(tbody);
+
+                    // Added style patches for .merged-style layout classes to hide interior borders completely
+                    const whiteRowStylePatch = `
+                <style id="forceWhiteTableLayout">
+                    #tableRep, #tableRep tbody tr, #tableRep tbody td, #tableRep tbody tr.summary-row td {
+                        background-color: #ffffff !important;
+                    }
+                    .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
+                        background-color: #ffffff !important;
+                    }
+                    #tableRep thead th, .DTFC_LeftHeadWrapper table thead th {
+                        text-align: center !important;
+                        vertical-align: middle !important;
+                    }
+                    /* Border blending mechanics to create a flawless single column illusion */
+                    .merged-style-left {
+                        border-right: none !important;
+                        text-align: left !important;
+                    }
+                    .merged-style-middle {
+                        border-left: none !important;
+                        border-right: none !important;
+                    }
+                    .merged-style-right {
+                        border-left: none !important;
+                    }
+                </style>
+            `;
+                    $('#forceWhiteTableLayout').remove();
+                    $('head').append(whiteRowStylePatch);
 
                     function getFooterDataArray() {
                         let rows = [];
-                        const footerMapping = [
-                            { label: 'TOTAL ATTENDANCE', attKey: 'valid' },
-                            { label: 'TOTAL YEARLY LEAVE', attKey: 'al' },
-                            { label: 'TOTAL SICK LEAVE', attKey: 'mc' },
-                            { label: 'TOTAL ABSENT', attKey: 'ab' }
-                        ];
-
                         footerMapping.forEach(rowConfig => {
                             let fullRow = [rowConfig.label, '', ''];
-                            attStats[rowConfig.attKey].forEach(val => {
-                                fullRow.push(val === 0 ? '' : String(val));
-                            });
+                            attStats[rowConfig.attKey].forEach(val => { fullRow.push(val === 0 ? '' : String(val)); });
                             uniquework_name.forEach(wn => {
                                 for (let i = 0; i < 7; i++) {
                                     let displayVal = "";
@@ -608,22 +657,24 @@
                         return columnName;
                     }
 
-                    $('#tableRep').addClass('table table-bordered').DataTable({
+                    let tableElement = $('#tableRep').addClass('table table-bordered').DataTable({
                         dom: '<"selected-values"fB>rtip',
                         buttons: [
                             {
                                 extend: 'csv',
-                                filename: function () {
-                                    return 'WeeklyProgramme(R1) ' + kmuj + '_' + section + '_' + sdate + '_to_' + edate;
-                                },
+                                filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '_' + section + '_' + sdate + '_to_' + edate; },
                                 header: false,
                                 exportOptions: {
                                     rows: ':visible',
                                     format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
                                 },
                                 customize: function (csv) {
+                                    let lines = csv.split('\n');
+                                    lines = lines.slice(0, lines.length - 6);
+                                    let cleanBody = lines.join('\n');
+
                                     let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
-                                    let baseCsv = customHeader + csv + "\n";
+                                    let baseCsv = customHeader + cleanBody + "\n";
                                     let footerRows = getFooterDataArray();
                                     let footerCsv = "";
                                     footerRows.forEach(row => {
@@ -638,10 +689,8 @@
                             },
                             {
                                 extend: 'excel',
-                                filename: function () {
-                                    return 'Report_' + kmuj + '_' + section + '_' + sdate + '_to_' + edate;
-                                },
-                                title: null, // Set to null to prevent default title injection messing up row numbers
+                                filename: function () { return 'Report_' + kmuj + '_' + section + '_' + sdate + '_to_' + edate; },
+                                title: null,
                                 header: false,
                                 exportOptions: {
                                     rows: ':visible',
@@ -651,21 +700,17 @@
                                     let sheet = xlsx.xl.worksheets['sheet1.xml'];
                                     let numCols = headerRow1.length;
 
-                                    // 1. Build Header 1 and Header 2 XML nodes using the same dataset arrays as CSV
                                     let row1Xml = '<row r="1">';
                                     let row2Xml = '<row r="2">';
                                     for (let c = 0; c < numCols; c++) {
                                         let colRef = getExcelColumnName(c);
                                         let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
                                         let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
-
                                         row1Xml += `<c t="inlineStr" r="${colRef}1"><is><t><![CDATA[${val1}]]></t></is></c>`;
                                         row2Xml += `<c t="inlineStr" r="${colRef}2"><is><t><![CDATA[${val2}]]></t></is></c>`;
                                     }
-                                    row1Xml += '</row>';
-                                    row2Xml += '</row>';
+                                    row1Xml += '</row>'; row2Xml += '</row>';
 
-                                    // 2. Shift the main table rows downward by 2 spaces to make room for custom headers
                                     let finalBodyRowIdx = 2;
                                     $('row', sheet).each(function () {
                                         let currentDocRow = parseInt($(this).attr('r'));
@@ -680,15 +725,12 @@
                                     });
 
                                     let sheetData = sheet.getElementsByTagName('sheetData')[0];
-
-                                    // Clean up any stray row overflows
                                     $('row', sheetData).each(function () {
                                         let rIdx = parseInt($(this).attr('r'));
-                                        if (rIdx > finalBodyRowIdx) { $(this).remove(); }
+                                        if (rIdx > (finalBodyRowIdx - 5)) { $(this).remove(); }
                                     });
 
-                                    // 3. Append Footer rows precisely reflecting CSV values
-                                    let currentExcelRow = finalBodyRowIdx + 1;
+                                    let currentExcelRow = (finalBodyRowIdx - 5) + 1;
                                     let footerRowsData = getFooterDataArray();
 
                                     footerRowsData.forEach((rowArr) => {
@@ -696,10 +738,7 @@
                                         rowArr.forEach((cellVal, cIdx) => {
                                             let colRef = getExcelColumnName(cIdx);
                                             let cleanVal = (cellVal === null || cellVal === undefined) ? "" : String(cellVal).trim();
-
-                                            // Match clean numeric fields, keep statuses (+, -, CT, etc.) as text strings
                                             let isNumeric = cleanVal !== "" && /^\d+$/.test(cleanVal);
-
                                             if (isNumeric) {
                                                 footerRowXml += `<c r="${colRef}${currentExcelRow}"><v>${cleanVal}</v></c>`;
                                             } else {
@@ -707,48 +746,54 @@
                                             }
                                         });
                                         footerRowXml += `</row>`;
-
-                                        // Parse safely back to structural worksheet node
                                         let parser = new DOMParser();
-                                        let xmlDoc = parser.parseFromString(footerRowXml, "text/xml");
-                                        sheetData.appendChild(sheet.importNode(xmlDoc.documentElement, true));
+                                        sheetData.appendChild(sheet.importNode(parser.parseFromString(footerRowXml, "text/xml").documentElement, true));
                                         currentExcelRow++;
                                     });
 
-                                    // 4. Prepend custom headers to the top row layout
                                     let parser = new DOMParser();
-                                    let row1Node = parser.parseFromString(row1Xml, "text/xml").documentElement;
-                                    let row2Node = parser.parseFromString(row2Xml, "text/xml").documentElement;
-
-                                    sheetData.insertBefore(sheet.importNode(row2Node, true), sheetData.firstChild);
-                                    sheetData.insertBefore(sheet.importNode(row1Node, true), sheetData.firstChild);
+                                    sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                    sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
                                 }
                             }
                         ],
-                        responsive: true,
+                        responsive: false,
                         autoWidth: false,
                         paging: false,
+                        ordering: false,
+                        fixedColumns: {
+                            left: 3
+                        },
+                        columnDefs: [
+                            { targets: '_all', className: 'dt-center head-center' }
+                        ],
                         createdRow: function (row) {
-                            $('td', row).addClass('text-nowrap align-middle text-center');
+                            if ($(row).hasClass('summary-row')) {
+                                $('td', row).css('background-color', '#ffffff');
+                                // Skip styling the custom visual cells to protect the border alignments
+                                $('td:gt(2)', row).addClass('text-nowrap align-middle text-center');
+                            } else {
+                                $('td', row).addClass('text-nowrap align-middle text-center');
+                            }
+                        },
+                        initComplete: function () {
+                            setTimeout(() => {
+                                let api = this.api();
+                                api.columns.adjust();
+                            }, 200);
                         }
                     });
 
-                    // Clean metadata view with stacked Week No and Week Ending
                     let metadataHtml = `
-                <div id="tableMetadataView" class="mt-2 mb-3 p-2" font-size: 15px; border-radius: 0 4px 4px 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                        <div>
-                            <div style="margin-bottom: 2px;"><strong>District (KMUJ) :</strong> <span class="text-uppercase">KMUJ ${kmuj}</span></div>
-                            <div style="margin-bottom: 2px;"><strong>Section :</strong> <span class="text-uppercase">MUJ ${section}</span></div>
-                            <div><strong>Gang :</strong> <span class="text-muted"><i>Not Specified</i></span></div>
+                        <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
+                            <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
+                                <div style="text-align: right; padding-right: 15px;">
+                                    <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
+                                    <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="text-align: right; padding-right: 15px;">
-                            <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
-                            <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+                    `;
                     $('.selected-values').after(metadataHtml);
 
                     $(document).off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
@@ -767,8 +812,9 @@
 
                         $btn.data('code', newCode); $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
                         const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
-                        const $footerCell = $(`#footerData tr[data-label="TOTAL ATTENDANCE"] .total-cell[data-workname="${workName}"][data-day="${dayIndex}"]`);
-                        $footerCell.text(newTotal > 0 ? newTotal : "");
+
+                        const $attendanceFooterCells = $(`.total-cell[data-rowtype="attendance"][data-workname="${workName}"][data-day="${dayIndex}"]`);
+                        $attendanceFooterCells.text(newTotal > 0 ? newTotal : "");
 
                         autoSaveWorkPlan(empId, date, workName, $icon);
                     });
@@ -780,12 +826,8 @@
 
 
 
-
-
-
-
     </script>
-    }
+}
 
 
 
