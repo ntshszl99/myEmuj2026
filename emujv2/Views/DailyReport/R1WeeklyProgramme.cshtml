@@ -114,7 +114,7 @@
                                         <div class="row mt-3 mx-5">
                                             <div class="col-6">
                                                 <div class="row">
-                                                    <h6>C.A - Public Holiday</h6>
+                                                    <h6>C.E - Compassionate Leave</h6>
                                                     <h6>C.T - Yearly Leave</h6>
                                                     <h6>T.H - Not Present</h6>
                                                     <h6>S - Sick</h6>
@@ -150,6 +150,79 @@
                     </div>
                 </div>
             </div>
+            <div class="" id="contentNormal">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3 m-0">
+                            <div class="row justify-content-end">
+                                <div class="col-3">
+                                    <label class="mt-3 form-label">Date (From - To)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" id="txtDateNormal" name="txtDate" required="required" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <label class="mt-3 form-label text-white">.</label>
+                                    <button id="btnSearchNormal" class="btn btn-primary">Search</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="col-lg-12">
+                                        <div class="table-responsive table-lg">
+                                            <table id="tableRepNormal" class="table table-striped table-bordered text-nowrap hover">
+                                                <thead></thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button type="button" id="btnBulkSaveNormal" class='btn btn-success'>Submit Weekly Programme</button>
+                                </div>
+                                <div class="card-body">
+                                    <div style="margin: 15px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
+                                        <div class="row mt-3 mx-5">
+                                            <div class="col-6">
+                                                <div class="row">
+                                                    <h6>C.E - Compassionate Leave</h6>
+                                                    <h6>C.T - Yearly Leave</h6>
+                                                    <h6>T.H - Not Present</h6>
+                                                    <h6>S - Sick</h6>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="row">
+                                                    <div class="col-md-12 ms-auto text-end">
+                                                        <h6 class="mb-2 mt-3">PANDUAN WAKTU KERJA</h6>
+                                                        <div class="d-flex justify-content-end">
+                                                            <div class="me-3">
+                                                                <h6>Isnin - Khamis</h6>
+                                                                <h6>Waktu Rehat</h6>
+                                                                <h6>Jumaat</h6>
+                                                                <h6>Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian</h6>
+                                                                <h6></h6>
+                                                            </div>
+                                                            <div>
+                                                                <h6>(0700 - 1645)</h6>
+                                                                <h6>(1200 - 1300)</h6>
+                                                                <h6>(0700 - 1300)</h6>
+                                                                <h6>(0700 - 1500)</h6>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="container-fluid" id="contentOthers">
                 <div class="card border-0 shadow-sm ">
                     <div class="card-body p-4 text-center mt-5 mb-5">
@@ -185,7 +258,118 @@
             listKMUJ();
             listReports();
 
-            $('#txtDate').daterangepicker({
+            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
+                $("#contentAdmin").show();
+                $("#contentOthers").hide();
+                $("#contentNormal").hide();
+
+                $("#kmuj, #section").on('change', function () {
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDate').val('');
+
+                    var drp = $('#txtDate').data('daterangepicker');
+                    drp.setStartDate(moment());
+                    drp.setEndDate(moment());
+                });
+
+
+                $('#kmuj').on('change', function (e, selectedSectionValue) {
+                    var selectedKmuj = $(this).find('option:selected').text();
+                    var selectedKmujVal = $(this).val();
+
+                    console.log("Selected KMUJ Text:", selectedKmuj);
+
+                    if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
+                        $('#section').prop('disabled', false).trigger('change.select2');
+
+                        listSection(selectedKmuj, selectedSectionValue);
+                    } else {
+                        $('#section')
+                            .html('<option value="-0">Select Section</option>')
+                            .prop('disabled', true)
+                            .trigger('change')
+                            .trigger('change.select2');
+                    }
+                });
+
+                $('#btnSearch').on('click', function () {
+                    var kmj = $("#kmuj option:selected").text();
+                    var scn = $("#section option:selected").text();
+
+                    localStorage.setItem("selKmj", kmj);
+                    localStorage.setItem("selScn", scn);
+
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
+
+                    listReports(kmj, scn, sdate, edate);
+
+                    if (sdate !== "") {
+                        salertSave('Searching for: ' + sdate + ' to ' + edate);
+                    } else {
+                        salertSave('Searching all dates for ' + rgn);
+                    }
+                });
+            }
+
+            else if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "4") {
+                $("#contentAdmin").hide();
+                $("#contentOthers").hide();
+                $("#contentNormal").show();
+
+                $('#txtDateNormal').daterangepicker({
+                    autoUpdateInput: false,
+                    singleDatePicker: true,
+                    minYear: 2021,
+                    locale: {
+                        format: 'DD/MM/YYYY'
+                    }
+                });
+
+                $('#txtDateNormal').on('apply.daterangepicker', function (ev, picker) {
+                    var newEndDate = moment(picker.startDate).add(7, 'days');
+                    $(this).data('daterangepicker').setEndDate(newEndDate);
+
+                    var sdate = picker.startDate.format('YYYY/MM/DD');
+                    var edate = newEndDate.format('YYYY/MM/DD');
+
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
+
+                    localStorage.setItem("selHar", sdate);
+                    localStorage.setItem("selHarE", edate);
+                });
+
+                $('#btnSearchNormal').on('click', function () {
+                    var scn = localStorage.getItem("scn");
+                    localStorage.setItem("selScn", scn);
+
+                    var kmj = localStorage.getItem("kmuj");
+                    localStorage.setItem("selKmj", kmj);
+
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
+
+                    // Run the report
+                    listReports(kmj, scn, sdate, edate);
+
+                    if (sdate !== "") {
+                        salertSave('Searching for: ' + sdate + ' to ' + edate);
+                    } else {
+                        salertSave('Searching all dates for ' + rgn);
+                    }
+                });
+            }
+            else {
+                $("#contentAdmin").hide();
+                $("#contentOthers").show();
+                $("#contentNormal").hide();
+            }
+
+
+
+
+            $('#txtDate, #txtDateNormal').daterangepicker({
                 autoUpdateInput: false,
                 singleDatePicker: true,
                 minYear: 2021,
@@ -194,7 +378,7 @@
                 }
             });
 
-            $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
+            $('#txtDate, #txtDateNormal').on('apply.daterangepicker', function (ev, picker) {
                 var newEndDate = moment(picker.startDate).add(6, 'days');
                 $(this).data('daterangepicker').setEndDate(newEndDate);
 
@@ -207,69 +391,22 @@
                 localStorage.setItem("selHarE", edate);
             });
 
-            $("#kmuj, #section").on('change', function () {
-                localStorage.removeItem("selHar");
-                localStorage.removeItem("selHarE");
-                $('#txtDate').val('');
+            
 
-                var drp = $('#txtDate').data('daterangepicker');
-                drp.setStartDate(moment());
-                drp.setEndDate(moment());
-            });
-
-
-            $('#kmuj').on('change', function (e, selectedSectionValue) {
-                var selectedKmuj = $(this).find('option:selected').text();
-                var selectedKmujVal = $(this).val();
-
-                console.log("Selected KMUJ Text:", selectedKmuj);
-
-                if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
-                    $('#section').prop('disabled', false).trigger('change.select2');
-
-                    listSection(selectedKmuj, selectedSectionValue);
-                } else {
-                    $('#section')
-                        .html('<option value="-0">Select Section</option>')
-                        .prop('disabled', true)
-                        .trigger('change')
-                        .trigger('change.select2');
-                }
-            });
-
-            $('#btnSearch').on('click', function () {
-                var kmj = $("#kmuj option:selected").text();
-                var scn = $("#section option:selected").text();
-
-                localStorage.setItem("selKmj", kmj);
-                localStorage.setItem("selScn", scn);
-
-                var sdate = localStorage.getItem("selHar") || "";
-                var edate = localStorage.getItem("selHarE") || "";
-
-                listReports(kmj, scn, sdate, edate);
-
-                if (sdate !== "") {
-                    salertSave('Searching for: ' + sdate + ' to ' + edate);
-                } else {
-                    salertSave('Searching all dates for ' + rgn);
-                }
-            });
-
-            $('#btnBulkSave').on('click', function () {
+            $('#btnBulkSave, #btnBulkSaveNormal').on('click', function () {
                 bulkSaveTotals();
             });
 
 
             // Use event delegation for dynamic DataTable content
-            $('#tableRep').on('click', '.attendance-toggle', function (e) {
+            $('#tableRep, #tableRepNormal').on('click', '.attendance-toggle', function (e) {
                 e.preventDefault();
                 var btn = $(this);
                 var span = btn.find('.attendance-text');
                 var currentText = span.text().trim();
 
                 // Define the cycle order
-                const cycle = ['', 'CT', 'TH', 'S'];
+                const cycle = ['','CE', 'CT', 'TH', 'S'];
 
                 // Determine next state
                 var currentIndex = cycle.indexOf(currentText);
@@ -286,7 +423,7 @@
                 );
             });
 
-            $('#tableRep').on('click', '.workplan-toggle', function () {
+            $('#tableRep, #tableRepNormal').on('click', '.workplan-toggle', function () {
                 var btn = $(this);
                 var icon = btn.find('i');
 
@@ -483,14 +620,14 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    if ($.fn.dataTable.isDataTable('#tableRep')) {
-                        $('#tableRep').DataTable().clear().destroy();
+                    if ($.fn.dataTable.isDataTable('#tableRep, #tableRepNormal')) {
+                        $('#tableRep, #tableRepNormal').DataTable().clear().destroy();
                     }
 
                     $('#tableMetadataView').remove();
-                    $('#tableRep thead').empty();
-                    $('#tableRep tbody').empty();
-                    $('#tableRep tfoot').remove();
+                    $('#tableRep, #tableRepNormal thead').empty();
+                    $('#tableRep, #tableRepNormal tbody').empty();
+                    $('#tableRep, #tableRepNormal tfoot').remove();
 
                     const startDate = moment(sdate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
                     const endDate = moment(edate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
@@ -522,10 +659,10 @@
                         }
                     }
                     thead += '</tr>';
-                    $('#tableRep thead').html(thead);
+                    $('#tableRep, #tableRepNormal thead').html(thead);
 
-                    // Statistics initializers
-                    let attStats = { valid: Array(7).fill(0), al: Array(7).fill(0), mc: Array(7).fill(0), ab: Array(7).fill(0) };
+                    // Statistics initializers (Added 'cs' array)
+                    let attStats = { valid: Array(7).fill(0), al: Array(7).fill(0), mc: Array(7).fill(0), ab: Array(7).fill(0), cs: Array(7).fill(0) };
                     let workStats = {};
                     uniquework_name.forEach(name => { workStats[name] = { dp: Array(7).fill(0), up: Array(7).fill(0) }; });
                     let dailyAdditionalMap = {};
@@ -567,6 +704,8 @@
                                     attStats.mc[dayIndex]++;
                                 } else if (l === "ab" || l === "th") {
                                     attStats.ab[dayIndex]++;
+                                } else if (l === "cs" || l === "ce") { // Track Cuti Ehsan stats
+                                    attStats.cs[dayIndex]++;
                                 } else {
                                     attStats.valid[dayIndex]++;
                                 }
@@ -585,10 +724,10 @@
                             let dayInfo = groupedData[staffNo].attendance_data[d];
                             let displayValue = "";
                             let leaveTypeTracking = "valid";
-                            let isClickable = false; // Default tracking flag
+                            let isClickable = false;
 
                             if (dayInfo) {
-                                isClickable = true; // Record verified in database context
+                                isClickable = true;
                                 const leave = dayInfo.leave ? String(dayInfo.leave).toLowerCase().trim() : "valid";
 
                                 if (leave === "al" || leave === "ct") {
@@ -600,6 +739,9 @@
                                 } else if (leave === "ab" || leave === "th") {
                                     displayValue = "TH";
                                     leaveTypeTracking = "ab";
+                                } else if (leave === "cs" || leave === "ce") { // Render CS text
+                                    displayValue = "CE";
+                                    leaveTypeTracking = "cs";
                                 } else if (leave === "ca") {
                                     displayValue = "CA";
                                     leaveTypeTracking = "valid";
@@ -609,20 +751,19 @@
                                 }
                             }
 
-                            // Dynamically append properties based on record existence check
                             let disabledAttr = isClickable ? "" : 'disabled="disabled"';
                             let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65;";
 
                             tbody += `<td>
-                                <a class="btn attendance-toggle" 
-                                   data-emplid="${staffNo}" 
-                                   data-date="${d}" 
-                                   data-leavetype="${leaveTypeTracking}"
-                                   ${disabledAttr}
-                                   style="display:block; ${cursorStyle}">
-                                   <span class="attendance-text">${displayValue}</span>
-                                </a>
-                            </td>`;
+                        <a class="btn attendance-toggle" 
+                           data-emplid="${staffNo}" 
+                           data-date="${d}" 
+                           data-leavetype="${leaveTypeTracking}"
+                           ${disabledAttr}
+                           style="display:block; ${cursorStyle}">
+                           <span class="attendance-text">${displayValue}</span>
+                        </a>
+                    </td>`;
                         }
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
@@ -641,11 +782,13 @@
                         tbody += `</tr>`;
                     }
 
+                    // Updated Footer Mapping to include TOTAL CUTI EHSAN
                     const footerMapping = [
                         { label: 'TOTAL ATTENDANCE', attKey: 'valid', type: 'attendance' },
                         { label: 'TOTAL YEARLY LEAVE', attKey: 'al', type: 'leave' },
                         { label: 'TOTAL SICK LEAVE', attKey: 'mc', type: 'leave' },
-                        { label: 'TOTAL ABSENT', attKey: 'ab', type: 'leave' }
+                        { label: 'TOTAL ABSENT', attKey: 'ab', type: 'leave' },
+                        { label: 'TOTAL CUTI EHSAN', attKey: 'cs', type: 'leave' }
                     ];
 
                     footerMapping.forEach(rowConfig => {
@@ -686,11 +829,11 @@
                     });
                     tbody += '</tr>';
 
-                    $('#tableRep tbody').html(tbody);
+                    $('#tableRep, #tableRepNormal tbody').html(tbody);
 
                     const whiteRowStylePatch = `
                 <style id="forceWhiteTableLayout">
-                    #tableRep, #tableRep tbody tr, #tableRep tbody td, #tableRep tbody tr.summary-row td {
+                    #tableRep , #tableRep tbody tr, #tableRep tbody td, #tableRep tbody tr.summary-row td {
                         background-color: #ffffff !important;
                     }
                     .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
@@ -770,12 +913,12 @@
                         return columnName;
                     }
 
-                    let tableElement = $('#tableRep').addClass('table table-bordered').DataTable({
+                    let tableElement = $('#tableRep, #tableRepNormal').addClass('table table-bordered').DataTable({
                         dom: '<"selected-values"fB>rtip',
                         buttons: [
                             {
                                 extend: 'csv',
-                                filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '_' + section + '_' + sdate + '_to_' + edate; },
+                                filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
                                 header: false,
                                 exportOptions: {
                                     rows: ':visible',
@@ -783,7 +926,7 @@
                                 },
                                 customize: function (csv) {
                                     let lines = csv.split('\n');
-                                    lines = lines.slice(0, lines.length - 6);
+                                    lines = lines.slice(0, lines.length - (footerMapping.length + 2)); // Dynamic balance adjustment
                                     let cleanBody = lines.join('\n');
 
                                     let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
@@ -802,7 +945,7 @@
                             },
                             {
                                 extend: 'excel',
-                                filename: function () { return 'Report_' + kmuj + '_' + section + '_' + sdate + '_to_' + edate; },
+                                filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
                                 title: null,
                                 header: false,
                                 exportOptions: {
@@ -840,10 +983,10 @@
                                     let sheetData = sheet.getElementsByTagName('sheetData')[0];
                                     $('row', sheetData).each(function () {
                                         let rIdx = parseInt($(this).attr('r'));
-                                        if (rIdx > (finalBodyRowIdx - 5)) { $(this).remove(); }
+                                        if (rIdx > (finalBodyRowIdx - (footerMapping.length + 1))) { $(this).remove(); }
                                     });
 
-                                    let currentExcelRow = (finalBodyRowIdx - 5) + 1;
+                                    let currentExcelRow = (finalBodyRowIdx - (footerMapping.length + 1)) + 1;
                                     let footerRowsData = getFooterDataArray();
 
                                     footerRowsData.forEach((rowArr) => {
@@ -909,13 +1052,12 @@
                     $('.selected-values').after(metadataHtml);
 
                     // ==========================================
-                    // 1. ATTENDANCE DYNAMIC TOGGLE HANDLER
+                    // 1. ATTENDANCE DYNAMIC TOGGLE HANDLER (Updated rotation loop)
                     // ==========================================
                     $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
                         e.preventDefault();
                         const $btn = $(this);
 
-                        // EXPLICIT GUARD: Block execution if cell has no mapped DB records
                         if ($btn.attr('disabled')) {
                             return false;
                         }
@@ -927,9 +1069,11 @@
                         const oldType = $btn.data('leavetype') || 'valid';
 
                         let newType, newDisplay;
+                        // Modified rotation loop: valid -> al -> mc -> ab -> cs -> valid
                         if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
                         else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
                         else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
+                        else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CS'; } // Adds step to CS
                         else { newType = 'valid'; newDisplay = ''; }
 
                         attStats[oldType][dayIndex]--;
@@ -947,6 +1091,7 @@
                         if (newType === 'al') dbCutiCode = "CT";
                         else if (newType === 'mc') dbCutiCode = "S";
                         else if (newType === 'ab') dbCutiCode = "TH";
+                        else if (newType === 'cs') dbCutiCode = "CS"; // Map code for auto-save routine
 
                         autoSaveStaffAttendance(empId, date, dbCutiCode);
                     });
@@ -980,7 +1125,6 @@
                 error: function () { alert("Failed to load reports."); }
             });
         }
-
      
 
     </script>

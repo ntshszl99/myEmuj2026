@@ -107,6 +107,89 @@
                     </div>
                 </div>
             </div>
+            <div class="" id="contentNormal">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3 m-0">
+                            <div class="row justify-content-end">
+                                <div class="col-3">
+                                    <label class="mt-3 form-label">Date (From - To)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" id="txtDateNormal" name="txtDate" required="required" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <label class="mt-3 form-label text-white">.</label>
+                                    <button id="btnSearchNormal" class="btn btn-primary">Search</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="col-lg-12">
+                                        <div class="col-4">
+                                            <div id="selectedValues" class="mb-3"></div>
+                                        </div>
+
+                                        <div class="table-responsive table-lg">
+                                            <table id="tableRepNormal" class="table table-bordered text-nowrap hover">
+                                                <thead></thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+
+                                        <table class="table table-bordered table-striped mt-5" id="summarySectionTableNormal">
+                                            <thead>
+                                                <tr class="table-warning font-weight-bold">
+                                                    <th colspan="3" class="text-left">SUMMARY CALCULATIONS</th>
+                                                </tr>
+                                                <tr class="text-center">
+                                                    <th scope="col" style="width: 50%;">Description</th>
+                                                    <th scope="col" style="width: 25%;">Value</th>
+                                                    <th scope="col" style="width: 25%;">Percentage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Total Man-Hours for the Gangs</td>
+                                                    <td><span id="totalHoursNormal"></span> Mhrs</td>
+                                                    <td>-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>On Track Works</td>
+                                                    <td><span id="totalOnTrackWorksNormal"></span> Mhrs</td>
+                                                    <td><span id="perOnTrackNormal"></span> % Mhrs</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Off Track Works</td>
+                                                    <td><span id="totalOffTrackWorksNormal"></span> Mhrs</td>
+                                                    <td><span id="perOffTrackNormal"></span> % Mhrs</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Others</td>
+                                                    <td><span id="totalSpecificCategoriesNormal"></span> Mhrs</td>
+                                                    <td><span id="perOthersNormal"></span> % Mhrs</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total</td>
+                                                    <td><span id="veryLastTotalNormal"></span> %</td>
+                                                    <td>-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Inspected by RE / CPWI on</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="container-fluid" id="contentOthers">
                 <div class="card border-0 shadow-sm ">
                     <div class="card-body p-4 text-center mt-5 mb-5">
@@ -135,80 +218,138 @@
         $(document).ready(function () {
             checkSess();
             listSection();
-            listKMUJ(); 1
+            listKMUJ(); 
+
+            //check access
+            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
+                $("#contentAdmin").show();
+                $("#contentOthers").hide();
+                $("#contentNormal").hide();
+
+                $('#txtDate').daterangepicker({
+                    autoUpdateInput: false,
+                    singleDatePicker: true,
+                    minYear: 2021,
+                    locale: {
+                        format: 'DD/MM/YYYY'
+                    }
+                });
+
+                $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
+                    var newEndDate = moment(picker.startDate).add(7, 'days');
+                    $(this).data('daterangepicker').setEndDate(newEndDate);
+
+                    var sdate = picker.startDate.format('YYYY/MM/DD');
+                    var edate = newEndDate.format('YYYY/MM/DD');
+
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
+
+                    localStorage.setItem("selHar", sdate);
+                    localStorage.setItem("selHarE", edate);
+                });
+
+                $("#kmuj, #section").on('change', function () {
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDate').val('');
+
+                    var drp = $('#txtDate').data('daterangepicker');
+                    drp.setStartDate(moment());
+                    drp.setEndDate(moment());
+                });
+
+                $('#kmuj').on('change', function (e, selectedSectionValue) {
+                    var selectedKmuj = $(this).find('option:selected').text();
+                    var selectedKmujVal = $(this).val();
+
+                    console.log("Selected KMUJ Text:", selectedKmuj);
+
+                    if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
+                        $('#section').prop('disabled', false).trigger('change.select2');
+
+                        listSection(selectedKmuj, selectedSectionValue);
+                    } else {
+                        $('#section')
+                            .html('<option value="-0">Select Section</option>')
+                            .prop('disabled', true)
+                            .trigger('change')
+                            .trigger('change.select2');
+                    }
+                });
 
 
-            $('#txtDate').daterangepicker({
-                autoUpdateInput: false,
-                singleDatePicker: true,
-                minYear: 2021,
-                locale: {
-                    format: 'DD/MM/YYYY'
-                }
-            });
+                $('#btnSearch').on('click', function () {
+                    var kmj = $("#kmuj option:selected").text();
+                    var scn = $("#section option:selected").text();
 
-            $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
-                var newEndDate = moment(picker.startDate).add(7, 'days');
-                $(this).data('daterangepicker').setEndDate(newEndDate);
+                    localStorage.setItem("selKmj", kmj);
+                    localStorage.setItem("selScn", scn);
 
-                var sdate = picker.startDate.format('YYYY/MM/DD');
-                var edate = newEndDate.format('YYYY/MM/DD');
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
 
-                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
+                    // Run the report
+                    listReports(kmj, scn, sdate, edate);
 
-                localStorage.setItem("selHar", sdate);
-                localStorage.setItem("selHarE", edate);
-            });
+                    if (sdate !== "") {
+                        salertSave('Searching for: ' + sdate + ' to ' + edate);
+                    } else {
+                        salertSave('Searching all dates for ' + rgn);
+                    }
+                });
+            }
+            else if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "4") {
+                $("#contentAdmin").hide();
+                $("#contentOthers").hide();
+                $("#contentNormal").show();
 
-            $("#kmuj, #section").on('change', function () {
-                localStorage.removeItem("selHar");
-                localStorage.removeItem("selHarE");
-                $('#txtDate').val('');
+                $('#txtDateNormal').daterangepicker({
+                    autoUpdateInput: false,
+                    singleDatePicker: true,
+                    minYear: 2021,
+                    locale: {
+                        format: 'DD/MM/YYYY'
+                    }
+                });
 
-                var drp = $('#txtDate').data('daterangepicker');
-                drp.setStartDate(moment());
-                drp.setEndDate(moment());
-            });
+                $('#txtDateNormal').on('apply.daterangepicker', function (ev, picker) {
+                    var newEndDate = moment(picker.startDate).add(7, 'days');
+                    $(this).data('daterangepicker').setEndDate(newEndDate);
 
-            $('#kmuj').on('change', function (e, selectedSectionValue) {
-                var selectedKmuj = $(this).find('option:selected').text();
-                var selectedKmujVal = $(this).val();
+                    var sdate = picker.startDate.format('YYYY/MM/DD');
+                    var edate = newEndDate.format('YYYY/MM/DD');
 
-                console.log("Selected KMUJ Text:", selectedKmuj);
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
 
-                if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
-                    $('#section').prop('disabled', false).trigger('change.select2');
+                    localStorage.setItem("selHar", sdate);
+                    localStorage.setItem("selHarE", edate);
+                });
 
-                    listSection(selectedKmuj, selectedSectionValue);
-                } else {
-                    $('#section')
-                        .html('<option value="-0">Select Section</option>')
-                        .prop('disabled', true)
-                        .trigger('change')
-                        .trigger('change.select2'); 
-                }
-            });
+                $('#btnSearchNormal').on('click', function () {
+                    var scn = localStorage.getItem("scn");
+                    localStorage.setItem("selScn", scn);
 
+                    var kmj = localStorage.getItem("kmuj");
+                    localStorage.setItem("selKmj", kmj);
 
-            $('#btnSearch').on('click', function () {
-                var kmj = $("#kmuj option:selected").text();
-                var scn = $("#section option:selected").text();
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
 
-                localStorage.setItem("selKmj", kmj);
-                localStorage.setItem("selScn", scn);
+                    // Run the report
+                    listReports(kmj, scn, sdate, edate);
 
-                var sdate = localStorage.getItem("selHar") || "";
-                var edate = localStorage.getItem("selHarE") || "";
-
-                // Run the report
-                listReports(kmj, scn, sdate, edate);
-
-                if (sdate !== "") {
-                    salertSave('Searching for: ' + sdate + ' to ' + edate);
-                } else {
-                    salertSave('Searching all dates for ' + rgn);
-                }
-            });
+                    if (sdate !== "") {
+                        salertSave('Searching for: ' + sdate + ' to ' + edate);
+                    } else {
+                        salertSave('Searching all dates for ' + rgn);
+                    }
+                });
+            }
+            else {
+                $("#contentAdmin").hide();
+                $("#contentOthers").show();
+                $("#contentNormal").hide();
+            }
 
 
         });
@@ -370,8 +511,11 @@
                     });
                     finalData.push(totalRow);
 
-                    // Update DOM Node Labels
-                    const updateText = (id, val) => { if (document.getElementById(id)) document.getElementById(id).innerText = val; };
+                    const updateText = (id, val) => {
+                        if (document.getElementById(id)) document.getElementById(id).innerText = val;
+                    };
+
+                    //Update Admin Dashboard Labels
                     updateText("totalHours", totalManHoursForGangs.toFixed(2));
                     updateText("totalOnTrackWorks", totalOnTrackWorks.toFixed(2));
                     updateText("perOnTrack", perOnTrack);
@@ -381,7 +525,16 @@
                     updateText("perOthers", perOthers);
                     updateText("veryLastTotal", "100.00");
 
-                    // 5. Setup DataTable Column Schemas
+                    //Update Normal Dashboard Labels
+                    updateText("totalHoursNormal", totalManHoursForGangs.toFixed(2));
+                    updateText("totalOnTrackWorksNormal", totalOnTrackWorks.toFixed(2));
+                    updateText("perOnTrackNormal", perOnTrack);
+                    updateText("totalOffTrackWorksNormal", offTrackWorksTotal.toFixed(2));
+                    updateText("perOffTrackNormal", perOffTrack);
+                    updateText("totalSpecificCategoriesNormal", totalOthers.toFixed(2));
+                    updateText("perOthersNormal", perOthers);
+                    updateText("veryLastTotalNormal", "100.00");
+
                     let columns = [
                         { data: "work_cat_id", title: "NO", className: "text-center" },
                         { data: "work_cat_name", title: "CATEGORY" },
@@ -409,11 +562,11 @@
                     });
 
                     // 6. Initialize DataTables Object Instance
-                    if ($.fn.DataTable.isDataTable('#tableRep')) {
-                        $('#tableRep').DataTable().clear().destroy();
+                    if ($.fn.DataTable.isDataTable('#tableRep, #tableRepNormal')) {
+                        $('#tableRep, #tableRepNormal').DataTable().clear().destroy();
                     }
 
-                    $('#tableRep').DataTable({
+                    $('#tableRep, #tableRepNormal').DataTable({
                         ordering: false,
                         paging: false,
                         dom: 'Bfrtip',
@@ -423,7 +576,7 @@
                         buttons: [
                             {
                                 extend: 'csv',
-                                filename: dynamicFileName,
+                                filename: function () { return 'WeeklyProgramme(R2) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
                                 customize: function (csv) {
                                     var summaryCsv =
                                         '\n"SUMMARY CALCULATIONS",,\n' +
@@ -439,8 +592,7 @@
                             },
                             {
                                 extend: 'excel',
-                                filename: dynamicFileName,
-                                title: 'Work Report Summary',
+                                filename: function () { return 'WeeklyProgramme(R2) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
                                 customize: function (xlsx) {
                                     var sheet = xlsx.xl.worksheets['sheet1.xml'];
 
@@ -496,33 +648,6 @@
                                     });
                                 }
                             },
-                            {
-                                extend: 'pdf',
-                                filename: dynamicFileName,
-                                customize: function (doc) {
-                                    doc.content.push({
-                                        text: 'Summary Calculations',
-                                        style: 'subheader',
-                                        margin: [0, 25, 0, 10]
-                                    });
-                                    doc.content.push({
-                                        table: {
-                                            headerRows: 1,
-                                            widths: ['*', 'auto', 'auto'],
-                                            body: [
-                                                [{ text: 'Description', bold: true }, { text: 'Value', bold: true }, { text: 'Percentage', bold: true }],
-                                                ['Total Man-Hours for the Gangs', totalManHoursForGangs.toFixed(2) + ' Mhrs', '-'],
-                                                ['On Track Works', totalOnTrackWorks.toFixed(2) + ' Mhrs', perOnTrack + '% Mhrs'],
-                                                ['Off Track Works', offTrackWorksTotal.toFixed(2) + ' Mhrs', perOffTrack + '% Mhrs'],
-                                                ['Others', totalOthers.toFixed(2) + ' Mhrs', perOthers + '% Mhrs'],
-                                                ['Total', '100.00 %', '-'],
-                                                ['Inspected by RE / CPWI on', '-', '-']
-                                            ]
-                                        },
-                                        layout: 'lightHorizontalLines'
-                                    });
-                                }
-                            }
                         ],
                         rowCallback: function (row, data, index) {
                             const categoryCell = $('td', row).eq(1);
