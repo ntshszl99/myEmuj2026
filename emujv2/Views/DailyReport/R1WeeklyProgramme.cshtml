@@ -719,6 +719,8 @@
                     let tbody = '';
                     for (let staffNo in groupedData) {
                         tbody += `<tr><td>${staffNo}</td><td>${groupedData[staffNo].Nama}</td><td>${groupedData[staffNo].JobDesc}</td>`;
+
+                        // Attendance Columns Processing Loop
                         for (let i = 0; i < 7; i++) {
                             let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
                             let dayInfo = groupedData[staffNo].attendance_data[d];
@@ -726,9 +728,10 @@
                             let leaveTypeTracking = "valid";
                             let isClickable = false;
 
-                            if (dayInfo) {
+                            // Updated validation: requires record existence AND active leave profile content to toggle
+                            if (dayInfo && dayInfo.leave !== undefined && dayInfo.leave !== null && String(dayInfo.leave).trim() !== "") {
                                 isClickable = true;
-                                const leave = dayInfo.leave ? String(dayInfo.leave).toLowerCase().trim() : "valid";
+                                const leave = String(dayInfo.leave).toLowerCase().trim();
 
                                 if (leave === "al" || leave === "ct") {
                                     displayValue = "CT";
@@ -739,7 +742,7 @@
                                 } else if (leave === "ab" || leave === "th") {
                                     displayValue = "TH";
                                     leaveTypeTracking = "ab";
-                                } else if (leave === "cs" || leave === "ce") { // Render CS text
+                                } else if (leave === "cs" || leave === "ce") {
                                     displayValue = "CE";
                                     leaveTypeTracking = "cs";
                                 } else if (leave === "ca") {
@@ -749,10 +752,12 @@
                                     displayValue = dayInfo.leave.toUpperCase();
                                     leaveTypeTracking = "valid";
                                 }
+                            } else {
+                                isClickable = false;
                             }
 
                             let disabledAttr = isClickable ? "" : 'disabled="disabled"';
-                            let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65;";
+                            let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65; pointer-events: none;";
 
                             tbody += `<td>
                         <a class="btn attendance-toggle" 
@@ -765,6 +770,8 @@
                         </a>
                     </td>`;
                         }
+
+                        // Workplan Columns Loop
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
                                 let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
@@ -839,7 +846,9 @@
                     .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
                         background-color: #ffffff !important;
                     }
-                    #tableRep thead th, .DTFC_LeftHeadWrapper table thead th {
+                    #tableRep thead th, 
+                    .dataTables_scrollHead table thead th,
+                    .DTFC_LeftHeadWrapper table thead th {
                         text-align: center !important;
                         vertical-align: middle !important;
                     }
@@ -926,7 +935,7 @@
                                 },
                                 customize: function (csv) {
                                     let lines = csv.split('\n');
-                                    lines = lines.slice(0, lines.length - (footerMapping.length + 2)); // Dynamic balance adjustment
+                                    lines = lines.slice(0, lines.length - (footerMapping.length + 2));
                                     let cleanBody = lines.join('\n');
 
                                     let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
@@ -1052,7 +1061,7 @@
                     $('.selected-values').after(metadataHtml);
 
                     // ==========================================
-                    // 1. ATTENDANCE DYNAMIC TOGGLE HANDLER (Updated rotation loop)
+                    // 1. ATTENDANCE DYNAMIC TOGGLE HANDLER
                     // ==========================================
                     $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
                         e.preventDefault();
@@ -1069,11 +1078,10 @@
                         const oldType = $btn.data('leavetype') || 'valid';
 
                         let newType, newDisplay;
-                        // Modified rotation loop: valid -> al -> mc -> ab -> cs -> valid
                         if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
                         else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
                         else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
-                        else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CS'; } // Adds step to CS
+                        else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
                         else { newType = 'valid'; newDisplay = ''; }
 
                         attStats[oldType][dayIndex]--;
@@ -1091,7 +1099,7 @@
                         if (newType === 'al') dbCutiCode = "CT";
                         else if (newType === 'mc') dbCutiCode = "S";
                         else if (newType === 'ab') dbCutiCode = "TH";
-                        else if (newType === 'cs') dbCutiCode = "CS"; // Map code for auto-save routine
+                        else if (newType === 'cs') dbCutiCode = "CS";
 
                         autoSaveStaffAttendance(empId, date, dbCutiCode);
                     });
@@ -1125,7 +1133,10 @@
                 error: function () { alert("Failed to load reports."); }
             });
         }
-     
+
+
+
+
 
     </script>
 }
