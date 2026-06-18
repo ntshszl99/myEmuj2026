@@ -217,6 +217,26 @@
                 drp.setEndDate(moment());
             });
 
+
+            $('#kmuj').on('change', function (e, selectedSectionValue) {
+                var selectedKmuj = $(this).find('option:selected').text();
+                var selectedKmujVal = $(this).val();
+
+                console.log("Selected KMUJ Text:", selectedKmuj);
+
+                if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
+                    $('#section').prop('disabled', false).trigger('change.select2');
+
+                    listSection(selectedKmuj, selectedSectionValue);
+                } else {
+                    $('#section')
+                        .html('<option value="-0">Select Section</option>')
+                        .prop('disabled', true)
+                        .trigger('change')
+                        .trigger('change.select2');
+                }
+            });
+
             $('#btnSearch').on('click', function () {
                 var kmj = $("#kmuj option:selected").text();
                 var scn = $("#section option:selected").text();
@@ -290,28 +310,41 @@
         });
 
 
-        function listSection() {
+        function listSection(kmuj, selectedSectionValue) {
             $.ajax({
-                url: linkDepan + "GetSectionList",
+                url: linkDepan + "Kmuj?Kmuj=" + encodeURIComponent(kmuj), 
                 dataType: "json",
                 beforeSend: function (request) {
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    if (data.length >= 1) {
-                        auxArr = [];
+                    $("#section").removeClass("is-invalid");
+
+                    var auxArr = [];
+                    auxArr.push("<option value='-0'>Select Section</option>");
+
+                    if (data && data.length >= 1) {
                         $.each(data, function (index, value) {
-                            auxArr[index] = "<option value='" + value.section_id + "'>" + value.section_name + "</option>";
+                            auxArr.push("<option value='" + value.section_val + "'>" + value.section_name + "</option>");
                         });
-                        $('#section').append(auxArr.join(''));
+
+                        $('#section').html('').append(auxArr.join(''));
+
+                        if (selectedSectionValue) {
+                            $('#section').val(selectedSectionValue);
+                        }
                     } else {
-                        $("#section").addClass(" is-invalid");
+                        $('#section')
+                            .html('<option value="-0">Select Section</option>')
+                            .addClass("is-invalid")
+                            .prop('disabled', true);
                     }
+
+                    $('#section').trigger('change').trigger('change.select2');
                 },
                 error: function (xhr) {
                     swarning();
-                },
-                complete: function () { }
+                }
             });
         }
 
