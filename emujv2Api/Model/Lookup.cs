@@ -606,14 +606,27 @@ namespace emujv2Api.Model
             {
                 var gangArray = Gang.Split(',');
 
-                SqlStr.Append(" SELECT b.Emplid, e.kmuj_name, d.section_name, b.Nama, b.JobGrade, UPPER(b.JobDesc) as JobDesc, (SELECT CONCAT('Gang ', a.gang_id)) as Gang, f.cuti_code, UPPER(f.cuti_name) as cuti_name ");
-                SqlStr.Append(" FROM gang_desc as a, [HR_MAIN].[dbo].[HR_MAIN] as b, staff_section as c, section as d, kmuj as e, Ref_Cuti as f, Gang as g ");
+                SqlStr.Append(" SELECT ");
+                SqlStr.Append("     b.Emplid, ");
+                SqlStr.Append("     e.kmuj_name, ");
+                SqlStr.Append("     d.section_name, ");
+                SqlStr.Append("     b.Nama, ");
+                SqlStr.Append("     b.JobGrade, ");
+                SqlStr.Append("     UPPER(b.JobDesc) AS JobDesc, ");
+                SqlStr.Append("     CONCAT('Gang ', a.gang_id) AS Gang, ");
+                SqlStr.Append("     a.staff_status, ");
+                SqlStr.Append("     UPPER(fc.cuti_name) AS cuti_name ");
 
-                SqlStr.Append(" WHERE b.Emplid = c.no_perkh ");
-                SqlStr.Append(" AND d.section_name = @Section ");
-                SqlStr.Append(" AND c.no_muj = e.kmuj_value "); 
-                SqlStr.Append(" AND c.no_section = d.section_val ");
-                SqlStr.Append(" AND d.section_kmuj = e.kmuj_value ");
+                SqlStr.Append(" FROM [HR_MAIN].[dbo].[HR_MAIN] AS b ");
+                SqlStr.Append(" INNER JOIN staff_section AS c ON b.Emplid = c.no_perkh ");
+                SqlStr.Append(" INNER JOIN section AS d ON c.no_section = d.section_val ");
+                SqlStr.Append(" INNER JOIN kmuj AS e ON c.no_muj = e.kmuj_value AND d.section_kmuj = e.kmuj_value ");
+                SqlStr.Append(" INNER JOIN gang_desc AS a ON a.staff_no = b.Emplid ");
+                SqlStr.Append(" INNER JOIN Gang AS g ON a.gang_id = g.id ");
+                SqlStr.Append(" INNER JOIN Ref_Cuti AS fc ON a.staff_status = fc.cuti_code ");
+
+                SqlStr.Append(" WHERE d.section_name = @Section ");
+                SqlStr.Append(" AND b.Status = 'A' ");
 
                 SqlStr.Append(" AND g.gang IN (");
                 for (int i = 0; i < gangArray.Length; i++)
@@ -626,10 +639,6 @@ namespace emujv2Api.Model
                 }
                 SqlStr.Append(") ");
 
-                SqlStr.Append(" AND a.gang_id = g.id ");
-                SqlStr.Append(" AND a.staff_no = b.Emplid ");
-                SqlStr.Append(" AND b.Status = 'A' ");
-                SqlStr.Append(" AND a.staff_status = f.cuti_code ");
                 SqlStr.Append(" ORDER BY b.Nama ASC ");
 
                 ParamTmp.Add("@Section", Section);
@@ -642,7 +651,6 @@ namespace emujv2Api.Model
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);
         }
-
 
         public string GetCheckList(string SDate, string EDate)
         {
