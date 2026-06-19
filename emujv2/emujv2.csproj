@@ -1045,6 +1045,8 @@
     <Content Include="assets\images\flags\za.svg" />
     <Content Include="assets\images\flags\zm.svg" />
     <Content Include="assets\images\flags\zw.svg" />
+    <Content Include="assets\images\png\tracklogoname.png" />
+    <Content Include="assets\images\png\tracklogo.png" />
     <Content Include="assets\images\users\emujlogo_long.png" />
     <Content Include="assets\images\users\emujlogo_longwhite.png" />
     <Content Include="assets\images\users\emujlogo_square.png" />
