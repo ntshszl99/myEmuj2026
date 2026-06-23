@@ -641,6 +641,11 @@
                     const weekNumber = startDate.isValid() ? startDate.week() : "";
                     const weekEndingStr = endDate.isValid() ? endDate.format('DD/MM/YYYY') : edate;
 
+                    // Format dynamic date display for the top title banner
+                    const reportDateRange = startDate.isValid() && endDate.isValid()
+                        ? `${startDate.format('DD/MM/YYYY')} TO ${endDate.format('DD/MM/YYYY')}`
+                        : `${sdate} TO ${edate}`;
+
                     const uniquework_name = [...new Set(data.map(item => item.work_name))];
 
                     let headerRow1 = ['Staff No', 'Name', 'Designation'];
@@ -845,25 +850,25 @@
 
                     // Injection of CSS Rules
                     const whiteRowStylePatch = `
-                <style id="forceWhiteTableLayout">
-                    #tableRep, #tableRepNormal, 
-                    #tableRep tbody tr, #tableRepNormal tbody tr, 
-                    #tableRep tbody td, #tableRepNormal tbody td {
-                        background-color: #ffffff !important;
-                    }
-                    .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
-                        background-color: #ffffff !important;
-                    }
-                    #tableRep thead th, #tableRepNormal thead th,
-                    .dataTables_scrollHead table thead th,
-                    .DTFC_LeftHeadWrapper table thead th {
-                        text-align: center !important;
-                        vertical-align: middle !important;
-                    }
-                    .merged-style-left { border-right: none !important; text-align: left !important; }
-                    .merged-style-middle { border-left: none !important; border-right: none !important; }
-                    .merged-style-right { border-left: none !important; }
-                </style>`;
+        <style id="forceWhiteTableLayout">
+            #tableRep, #tableRepNormal, 
+            #tableRep tbody tr, #tableRepNormal tbody tr, 
+            #tableRep tbody td, #tableRepNormal tbody td {
+                background-color: #ffffff !important;
+            }
+            .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
+                background-color: #ffffff !important;
+            }
+            #tableRep thead th, #tableRepNormal thead th,
+            .dataTables_scrollHead table thead th,
+            .DTFC_LeftHeadWrapper table thead th {
+                text-align: center !important;
+                vertical-align: middle !important;
+            }
+            .merged-style-left { border-right: none !important; text-align: left !important; }
+            .merged-style-middle { border-left: none !important; border-right: none !important; }
+            .merged-style-right { border-left: none !important; }
+        </style>`;
                     $('#forceWhiteTableLayout').remove();
                     $('head').append(whiteRowStylePatch);
 
@@ -940,8 +945,16 @@
                                             lines = lines.slice(0, lines.length - (footerMapping.length + 2));
                                             let cleanBody = lines.join('\n');
 
+                                            let commasPadding = ", ".repeat(headerRow1.length - 1);
+
+                                            // Structured line-by-line configuration for top alignments
+                                            let titleRow = `KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}${commasPadding}\n`;
+                                            let kmujRow = `KMUJ: ${kmuj}${commasPadding}\n`;
+                                            let sectionRow = `Section: ${section}${commasPadding}\n\n`; // Section sits cleanly on row 3
+
                                             let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
-                                            let baseCsv = customHeader + cleanBody + "\n";
+                                            let baseCsv = titleRow + kmujRow + sectionRow + customHeader + cleanBody + "\n";
+
                                             let footerRows = getFooterDataArray();
                                             let footerCsv = "";
                                             footerRows.forEach(row => {
@@ -967,21 +980,43 @@
                                             let sheet = xlsx.xl.worksheets['sheet1.xml'];
                                             let numCols = headerRow1.length;
 
+                                            // Primary layout definitions for rows 1 to 6
+                                            // Row 1: Title Banner
                                             let row1Xml = '<row r="1">';
+                                            row1Xml += `<c t="inlineStr" r="A1"><is><t><![CDATA[KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}]]></t></is></c>`;
+                                            row1Xml += '</row>';
+
+                                            // Row 2: KMUJ isolated parameter
                                             let row2Xml = '<row r="2">';
+                                            row2Xml += `<c t="inlineStr" r="A2"><is><t><![CDATA[KMUJ: ${kmuj}]]></t></is></c>`;
+                                            row2Xml += '</row>';
+
+                                            // Row 3: Section Parameter assigned to row index 3
+                                            let row3Xml = '<row r="3">';
+                                            row3Xml += `<c t="inlineStr" r="A3"><is><t><![CDATA[Section: ${section}]]></t></is></c>`;
+                                            row3Xml += '</row>';
+
+                                            // Row 4: Empty buffer spacing line
+                                            let row4Xml = '<row r="4"></row>';
+
+                                            // Row 5 & 6: Main headers
+                                            let row5Xml = '<row r="5">';
+                                            let row6Xml = '<row r="6">';
                                             for (let c = 0; c < numCols; c++) {
                                                 let colRef = getExcelColumnName(c);
                                                 let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
                                                 let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
-                                                row1Xml += `<c t="inlineStr" r="${colRef}1"><is><t><![CDATA[${val1}]]></t></is></c>`;
-                                                row2Xml += `<c t="inlineStr" r="${colRef}2"><is><t><![CDATA[${val2}]]></t></is></c>`;
+                                                row5Xml += `<c t="inlineStr" r="${colRef}5"><is><t><![CDATA[${val1}]]></t></is></c>`;
+                                                row6Xml += `<c t="inlineStr" r="${colRef}6"><is><t><![CDATA[${val2}]]></t></is></c>`;
                                             }
-                                            row1Xml += '</row>'; row2Xml += '</row>';
+                                            row5Xml += '</row>'; row6Xml += '</row>';
 
-                                            let finalBodyRowIdx = 2;
+                                            let finalBodyRowIdx = 6;
+
+                                            // Shift table contents down by 6 slots to cleanly integrate the extra row assignment
                                             $('row', sheet).each(function () {
                                                 let currentDocRow = parseInt($(this).attr('r'));
-                                                let newDocRow = currentDocRow + 2;
+                                                let newDocRow = currentDocRow + 6;
                                                 $(this).attr('r', newDocRow);
                                                 if (newDocRow > finalBodyRowIdx) { finalBodyRowIdx = newDocRow; }
                                                 $('c', this).each(function () {
@@ -1018,7 +1053,12 @@
                                                 currentExcelRow++;
                                             });
 
+                                            // Append layout layers chronologically back-to-front
                                             let parser = new DOMParser();
+                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row6Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row5Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row4Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row3Xml, "text/xml").documentElement, true), sheetData.firstChild);
                                             sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
                                             sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
                                         }
@@ -1051,14 +1091,14 @@
 
                     // Metadata UI Attachment
                     let metadataHtml = `
-                <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
-                    <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
-                        <div style="text-align: right; padding-right: 15px;">
-                            <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
-                            <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
-                        </div>
-                    </div>
-                </div>`;
+        <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
+            <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
+                <div style="text-align: right; padding-right: 15px;">
+                    <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
+                    <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
+                </div>
+            </div>
+        </div>`;
                     $('.selected-values').first().after(metadataHtml);
 
                     // ==========================================
@@ -1128,9 +1168,6 @@
                 error: function () { alert("Failed to load reports."); }
             });
         }
-
-
-
 
     </script>
 }
