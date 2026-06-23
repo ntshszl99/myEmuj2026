@@ -8,6 +8,7 @@ using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlTypes;
 using System.DirectoryServices.Protocols;
 using System.Drawing;
 using System.Globalization;
@@ -285,7 +286,7 @@ namespace emujv2Api.Model
             SqlStr.Append("    ) AS s CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
             SqlStr.Append(") ");
 
-            SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, wp.work_plan_type_code ");
+            SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, wp.work_plan_type_code, h.staff_name, a.upd_user ");
             SqlStr.Append("FROM daily_form a ");
             SqlStr.Append("JOIN kerja b ON a.daily_worktype = b.id ");
             SqlStr.Append("JOIN kmuj c ON a.daily_kmuj = c.kmuj_value ");
@@ -294,6 +295,7 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN [HR_MAIN].[dbo].[HR_MAIN] ls ON p.staff_id = LTRIM(RTRIM(ls.Emplid)) ");
             SqlStr.Append("LEFT JOIN gang_desc gd ON p.staff_id = LTRIM(RTRIM(gd.staff_no)) ");
             SqlStr.Append("LEFT JOIN staff_leave sl ON p.staff_id = LTRIM(RTRIM(sl.staff_no)) AND a.daily_date = sl.leave_date ");
+            SqlStr.Append("LEFT JOIN staff_login h ON h.staff_id = LTRIM(RTRIM(a.upd_user)) ");
 
             SqlStr.Append("LEFT JOIN work_plan wp ON p.staff_id = wp.staff_no AND a.daily_date = wp.work_date ");
 

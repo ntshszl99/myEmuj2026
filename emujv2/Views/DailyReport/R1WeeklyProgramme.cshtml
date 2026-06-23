@@ -634,11 +634,11 @@
                         $(id).find('tfoot').remove();
                     });
 
-                    $('#tableMetadataView').remove();
+                    $('#tableMetadataViewTop').remove();
 
                     const startDate = moment(sdate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
                     const endDate = moment(edate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
-                    const weekNumber = startDate.isValid() ? startDate.week() : "";
+                    const weekNumber = startDate.isValid() ? startDate.week() : "undefined";
                     const weekEndingStr = endDate.isValid() ? endDate.format('DD/MM/YYYY') : edate;
 
                     // Format dynamic date display for the top title banner
@@ -647,6 +647,9 @@
                         : `${sdate} TO ${edate}`;
 
                     const uniquework_name = [...new Set(data.map(item => item.work_name))];
+
+                    const updatedByPerson = (data && data.length > 0 && data[0].staff_name) ? data[0].staff_name : "undefined";
+                    $('#screenUpdatedByText').text(updatedByPerson);
 
                     let headerRow1 = ['Staff No', 'Name', 'Designation'];
                     headerRow1.push('ATTENDANCE', '', '', '', '', '', '');
@@ -850,25 +853,25 @@
 
                     // Injection of CSS Rules
                     const whiteRowStylePatch = `
-        <style id="forceWhiteTableLayout">
-            #tableRep, #tableRepNormal, 
-            #tableRep tbody tr, #tableRepNormal tbody tr, 
-            #tableRep tbody td, #tableRepNormal tbody td {
-                background-color: #ffffff !important;
-            }
-            .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
-                background-color: #ffffff !important;
-            }
-            #tableRep thead th, #tableRepNormal thead th,
-            .dataTables_scrollHead table thead th,
-            .DTFC_LeftHeadWrapper table thead th {
-                text-align: center !important;
-                vertical-align: middle !important;
-            }
-            .merged-style-left { border-right: none !important; text-align: left !important; }
-            .merged-style-middle { border-left: none !important; border-right: none !important; }
-            .merged-style-right { border-left: none !important; }
-        </style>`;
+                    <style id="forceWhiteTableLayout">
+                        #tableRep, #tableRepNormal, 
+                        #tableRep tbody tr, #tableRepNormal tbody tr, 
+                        #tableRep tbody td, #tableRepNormal tbody td {
+                            background-color: #ffffff !important;
+                        }
+                        .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
+                            background-color: #ffffff !important;
+                        }
+                        #tableRep thead th, #tableRepNormal thead th,
+                        .dataTables_scrollHead table thead th,
+                        .DTFC_LeftHeadWrapper table thead th {
+                            text-align: center !important;
+                            vertical-align: middle !important;
+                        }
+                        .merged-style-left { border-right: none !important; text-align: left !important; }
+                        .merged-style-middle { border-left: none !important; border-right: none !important; }
+                        .merged-style-right { border-left: none !important; }
+                    </style>`;
                     $('#forceWhiteTableLayout').remove();
                     $('head').append(whiteRowStylePatch);
 
@@ -933,136 +936,188 @@
                                 dom: '<"selected-values"fB>rtip',
                                 buttons: [
                                     {
-                                        extend: 'csv',
-                                        filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                        header: false,
-                                        exportOptions: {
-                                            rows: ':visible',
-                                            format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
-                                        },
-                                        customize: function (csv) {
-                                            let lines = csv.split('\n');
-                                            lines = lines.slice(0, lines.length - (footerMapping.length + 2));
-                                            let cleanBody = lines.join('\n');
-
-                                            let commasPadding = ", ".repeat(headerRow1.length - 1);
-
-                                            // Structured line-by-line configuration for top alignments
-                                            let titleRow = `KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}${commasPadding}\n`;
-                                            let kmujRow = `KMUJ: ${kmuj}${commasPadding}\n`;
-                                            let sectionRow = `Section: ${section}${commasPadding}\n\n`; // Section sits cleanly on row 3
-
-                                            let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
-                                            let baseCsv = titleRow + kmujRow + sectionRow + customHeader + cleanBody + "\n";
-
-                                            let footerRows = getFooterDataArray();
-                                            let footerCsv = "";
-                                            footerRows.forEach(row => {
-                                                let escapedRow = row.map(val => {
-                                                    let stringVal = (val === null || val === undefined) ? "" : String(val);
-                                                    return `"${stringVal.replace(/"/g, '""')}"`;
-                                                });
-                                                footerCsv += escapedRow.join(",") + "\n";
-                                            });
-                                            return baseCsv + footerCsv;
-                                        }
+                                    extend: 'csv',
+                                    filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
+                                    header: false,
+                                    exportOptions: {
+                                        rows: ':visible',
+                                        format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
                                     },
-                                    {
-                                        extend: 'excel',
-                                        filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                        title: null,
-                                        header: false,
-                                        exportOptions: {
-                                            rows: ':visible',
-                                            format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
-                                        },
-                                        customize: function (xlsx) {
-                                            let sheet = xlsx.xl.worksheets['sheet1.xml'];
-                                            let numCols = headerRow1.length;
+                                    customize: function (csv) {
+                                        let lines = csv.split('\n');
+                                        lines = lines.slice(0, lines.length - (footerMapping.length + 2));
+                                        let cleanBody = lines.join('\n');
 
-                                            // Primary layout definitions for rows 1 to 6
-                                            // Row 1: Title Banner
-                                            let row1Xml = '<row r="1">';
-                                            row1Xml += `<c t="inlineStr" r="A1"><is><t><![CDATA[KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}]]></t></is></c>`;
-                                            row1Xml += '</row>';
+                                        let commasPadding = ", ".repeat(headerRow1.length - 1);
 
-                                            // Row 2: KMUJ isolated parameter
-                                            let row2Xml = '<row r="2">';
-                                            row2Xml += `<c t="inlineStr" r="A2"><is><t><![CDATA[KMUJ: ${kmuj}]]></t></is></c>`;
-                                            row2Xml += '</row>';
+                                        // Structured line-by-line configuration for top alignments
+                                        let titleRow = `KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}${commasPadding}\n`;
+                                        let kmujRow = `KMUJ: ${kmuj}${commasPadding}\n`;
+                                        let sectionRow = `Section: ${section}${commasPadding}\n\n`;
 
-                                            // Row 3: Section Parameter assigned to row index 3
-                                            let row3Xml = '<row r="3">';
-                                            row3Xml += `<c t="inlineStr" r="A3"><is><t><![CDATA[Section: ${section}]]></t></is></c>`;
-                                            row3Xml += '</row>';
+                                        let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
+                                        let baseCsv = titleRow + kmujRow + sectionRow + customHeader + cleanBody + "\n";
 
-                                            // Row 4: Empty buffer spacing line
-                                            let row4Xml = '<row r="4"></row>';
-
-                                            // Row 5 & 6: Main headers
-                                            let row5Xml = '<row r="5">';
-                                            let row6Xml = '<row r="6">';
-                                            for (let c = 0; c < numCols; c++) {
-                                                let colRef = getExcelColumnName(c);
-                                                let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
-                                                let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
-                                                row5Xml += `<c t="inlineStr" r="${colRef}5"><is><t><![CDATA[${val1}]]></t></is></c>`;
-                                                row6Xml += `<c t="inlineStr" r="${colRef}6"><is><t><![CDATA[${val2}]]></t></is></c>`;
-                                            }
-                                            row5Xml += '</row>'; row6Xml += '</row>';
-
-                                            let finalBodyRowIdx = 6;
-
-                                            // Shift table contents down by 6 slots to cleanly integrate the extra row assignment
-                                            $('row', sheet).each(function () {
-                                                let currentDocRow = parseInt($(this).attr('r'));
-                                                let newDocRow = currentDocRow + 6;
-                                                $(this).attr('r', newDocRow);
-                                                if (newDocRow > finalBodyRowIdx) { finalBodyRowIdx = newDocRow; }
-                                                $('c', this).each(function () {
-                                                    let cellRef = $(this).attr('r');
-                                                    let colPart = cellRef.match(/[A-Z]+/)[0];
-                                                    $(this).attr('r', colPart + newDocRow);
-                                                });
+                                        let footerRows = getFooterDataArray();
+                                        let footerCsv = "";
+                                        footerRows.forEach(row => {
+                                            let escapedRow = row.map(val => {
+                                                let stringVal = (val === null || val === undefined) ? "" : String(val);
+                                                return `"${stringVal.replace(/"/g, '""')}"`;
                                             });
+                                            footerCsv += escapedRow.join(",") + "\n";
+                                        });
 
-                                            let sheetData = sheet.getElementsByTagName('sheetData')[0];
-                                            $('row', sheetData).each(function () {
-                                                let rIdx = parseInt($(this).attr('r'));
-                                                if (rIdx > (finalBodyRowIdx - (footerMapping.length + 1))) { $(this).remove(); }
-                                            });
+                                        // --- NEW: Add spacing row and Info Box Content to CSV ---
+                                        let spacerRowCsv = commasPadding + "\n";
 
-                                            let currentExcelRow = (finalBodyRowIdx - (footerMapping.length + 1)) + 1;
-                                            let footerRowsData = getFooterDataArray();
+                                        let infoRowsCsv = "";
+                                        infoRowsCsv += `"C.E - Compassionate Leave",` + `,"PANDUAN WAKTU KERJA"` + ", ".repeat(Math.max(0, headerRow1.length - 3)) + "\n";
+                                        infoRowsCsv += `"C.T - Yearly Leave",` + `,"Isnin - Khamis","(0700 - 1645)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                        infoRowsCsv += `"T.H - Not Present",` + `,"Waktu Rehat","(1200 - 1300)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                        infoRowsCsv += `"S - Sick",` + `,"Jumaat","(0700 - 1300)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                        infoRowsCsv += `"",` + `,"Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian","(0700 - 1500)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
 
-                                            footerRowsData.forEach((rowArr) => {
-                                                let footerRowXml = `<row r="${currentExcelRow}">`;
-                                                rowArr.forEach((cellVal, cIdx) => {
-                                                    let colRef = getExcelColumnName(cIdx);
-                                                    let cleanVal = (cellVal === null || cellVal === undefined) ? "" : String(cellVal).trim();
-                                                    let isNumeric = cleanVal !== "" && /^\d+$/.test(cleanVal);
-                                                    if (isNumeric) {
-                                                        footerRowXml += `<c r="${colRef}${currentExcelRow}"><v>${cleanVal}</v></c>`;
-                                                    } else {
-                                                        footerRowXml += `<c t="inlineStr" r="${colRef}${currentExcelRow}"><is><t><![CDATA[${cleanVal}]]></t></is></c>`;
-                                                    }
-                                                });
-                                                footerRowXml += `</row>`;
-                                                let parser = new DOMParser();
-                                                sheetData.appendChild(sheet.importNode(parser.parseFromString(footerRowXml, "text/xml").documentElement, true));
-                                                currentExcelRow++;
-                                            });
+                                        let updatedByCsvRow = `"PREPARED BY PWI: ${updatedByPerson.replace(/"/g, '""')}"` + commasPadding + "\n";
+                                        let receivedByCsvRow = `"RECEIVED BY GANGER"` + commasPadding + "\n";
 
-                                            // Append layout layers chronologically back-to-front
-                                            let parser = new DOMParser();
-                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row6Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row5Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row4Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row3Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                        }
+                                        return baseCsv + footerCsv + spacerRowCsv + infoRowsCsv + spacerRowCsv + updatedByCsvRow + receivedByCsvRow;
                                     }
+                                },
+                                {
+                                    extend: 'excel',
+                                    filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
+                                    title: null,
+                                    header: false,
+                                    exportOptions: {
+                                        rows: ':visible',
+                                        format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
+                                    },
+                                    customize: function (xlsx) {
+                                        let sheet = xlsx.xl.worksheets['sheet1.xml'];
+                                        let numCols = headerRow1.length;
+
+                                        // Primary layout definitions for rows 1 to 6
+                                        let row1Xml = '<row r="1">';
+                                        row1Xml += `<c t="inlineStr" r="A1"><is><t><![CDATA[KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}]]></t></is></c>`;
+                                        row1Xml += '</row>';
+
+                                        let row2Xml = '<row r="2">';
+                                        row2Xml += `<c t="inlineStr" r="A2"><is><t><![CDATA[KMUJ: ${kmuj}]]></t></is></c>`;
+                                        row2Xml += '</row>';
+
+                                        let row3Xml = '<row r="3">';
+                                        row3Xml += `<c t="inlineStr" r="A3"><is><t><![CDATA[Section: ${section}]]></t></is></c>`;
+                                        row3Xml += '</row>';
+
+                                        let row4Xml = '<row r="4"></row>';
+
+                                        let row5Xml = '<row r="5">';
+                                        let row6Xml = '<row r="6">';
+                                        for (let c = 0; c < numCols; c++) {
+                                            let colRef = getExcelColumnName(c);
+                                            let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
+                                            let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
+                                            row5Xml += `<c t="inlineStr" r="${colRef}5"><is><t><![CDATA[${val1}]]></t></is></c>`;
+                                            row6Xml += `<c t="inlineStr" r="${colRef}6"><is><t><![CDATA[${val2}]]></t></is></c>`;
+                                        }
+                                        row5Xml += '</row>'; row6Xml += '</row>';
+
+                                        let finalBodyRowIdx = 6;
+
+                                        $('row', sheet).each(function () {
+                                            let currentDocRow = parseInt($(this).attr('r'));
+                                            let newDocRow = currentDocRow + 6;
+                                            $(this).attr('r', newDocRow);
+                                            if (newDocRow > finalBodyRowIdx) { finalBodyRowIdx = newDocRow; }
+                                            $('c', this).each(function () {
+                                                let cellRef = $(this).attr('r');
+                                                let colPart = cellRef.match(/[A-Z]+/)[0];
+                                                $(this).attr('r', colPart + newDocRow);
+                                            });
+                                        });
+
+                                        let sheetData = sheet.getElementsByTagName('sheetData')[0];
+                                        $('row', sheetData).each(function () {
+                                            let rIdx = parseInt($(this).attr('r'));
+                                            if (rIdx > (finalBodyRowIdx - (footerMapping.length + 1))) { $(this).remove(); }
+                                        });
+
+                                        let currentExcelRow = (finalBodyRowIdx - (footerMapping.length + 1)) + 1;
+                                        let footerRowsData = getFooterDataArray();
+
+                                        footerRowsData.forEach((rowArr) => {
+                                            let footerRowXml = `<row r="${currentExcelRow}">`;
+                                            rowArr.forEach((cellVal, cIdx) => {
+                                                let colRef = getExcelColumnName(cIdx);
+                                                let cleanVal = (cellVal === null || cellVal === undefined) ? "" : String(cellVal).trim();
+                                                let isNumeric = cleanVal !== "" && /^\d+$/.test(cleanVal);
+                                                if (isNumeric) {
+                                                    footerRowXml += `<c r="${colRef}${currentExcelRow}"><v>${cleanVal}</v></c>`;
+                                                } else {
+                                                    footerRowXml += `<c t="inlineStr" r="${colRef}${currentExcelRow}"><is><t><![CDATA[${cleanVal}]]></t></is></c>`;
+                                                }
+                                            });
+                                            footerRowXml += `</row>`;
+                                            let parser = new DOMParser();
+                                            sheetData.appendChild(sheet.importNode(parser.parseFromString(footerRowXml, "text/xml").documentElement, true));
+                                            currentExcelRow++;
+                                        });
+
+                                        let parser = new DOMParser();
+
+                                        // 1. Spacer Row
+                                        let spacerRowXml = `<row r="${currentExcelRow}"></row>`;
+                                        sheetData.appendChild(sheet.importNode(parser.parseFromString(spacerRowXml, "text/xml").documentElement, true));
+                                        currentExcelRow++;
+
+                                        // 2. Info Block (Leave info on Left Column A | Work times on Right Column C & D)
+                                        let infoLayoutData = [
+                                            { a: "C.E - Compassionate Leave", c: "PANDUAN WAKTU KERJA", d: "" },
+                                            { a: "C.T - Yearly Leave", c: "Isnin - Khamis", d: "(0700 - 1645)" },
+                                            { a: "T.H - Not Present", c: "Waktu Rehat", d: "(1200 - 1300)" },
+                                            { a: "S - Sick", c: "Jumaat", d: "(0700 - 1300)" },
+                                            { a: "", c: "Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian", d: "(0700 - 1500)" }
+                                        ];
+
+                                        infoLayoutData.forEach(info => {
+                                            let rowXml = `<row r="${currentExcelRow}">`;
+                                            if (info.a) rowXml += `<c t="inlineStr" r="A${currentExcelRow}"><is><t><![CDATA[${info.a}]]></t></is></c>`;
+                                            if (info.c) rowXml += `<c t="inlineStr" r="C${currentExcelRow}"><is><t><![CDATA[${info.c}]]></t></is></c>`;
+                                            if (info.d) rowXml += `<c t="inlineStr" r="D${currentExcelRow}"><is><t><![CDATA[${info.d}]]></t></is></c>`;
+                                            rowXml += `</row>`;
+
+                                            sheetData.appendChild(sheet.importNode(parser.parseFromString(rowXml, "text/xml").documentElement, true));
+                                            currentExcelRow++;
+                                        });
+
+                                        // 3. Post-Info Spacer Row
+                                        let postSpacerRowXml = `<row r="${currentExcelRow}"></row>`;
+                                        sheetData.appendChild(sheet.importNode(parser.parseFromString(postSpacerRowXml, "text/xml").documentElement, true));
+                                        currentExcelRow++;
+
+                                        // 4. Updated By row
+                                        let updatedByRowXml = `<row r="${currentExcelRow}">`;
+                                        updatedByRowXml += `<c t="inlineStr" r="A${currentExcelRow}"><is><t><![CDATA[PREPARED BY PWI: ${updatedByPerson}]]></t></is></c>`;
+                                        updatedByRowXml += `</row>`;
+                                        sheetData.appendChild(sheet.importNode(parser.parseFromString(updatedByRowXml, "text/xml").documentElement, true));
+                                        currentExcelRow++;
+
+                                        // 5. RECEIVED BY GANGER row
+                                        let receivedByRowXml = `<row r="${currentExcelRow}">`;
+                                        receivedByRowXml += `<c t="inlineStr" r="A${currentExcelRow}"><is><t><![CDATA[RECEIVED BY GANGER]]></t></is></c>`;
+                                        receivedByRowXml += `</row>`;
+                                        sheetData.appendChild(sheet.importNode(parser.parseFromString(receivedByRowXml, "text/xml").documentElement, true));
+
+                                        // Append layout layers chronologically back-to-front
+                                        sheetData.insertBefore(sheet.importNode(parser.parseFromString(row6Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                        sheetData.insertBefore(sheet.importNode(parser.parseFromString(row5Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                        sheetData.insertBefore(sheet.importNode(parser.parseFromString(row4Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                        sheetData.insertBefore(sheet.importNode(parser.parseFromString(row3Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                        sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                        sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                    }
+                                }
                                 ],
                                 responsive: false,
                                 autoWidth: false,
@@ -1090,20 +1145,25 @@
                     });
 
                     // Metadata UI Attachment
-                    let metadataHtml = `
-        <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
-            <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
-                <div style="text-align: right; padding-right: 15px;">
-                    <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
-                    <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
-                </div>
-            </div>
-        </div>`;
-                    $('.selected-values').first().after(metadataHtml);
+                    let topMetadataHtml = `
+                    <div id="tableMetadataViewTop" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
+                        <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
+                            <div style="text-align: right; padding-right: 15px;">
+                                <div style="margin-bottom: 4px;"><strong>Week No :</strong> ${weekNumber}</div>
+                                <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
+                                <br>
+                                <div><strong>Prepared By PWI:</strong> ${updatedByPerson}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                    $('.selected-values').first().after(topMetadataHtml);
+
+               
 
                     // ==========================================
                     // Event delegation triggers (Stay unchanged)
                     // ==========================================
+
                     $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
                         e.preventDefault();
                         const $btn = $(this);
