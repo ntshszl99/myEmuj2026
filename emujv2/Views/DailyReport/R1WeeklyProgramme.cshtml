@@ -620,14 +620,21 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    if ($.fn.dataTable.isDataTable('#tableRep, #tableRepNormal')) {
-                        $('#tableRep, #tableRepNormal').DataTable().clear().destroy();
-                    }
+                    // Target tables clearly
+                    const targetTableIds = ['#tableRep', '#tableRepNormal'];
+
+                    // 1. Destroy existing DataTables instances cleanly safely
+                    targetTableIds.forEach(id => {
+                        if ($.fn.dataTable.isDataTable(id)) {
+                            $(id).DataTable().clear().destroy();
+                        }
+                        // Wipe structural contents individually
+                        $(id).find('thead').empty();
+                        $(id).find('tbody').empty();
+                        $(id).find('tfoot').remove();
+                    });
 
                     $('#tableMetadataView').remove();
-                    $('#tableRep, #tableRepNormal thead').empty();
-                    $('#tableRep, #tableRepNormal tbody').empty();
-                    $('#tableRep, #tableRepNormal tfoot').remove();
 
                     const startDate = moment(sdate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
                     const endDate = moment(edate, ['YYYY/MM/DD', 'YYYY-MM-DD']);
@@ -649,19 +656,19 @@
                         }
                     }
 
-                    let thead = '<tr><th rowspan="2">Staff No</th><th rowspan="2">Name</th><th rowspan="2">Designation</th>';
-                    thead += `<th colspan="7">ATTENDANCE</th>`;
-                    uniquework_name.forEach(desc => { thead += `<th colspan="7">${desc}</th>`; });
-                    thead += '</tr><tr>';
+                    // Generate structural components
+                    let theadHtml = '<tr><th rowspan="2">Staff No</th><th rowspan="2">Name</th><th rowspan="2">Designation</th>';
+                    theadHtml += `<th colspan="7">ATTENDANCE</th>`;
+                    uniquework_name.forEach(desc => { theadHtml += `<th colspan="7">${desc}</th>`; });
+                    theadHtml += '</tr><tr>';
                     for (let i = 0; i < (1 + uniquework_name.length); i++) {
                         for (let j = 0; j < 7; j++) {
-                            thead += `<th>${moment(startDate).add(j, 'days').format('DD')}</th>`;
+                            theadHtml += `<th>${moment(startDate).add(j, 'days').format('DD')}</th>`;
                         }
                     }
-                    thead += '</tr>';
-                    $('#tableRep, #tableRepNormal thead').html(thead);
+                    theadHtml += '</tr>';
 
-                    // Statistics initializers (Added 'cs' array)
+                    // Statistics initializers
                     let attStats = { valid: Array(7).fill(0), al: Array(7).fill(0), mc: Array(7).fill(0), ab: Array(7).fill(0), cs: Array(7).fill(0) };
                     let workStats = {};
                     uniquework_name.forEach(name => { workStats[name] = { dp: Array(7).fill(0), up: Array(7).fill(0) }; });
@@ -704,7 +711,7 @@
                                     attStats.mc[dayIndex]++;
                                 } else if (l === "ab" || l === "th") {
                                     attStats.ab[dayIndex]++;
-                                } else if (l === "cs" || l === "ce") { // Track Cuti Ehsan stats
+                                } else if (l === "cs" || l === "ce") {
                                     attStats.cs[dayIndex]++;
                                 } else {
                                     attStats.valid[dayIndex]++;
@@ -716,11 +723,10 @@
                         return acc;
                     }, {});
 
-                    let tbody = '';
+                    let tbodyHtml = '';
                     for (let staffNo in groupedData) {
-                        tbody += `<tr><td>${staffNo}</td><td>${groupedData[staffNo].Nama}</td><td>${groupedData[staffNo].JobDesc}</td>`;
+                        tbodyHtml += `<tr><td>${staffNo}</td><td>${groupedData[staffNo].Nama}</td><td>${groupedData[staffNo].JobDesc}</td>`;
 
-                        // Attendance Columns Processing Loop
                         for (let i = 0; i < 7; i++) {
                             let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
                             let dayInfo = groupedData[staffNo].attendance_data[d];
@@ -728,7 +734,6 @@
                             let leaveTypeTracking = "valid";
                             let isClickable = false;
 
-                            // Updated validation: requires record existence AND active leave profile content to toggle
                             if (dayInfo && dayInfo.leave !== undefined && dayInfo.leave !== null && String(dayInfo.leave).trim() !== "") {
                                 isClickable = true;
                                 const leave = String(dayInfo.leave).toLowerCase().trim();
@@ -752,14 +757,12 @@
                                     displayValue = dayInfo.leave.toUpperCase();
                                     leaveTypeTracking = "valid";
                                 }
-                            } else {
-                                isClickable = false;
                             }
 
                             let disabledAttr = isClickable ? "" : 'disabled="disabled"';
                             let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65; pointer-events: none;";
 
-                            tbody += `<td>
+                            tbodyHtml += `<td>
                         <a class="btn attendance-toggle" 
                            data-emplid="${staffNo}" 
                            data-date="${d}" 
@@ -771,7 +774,6 @@
                     </td>`;
                         }
 
-                        // Workplan Columns Loop
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
                                 let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
@@ -780,16 +782,15 @@
                                     let iconClass = "fa-minus fa-rotate-90";
                                     if (currentCodeVal === "dp") iconClass = "fa-plus";
                                     else if (currentCodeVal === "up") iconClass = "fa-minus";
-                                    tbody += `<td><a class="btn workplan-toggle" data-emplid="${staffNo}" data-date="${d}" data-workname="${wn}" data-code="${currentCodeVal}"><i class="fa ${iconClass}"></i></a></td>`;
+                                    tbodyHtml += `<td><a class="btn workplan-toggle" data-emplid="${staffNo}" data-date="${d}" data-workname="${wn}" data-code="${currentCodeVal}"><i class="fa ${iconClass}"></i></a></td>`;
                                 } else {
-                                    tbody += `<td></td>`;
+                                    tbodyHtml += `<td></td>`;
                                 }
                             }
                         });
-                        tbody += `</tr>`;
+                        tbodyHtml += `</tr>`;
                     }
 
-                    // Updated Footer Mapping to include TOTAL CUTI EHSAN
                     const footerMapping = [
                         { label: 'TOTAL ATTENDANCE', attKey: 'valid', type: 'attendance' },
                         { label: 'TOTAL YEARLY LEAVE', attKey: 'al', type: 'leave' },
@@ -799,13 +800,13 @@
                     ];
 
                     footerMapping.forEach(rowConfig => {
-                        tbody += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
+                        tbodyHtml += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
                             `<td class="merged-style-left">${rowConfig.label}</td>` +
                             `<td class="merged-style-middle"></td>` +
                             `<td class="merged-style-right"></td>`;
 
                         attStats[rowConfig.attKey].forEach((val, i) => {
-                            tbody += `<td class="summary-att-cell" data-day="${i}" data-key="${rowConfig.attKey}">${val === 0 ? '' : val}</td>`;
+                            tbodyHtml += `<td class="summary-att-cell" data-day="${i}" data-key="${rowConfig.attKey}">${val === 0 ? '' : val}</td>`;
                         });
 
                         uniquework_name.forEach(wn => {
@@ -815,56 +816,54 @@
                                     let total = (workStats[wn].dp[i] || 0) + (workStats[wn].up[i] || 0);
                                     displayVal = total > 0 ? total : "";
                                 }
-                                tbody += `<td class="total-cell" data-rowtype="${rowConfig.type}" data-workname="${wn}" data-day="${i}">${displayVal}</td>`;
+                                tbodyHtml += `<td class="total-cell" data-rowtype="${rowConfig.type}" data-workname="${wn}" data-day="${i}">${displayVal}</td>`;
                             }
                         });
-                        tbody += '</tr>';
+                        tbodyHtml += '</tr>';
                     });
 
-                    tbody += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
+                    tbodyHtml += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
                         `<td class="merged-style-left">ADDITIONAL INFO</td>` +
                         `<td class="merged-style-middle"></td>` +
                         `<td class="merged-style-right"></td>`;
 
-                    for (let i = 0; i < 7; i++) { tbody += `<td></td>`; }
+                    for (let i = 0; i < 7; i++) { tbodyHtml += `<td></td>`; }
                     uniquework_name.forEach((wn) => {
                         for (let i = 0; i < 7; i++) {
                             let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
                             let info = dailyAdditionalMap[`${d}_${wn}`] || "";
-                            tbody += `<td><div class="vertical-text">${info}</div></td>`;
+                            tbodyHtml += `<td><div class="vertical-text">${info}</div></td>`;
                         }
                     });
-                    tbody += '</tr>';
+                    tbodyHtml += '</tr>';
 
-                    $('#tableRep, #tableRepNormal tbody').html(tbody);
+                    // 2. Safely apply headers and content to BOTH separate tables explicitly
+                    targetTableIds.forEach(id => {
+                        $(id).find('thead').html(theadHtml);
+                        $(id).find('tbody').html(tbodyHtml);
+                    });
 
+                    // Injection of CSS Rules
                     const whiteRowStylePatch = `
                 <style id="forceWhiteTableLayout">
-                    #tableRep , #tableRep tbody tr, #tableRep tbody td, #tableRep tbody tr.summary-row td {
+                    #tableRep, #tableRepNormal, 
+                    #tableRep tbody tr, #tableRepNormal tbody tr, 
+                    #tableRep tbody td, #tableRepNormal tbody td {
                         background-color: #ffffff !important;
                     }
                     .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
                         background-color: #ffffff !important;
                     }
-                    #tableRep thead th, 
+                    #tableRep thead th, #tableRepNormal thead th,
                     .dataTables_scrollHead table thead th,
                     .DTFC_LeftHeadWrapper table thead th {
                         text-align: center !important;
                         vertical-align: middle !important;
                     }
-                    .merged-style-left {
-                        border-right: none !important;
-                        text-align: left !important;
-                    }
-                    .merged-style-middle {
-                        border-left: none !important;
-                        border-right: none !important;
-                    }
-                    .merged-style-right {
-                        border-left: none !important;
-                    }
-                </style>
-            `;
+                    .merged-style-left { border-right: none !important; text-align: left !important; }
+                    .merged-style-middle { border-left: none !important; border-right: none !important; }
+                    .merged-style-right { border-left: none !important; }
+                </style>`;
                     $('#forceWhiteTableLayout').remove();
                     $('head').append(whiteRowStylePatch);
 
@@ -922,132 +921,135 @@
                         return columnName;
                     }
 
-                    let tableElement = $('#tableRep, #tableRepNormal').addClass('table table-bordered').DataTable({
-                        dom: '<"selected-values"fB>rtip',
-                        buttons: [
-                            {
-                                extend: 'csv',
-                                filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                header: false,
-                                exportOptions: {
-                                    rows: ':visible',
-                                    format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
-                                },
-                                customize: function (csv) {
-                                    let lines = csv.split('\n');
-                                    lines = lines.slice(0, lines.length - (footerMapping.length + 2));
-                                    let cleanBody = lines.join('\n');
+                    // 3. Initialize DataTable on EACH table distinctly
+                    targetTableIds.forEach(id => {
+                        if ($(id).length > 0) {
+                            $(id).addClass('table table-bordered').DataTable({
+                                dom: '<"selected-values"fB>rtip',
+                                buttons: [
+                                    {
+                                        extend: 'csv',
+                                        filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
+                                        header: false,
+                                        exportOptions: {
+                                            rows: ':visible',
+                                            format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
+                                        },
+                                        customize: function (csv) {
+                                            let lines = csv.split('\n');
+                                            lines = lines.slice(0, lines.length - (footerMapping.length + 2));
+                                            let cleanBody = lines.join('\n');
 
-                                    let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
-                                    let baseCsv = customHeader + cleanBody + "\n";
-                                    let footerRows = getFooterDataArray();
-                                    let footerCsv = "";
-                                    footerRows.forEach(row => {
-                                        let escapedRow = row.map(val => {
-                                            let stringVal = (val === null || val === undefined) ? "" : String(val);
-                                            return `"${stringVal.replace(/"/g, '""')}"`;
-                                        });
-                                        footerCsv += escapedRow.join(",") + "\n";
-                                    });
-                                    return baseCsv + footerCsv;
-                                }
-                            },
-                            {
-                                extend: 'excel',
-                                filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                title: null,
-                                header: false,
-                                exportOptions: {
-                                    rows: ':visible',
-                                    format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
-                                },
-                                customize: function (xlsx) {
-                                    let sheet = xlsx.xl.worksheets['sheet1.xml'];
-                                    let numCols = headerRow1.length;
+                                            let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
+                                            let baseCsv = customHeader + cleanBody + "\n";
+                                            let footerRows = getFooterDataArray();
+                                            let footerCsv = "";
+                                            footerRows.forEach(row => {
+                                                let escapedRow = row.map(val => {
+                                                    let stringVal = (val === null || val === undefined) ? "" : String(val);
+                                                    return `"${stringVal.replace(/"/g, '""')}"`;
+                                                });
+                                                footerCsv += escapedRow.join(",") + "\n";
+                                            });
+                                            return baseCsv + footerCsv;
+                                        }
+                                    },
+                                    {
+                                        extend: 'excel',
+                                        filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
+                                        title: null,
+                                        header: false,
+                                        exportOptions: {
+                                            rows: ':visible',
+                                            format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
+                                        },
+                                        customize: function (xlsx) {
+                                            let sheet = xlsx.xl.worksheets['sheet1.xml'];
+                                            let numCols = headerRow1.length;
 
-                                    let row1Xml = '<row r="1">';
-                                    let row2Xml = '<row r="2">';
-                                    for (let c = 0; c < numCols; c++) {
-                                        let colRef = getExcelColumnName(c);
-                                        let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
-                                        let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
-                                        row1Xml += `<c t="inlineStr" r="${colRef}1"><is><t><![CDATA[${val1}]]></t></is></c>`;
-                                        row2Xml += `<c t="inlineStr" r="${colRef}2"><is><t><![CDATA[${val2}]]></t></is></c>`;
-                                    }
-                                    row1Xml += '</row>'; row2Xml += '</row>';
-
-                                    let finalBodyRowIdx = 2;
-                                    $('row', sheet).each(function () {
-                                        let currentDocRow = parseInt($(this).attr('r'));
-                                        let newDocRow = currentDocRow + 2;
-                                        $(this).attr('r', newDocRow);
-                                        if (newDocRow > finalBodyRowIdx) { finalBodyRowIdx = newDocRow; }
-                                        $('c', this).each(function () {
-                                            let cellRef = $(this).attr('r');
-                                            let colPart = cellRef.match(/[A-Z]+/)[0];
-                                            $(this).attr('r', colPart + newDocRow);
-                                        });
-                                    });
-
-                                    let sheetData = sheet.getElementsByTagName('sheetData')[0];
-                                    $('row', sheetData).each(function () {
-                                        let rIdx = parseInt($(this).attr('r'));
-                                        if (rIdx > (finalBodyRowIdx - (footerMapping.length + 1))) { $(this).remove(); }
-                                    });
-
-                                    let currentExcelRow = (finalBodyRowIdx - (footerMapping.length + 1)) + 1;
-                                    let footerRowsData = getFooterDataArray();
-
-                                    footerRowsData.forEach((rowArr) => {
-                                        let footerRowXml = `<row r="${currentExcelRow}">`;
-                                        rowArr.forEach((cellVal, cIdx) => {
-                                            let colRef = getExcelColumnName(cIdx);
-                                            let cleanVal = (cellVal === null || cellVal === undefined) ? "" : String(cellVal).trim();
-                                            let isNumeric = cleanVal !== "" && /^\d+$/.test(cleanVal);
-                                            if (isNumeric) {
-                                                footerRowXml += `<c r="${colRef}${currentExcelRow}"><v>${cleanVal}</v></c>`;
-                                            } else {
-                                                footerRowXml += `<c t="inlineStr" r="${colRef}${currentExcelRow}"><is><t><![CDATA[${cleanVal}]]></t></is></c>`;
+                                            let row1Xml = '<row r="1">';
+                                            let row2Xml = '<row r="2">';
+                                            for (let c = 0; c < numCols; c++) {
+                                                let colRef = getExcelColumnName(c);
+                                                let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
+                                                let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
+                                                row1Xml += `<c t="inlineStr" r="${colRef}1"><is><t><![CDATA[${val1}]]></t></is></c>`;
+                                                row2Xml += `<c t="inlineStr" r="${colRef}2"><is><t><![CDATA[${val2}]]></t></is></c>`;
                                             }
-                                        });
-                                        footerRowXml += `</row>`;
-                                        let parser = new DOMParser();
-                                        sheetData.appendChild(sheet.importNode(parser.parseFromString(footerRowXml, "text/xml").documentElement, true));
-                                        currentExcelRow++;
-                                    });
+                                            row1Xml += '</row>'; row2Xml += '</row>';
 
-                                    let parser = new DOMParser();
-                                    sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
-                                    sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                            let finalBodyRowIdx = 2;
+                                            $('row', sheet).each(function () {
+                                                let currentDocRow = parseInt($(this).attr('r'));
+                                                let newDocRow = currentDocRow + 2;
+                                                $(this).attr('r', newDocRow);
+                                                if (newDocRow > finalBodyRowIdx) { finalBodyRowIdx = newDocRow; }
+                                                $('c', this).each(function () {
+                                                    let cellRef = $(this).attr('r');
+                                                    let colPart = cellRef.match(/[A-Z]+/)[0];
+                                                    $(this).attr('r', colPart + newDocRow);
+                                                });
+                                            });
+
+                                            let sheetData = sheet.getElementsByTagName('sheetData')[0];
+                                            $('row', sheetData).each(function () {
+                                                let rIdx = parseInt($(this).attr('r'));
+                                                if (rIdx > (finalBodyRowIdx - (footerMapping.length + 1))) { $(this).remove(); }
+                                            });
+
+                                            let currentExcelRow = (finalBodyRowIdx - (footerMapping.length + 1)) + 1;
+                                            let footerRowsData = getFooterDataArray();
+
+                                            footerRowsData.forEach((rowArr) => {
+                                                let footerRowXml = `<row r="${currentExcelRow}">`;
+                                                rowArr.forEach((cellVal, cIdx) => {
+                                                    let colRef = getExcelColumnName(cIdx);
+                                                    let cleanVal = (cellVal === null || cellVal === undefined) ? "" : String(cellVal).trim();
+                                                    let isNumeric = cleanVal !== "" && /^\d+$/.test(cleanVal);
+                                                    if (isNumeric) {
+                                                        footerRowXml += `<c r="${colRef}${currentExcelRow}"><v>${cleanVal}</v></c>`;
+                                                    } else {
+                                                        footerRowXml += `<c t="inlineStr" r="${colRef}${currentExcelRow}"><is><t><![CDATA[${cleanVal}]]></t></is></c>`;
+                                                    }
+                                                });
+                                                footerRowXml += `</row>`;
+                                                let parser = new DOMParser();
+                                                sheetData.appendChild(sheet.importNode(parser.parseFromString(footerRowXml, "text/xml").documentElement, true));
+                                                currentExcelRow++;
+                                            });
+
+                                            let parser = new DOMParser();
+                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                            sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
+                                        }
+                                    }
+                                ],
+                                responsive: false,
+                                autoWidth: false,
+                                paging: false,
+                                ordering: false,
+                                fixedColumns: { left: 3 },
+                                columnDefs: [
+                                    { targets: '_all', className: 'dt-center head-center' }
+                                ],
+                                createdRow: function (row) {
+                                    if ($(row).hasClass('summary-row')) {
+                                        $('td', row).css('background-color', '#ffffff');
+                                        $('td:gt(2)', row).addClass('text-nowrap align-middle text-center');
+                                    } else {
+                                        $('td', row).addClass('text-nowrap align-middle text-center');
+                                    }
+                                },
+                                initComplete: function () {
+                                    setTimeout(() => {
+                                        this.api().columns.adjust();
+                                    }, 200);
                                 }
-                            }
-                        ],
-                        responsive: false,
-                        autoWidth: false,
-                        paging: false,
-                        ordering: false,
-                        fixedColumns: {
-                            left: 3
-                        },
-                        columnDefs: [
-                            { targets: '_all', className: 'dt-center head-center' }
-                        ],
-                        createdRow: function (row) {
-                            if ($(row).hasClass('summary-row')) {
-                                $('td', row).css('background-color', '#ffffff');
-                                $('td:gt(2)', row).addClass('text-nowrap align-middle text-center');
-                            } else {
-                                $('td', row).addClass('text-nowrap align-middle text-center');
-                            }
-                        },
-                        initComplete: function () {
-                            setTimeout(() => {
-                                let api = this.api();
-                                api.columns.adjust();
-                            }, 200);
+                            });
                         }
                     });
 
+                    // Metadata UI Attachment
                     let metadataHtml = `
                 <div id="tableMetadataView" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
                     <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
@@ -1056,20 +1058,16 @@
                             <div><strong>Week Ending :</strong> ${weekEndingStr}</div>
                         </div>
                     </div>
-                </div>
-            `;
-                    $('.selected-values').after(metadataHtml);
+                </div>`;
+                    $('.selected-values').first().after(metadataHtml);
 
                     // ==========================================
-                    // 1. ATTENDANCE DYNAMIC TOGGLE HANDLER
+                    // Event delegation triggers (Stay unchanged)
                     // ==========================================
                     $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
                         e.preventDefault();
                         const $btn = $(this);
-
-                        if ($btn.attr('disabled')) {
-                            return false;
-                        }
+                        if ($btn.attr('disabled')) return false;
 
                         const $span = $btn.find('.attendance-text');
                         const date = $btn.data('date');
@@ -1104,9 +1102,6 @@
                         autoSaveStaffAttendance(empId, date, dbCutiCode);
                     });
 
-                    // ==========================================
-                    // 2. WORKPLAN TOGGLE HANDLER
-                    // ==========================================
                     $(document).off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
                         e.preventDefault();
                         const $btn = $(this); const $icon = $btn.find('i');
@@ -1133,7 +1128,6 @@
                 error: function () { alert("Failed to load reports."); }
             });
         }
-
 
 
 
