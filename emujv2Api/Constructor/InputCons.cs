@@ -56,6 +56,9 @@ namespace emujv2Api.Constructor
         public string UpdBy { get; set; }
         public string UpdDate { get; set; }
 
+        public string VerifiedBy { get; set; }
+
+
         public List<StaffInfo> StaffList { get; set; }
 
         public WorkPlanTotal WorkPlanTotal { get; set; }

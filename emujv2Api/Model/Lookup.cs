@@ -280,7 +280,7 @@ namespace emujv2Api.Model
             SqlStr.Append("), ");
             SqlStr.Append("ParsedAttendance AS ( ");
             SqlStr.Append("    SELECT LTRIM(RTRIM(m.n.value('.[1]', 'varchar(8000)'))) AS staff_id, rpt_code ");
-            SqlStr.Append("    FROM ( ");
+            SqlStr.Append("    FROM ( "); 
             SqlStr.Append("        SELECT staff_id, rpt_code, CAST('<XMLRoot><RowData>' + REPLACE(staff_id, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
             SqlStr.Append("        FROM CombinedAttendance WHERE staff_id IS NOT NULL ");
             SqlStr.Append("    ) AS s CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
@@ -871,9 +871,9 @@ namespace emujv2Api.Model
                     ELSE 0 
                 END) AS TotalTime";
 
-           
+
             SqlStr.Append("SELECT ");
-            SqlStr.Append("    a.work_cat_id, a.work_cat_name, b.work_name, ");
+            SqlStr.Append("    a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, v.staff_name AS verifier_name, c.verified_at, ");
             SqlStr.Append(string.Join(", ", caseStatements));
             SqlStr.Append(", ");
             SqlStr.Append(sumColumn);
@@ -881,11 +881,13 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN kerja AS b ON a.work_cat_id = b.work_cat_id ");
             SqlStr.Append("LEFT JOIN daily_form AS c ON b.id = c.daily_worktype ");
             SqlStr.Append("    AND c.daily_date BETWEEN @MulaTarikh AND @AkhirTarikh ");
-            // JOINing work_plan based on the rpt_code shared with daily_form
             SqlStr.Append("LEFT JOIN work_plan AS wp ON c.rpt_code = wp.rpt_code ");
             SqlStr.Append("LEFT JOIN section AS d ON d.section_val = c.daily_sec ");
             SqlStr.Append("LEFT JOIN kmuj AS e ON e.kmuj_value = c.daily_kmuj ");
-            SqlStr.Append("GROUP BY a.work_cat_id, a.work_cat_name, b.work_name ");
+            SqlStr.Append("LEFT JOIN staff_login AS f ON f.staff_id = c.upd_user ");
+            SqlStr.Append("LEFT JOIN staff_login AS v ON v.staff_id = c.verified_by ");
+
+            SqlStr.Append("GROUP BY a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, v.staff_name, c.verified_at ");
             SqlStr.Append("ORDER BY CAST(a.work_cat_id AS INT) ASC;");
 
             ParamTmp.Add("@Kmuj", Kmuj);

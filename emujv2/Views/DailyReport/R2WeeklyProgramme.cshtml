@@ -94,9 +94,19 @@
                                                     <td>-</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Inspected by RE / CPWI on</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
+                                                    <td>Prepared By PWI On</td>
+                                                    <td id="htmlPreparedByPWI">-</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Verified By PW/KMUJ On</td>
+                                                    <td style="vertical-align: middle;">
+                                                        <span id="htmlVerifiedByPW">-</span>
+                                                    </td>
+                                                    <td id="tdVerifyAction" style="width: 150px; vertical-align: middle;">
+                                                        <button type="button" id="btnVerify" class="btn btn-sm btn-success w-100" style="font-size: 13px;">Verify</button>
+                                                        <span id="htmlVerifiedAt" ></span>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -176,9 +186,19 @@
                                                     <td>-</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Inspected by RE / CPWI on</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
+                                                    <td>Prepared By PWI On</td>
+                                                    <td id="htmlPreparedByPWI">-</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Verified By JW/KMUJ on</td>
+                                                    <td style="vertical-align: middle;">
+                                                        <span id="htmlVerifiedByPWNormal">-</span>
+                                                    </td>
+                                                    <td id="tdVerifyActionNormal" style="width: 150px; vertical-align: middle;">
+                                                        <button type="button" id="btnVerifyNormal" class="btn btn-sm btn-success w-100" style="font-size: 13px;">Verify</button>
+                                                        <span id="htmlVerifiedAt"></span>
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -218,9 +238,11 @@
         $(document).ready(function () {
             checkSess();
             listSection();
-            listKMUJ(); 
+            listKMUJ();
 
-            //check access
+            // ==========================================
+            // ADMIN / POWER USER VIEWS (lvlI: 1 or 5)
+            // ==========================================
             if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
                 $("#contentAdmin").show();
                 $("#contentOthers").hide();
@@ -230,20 +252,15 @@
                     autoUpdateInput: false,
                     singleDatePicker: true,
                     minYear: 2021,
-                    locale: {
-                        format: 'DD/MM/YYYY'
-                    }
+                    locale: { format: 'DD/MM/YYYY' }
                 });
 
                 $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
-                    var newEndDate = moment(picker.startDate).add(7, 'days');
+                    var newEndDate = moment(picker.startDate).add(6, 'days');
                     $(this).data('daterangepicker').setEndDate(newEndDate);
-
                     var sdate = picker.startDate.format('YYYY/MM/DD');
                     var edate = newEndDate.format('YYYY/MM/DD');
-
                     $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
-
                     localStorage.setItem("selHar", sdate);
                     localStorage.setItem("selHarE", edate);
                 });
@@ -252,7 +269,6 @@
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
                     $('#txtDate').val('');
-
                     var drp = $('#txtDate').data('daterangepicker');
                     drp.setStartDate(moment());
                     drp.setEndDate(moment());
@@ -262,43 +278,39 @@
                     var selectedKmuj = $(this).find('option:selected').text();
                     var selectedKmujVal = $(this).val();
 
-                    console.log("Selected KMUJ Text:", selectedKmuj);
-
                     if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
                         $('#section').prop('disabled', false).trigger('change.select2');
-
                         listSection(selectedKmuj, selectedSectionValue);
                     } else {
-                        $('#section')
-                            .html('<option value="-0">Select Section</option>')
-                            .prop('disabled', true)
-                            .trigger('change')
-                            .trigger('change.select2');
+                        $('#section').html('<option value="-0">Select Section</option>').prop('disabled', true).trigger('change').trigger('change.select2');
                     }
                 });
-
 
                 $('#btnSearch').on('click', function () {
                     var kmj = $("#kmuj option:selected").text();
                     var scn = $("#section option:selected").text();
-
                     localStorage.setItem("selKmj", kmj);
                     localStorage.setItem("selScn", scn);
-
                     var sdate = localStorage.getItem("selHar") || "";
                     var edate = localStorage.getItem("selHarE") || "";
-
-                    // Run the report
                     listReports(kmj, scn, sdate, edate);
+                    salertSave(sdate !== "" ? 'Searching for: ' + sdate + ' to ' + edate : 'Searching all dates for ' + kmj);
+                });
 
-                    if (sdate !== "") {
-                        salertSave('Searching for: ' + sdate + ' to ' + edate);
-                    } else {
-                        salertSave('Searching all dates for ' + rgn);
+                $('#btnVerify').off('click').on('click', function () {
+                    let rptCodesArray = $(this).data('rpt-codes');
+                    if (!rptCodesArray || !Array.isArray(rptCodesArray) || rptCodesArray.length === 0) {
+                        alert("Report reference codes not found.");
+                        return;
                     }
+                    executeReportVerification(rptCodesArray.join(','));
                 });
             }
-            else if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "4") {
+
+            // ==========================================
+            // NORMAL USER VIEWS (lvlI: 2, 3, or 4)
+            // ==========================================
+            else if (["2", "3", "4"].includes(localStorage.getItem("lvlI"))) {
                 $("#contentAdmin").hide();
                 $("#contentOthers").hide();
                 $("#contentNormal").show();
@@ -307,113 +319,125 @@
                     autoUpdateInput: false,
                     singleDatePicker: true,
                     minYear: 2021,
-                    locale: {
-                        format: 'DD/MM/YYYY'
-                    }
+                    locale: { format: 'DD/MM/YYYY' }
                 });
 
                 $('#txtDateNormal').on('apply.daterangepicker', function (ev, picker) {
-                    var newEndDate = moment(picker.startDate).add(7, 'days');
+                    var newEndDate = moment(picker.startDate).add(6, 'days');
                     $(this).data('daterangepicker').setEndDate(newEndDate);
-
-                    var sdate = picker.startDate.format('YYYY/MM/DD');
-                    var edate = newEndDate.format('YYYY/MM/DD');
-
+                    localStorage.setItem("selHar", picker.startDate.format('YYYY/MM/DD'));
+                    localStorage.setItem("selHarE", newEndDate.format('YYYY/MM/DD'));
                     $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
-
-                    localStorage.setItem("selHar", sdate);
-                    localStorage.setItem("selHarE", edate);
                 });
 
                 $('#btnSearchNormal').on('click', function () {
-                    var scn = localStorage.getItem("scn");
-                    localStorage.setItem("selScn", scn);
-
-                    var kmj = localStorage.getItem("kmuj");
-                    localStorage.setItem("selKmj", kmj);
-
-                    var sdate = localStorage.getItem("selHar") || "";
-                    var edate = localStorage.getItem("selHarE") || "";
-
-                    // Run the report
-                    listReports(kmj, scn, sdate, edate);
-
-                    if (sdate !== "") {
-                        salertSave('Searching for: ' + sdate + ' to ' + edate);
-                    } else {
-                        salertSave('Searching all dates for ' + rgn);
-                    }
+                    var scn = localStorage.getItem("scn") || "";
+                    var kmj = localStorage.getItem("kmuj") || "All Departments";
+                    listReports(kmj, scn, localStorage.getItem("selHar") || "", localStorage.getItem("selHarE") || "");
+                    salertSave('Searching for reports in ' + kmj);
                 });
             }
+
+            // ==========================================
+            // FALLBACK / GUEST VIEWS
+            // ==========================================
             else {
                 $("#contentAdmin").hide();
                 $("#contentOthers").show();
                 $("#contentNormal").hide();
             }
-
-
         });
 
+        // Helper: Fetch Section List
         function listSection(kmuj, selectedSectionValue) {
+            if (!kmuj || kmuj === "Select KMUJ") return;
             $.ajax({
                 url: linkDepan + "Kmuj?Kmuj=" + encodeURIComponent(kmuj),
                 dataType: "json",
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
+                beforeSend: (req) => req.setRequestHeader("Token", localStorage.getItem('main')),
                 success: function (data) {
-                    $("#section").removeClass("is-invalid");
-
-                    var auxArr = [];
-                    auxArr.push("<option value='-0'>Select Section</option>");
-
-                    if (data && data.length >= 1) {
-                        $.each(data, function (index, value) {
-                            auxArr.push("<option value='" + value.section_val + "'>" + value.section_name + "</option>");
-                        });
-
-                        $('#section').html('').append(auxArr.join(''));
-
-                        if (selectedSectionValue) {
-                            $('#section').val(selectedSectionValue);
-                        }
+                    var auxArr = ["<option value='-0'>Select Section</option>"];
+                    if (data && data.length > 0) {
+                        $.each(data, (i, v) => auxArr.push("<option value='" + v.section_val + "'>" + v.section_name + "</option>"));
+                        $('#section').html(auxArr.join('')).prop('disabled', false);
+                        if (selectedSectionValue) $('#section').val(selectedSectionValue);
                     } else {
-                        $('#section')
-                            .html('<option value="-0">Select Section</option>')
-                            .addClass("is-invalid")
-                            .prop('disabled', true);
+                        $('#section').html(auxArr.join('')).addClass("is-invalid").prop('disabled', true);
                     }
-
                     $('#section').trigger('change').trigger('change.select2');
                 },
-                error: function (xhr) {
-                    swarning();
-                }
+                error: () => swarning()
             });
         }
 
+        // Helper: Fetch KMUJ List
         function listKMUJ() {
             $.ajax({
                 url: linkDepan + "KMUJList",
                 dataType: "json",
+                beforeSend: (req) => req.setRequestHeader("Token", localStorage.getItem('main')),
+                success: function (data) {
+                    var $kmuj = $('#kmuj');
+                    $kmuj.find('option:not([value="-0"])').remove();
+                    if (data && data.length > 0) {
+                        var arr = [];
+                        $.each(data, (i, v) => arr.push("<option value='" + v.kmuj_id + "'>" + v.kmuj_name + "</option>"));
+                        $kmuj.append(arr.join(''));
+                    }
+                },
+                error: () => swarning()
+            });
+        }
+
+
+        function executeReportVerification(commaSeparatedRptCodes) {
+            let currentUserId = localStorage.getItem('usrI');
+
+            if (!currentUserId) {
+                Swal.fire({ title: 'Error!', text: 'Unable to identify active user session.', icon: 'error' });
+                return;
+            }
+
+            $.ajax({
+                url: linkDepan + "UpdateVerifier",
+                type: 'POST',
+                contentType: 'application/json',
                 beforeSend: function (request) {
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
-                success: function (data) {
-                    if (data.length >= 1) {
-                        auxArr = [];
-                        $.each(data, function (index, value) {
-                            auxArr[index] = "<option value='" + value.kmuj_id + "'>" + value.kmuj_name + "</option>";
-                        });
-                        $('#kmuj').append(auxArr.join(''));
+                data: JSON.stringify({
+                    VerifiedBy: currentUserId,
+                    RptCode: commaSeparatedRptCodes
+                }),
+                success: function (response) {
+                    // Parse response if it's a string
+                    let res = typeof response === "string" ? JSON.parse(response) : response;
+
+                    if (res.status === "00" || res === "0") {
+                        Swal.fire({ title: 'Success!', text: 'Reports verified successfully.', icon: 'success' });
+
+                        // Refresh logic
+                        if ($('#btnSearch').is(':visible')) {
+                            $('#btnSearch').click();
+                        } else if ($('#btnSearchNormal').is(':visible')) {
+                            $('#btnSearchNormal').click();
+                        } else {
+                            window.location.reload();
+                        }
                     } else {
-                        $("#kmuj").addClass(" is-invalid");
+                        Swal.fire({ title: 'Error!', text: 'Update failed: ' + (res.StatusDetail || 'Unknown error'), icon: 'error' });
                     }
                 },
                 error: function (xhr) {
-                    swarning();
-                },
-                complete: function () { }
+                    // Note: 'res' is not available in error block, so we check xhr.responseJSON
+                    let errorText = "Server connection error.";
+                    if (xhr.responseJSON && xhr.responseJSON.StatusDetail) {
+                        errorText = xhr.responseJSON.StatusDetail;
+                    }
+
+                    console.error("Critical server error:", xhr);
+                    Swal.fire({ title: 'Error!', text: 'Update failed: ' + errorText, icon: 'error' });
+                }
             });
         }
 
@@ -426,84 +450,95 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    console.log("Raw Data Received:", data);
-
                     if (!data || !Array.isArray(data) || !data.length) {
-                        console.error('No valid data returned from the server.');
+                        console.warn('No data returned.');
                         return;
                     }
 
+                    // 1. RESOLVE VERIFIER NAME & DATE
+                    const validVerifyRow = data.find(item =>
+                        (item.verifier_name || item.Verifier_Name || item.verifierName || "").trim() !== ''
+                    );
+
+                    let verifiedByPerson = "-";
+                    let verifiedAtDate = "";
+
+                    if (validVerifyRow) {
+                        const name = (validVerifyRow.verifier_name || validVerifyRow.Verifier_Name || validVerifyRow.verifierName).trim();
+                        const rawDate = validVerifyRow.verified_at || validVerifyRow.Verified_At;
+                        verifiedByPerson = name;
+                        if (rawDate) {
+                            const d = new Date(rawDate);
+                            verifiedAtDate = d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
+                    }
+
+                    // 2. UPDATE UI (ADMIN & NORMAL)
+                    $('#htmlVerifiedByPW, #htmlVerifiedByPWNormal').text(verifiedByPerson);
+                    $('#htmlVerifiedAt, #htmlVerifiedAtNormal').text(verifiedAtDate);
+
+                    if (verifiedByPerson !== "-") {
+                        $('#btnVerify, #btnVerifyNormal').hide();
+                    } else {
+                        $('#btnVerify, #btnVerifyNormal').show();
+                    }
+
+                    // 3. CAPTURE REPORT CODES FOR BUTTON
+                    let uniqueReportCodes = [...new Set(data.map(i => (i.rpt_code || "").trim()).filter(i => i))];
+                    $('#btnVerify, #btnVerifyNormal').data('rpt-codes', uniqueReportCodes);
+
+                    // 4. PREPARE DATA
                     let finalData = [];
                     let uniqueDates = new Set();
+                    const validStaffRow = data.find(i => (i.staff_name || i.Staff_Name || i.staffName));
+                    const updatedByPerson = validStaffRow ? (validStaffRow.staff_name || validStaffRow.Staff_Name || validStaffRow.staffName).trim() : "-";
 
-                    // Sanitize variables for safe file naming (removes slashes from dates)
-                    let safeSdate = sdate.replace(/\//g, '-');
-                    let safeEdate = edate.replace(/\//g, '-');
-                    let dynamicFileName = `Annexure 20.7 – Weekly Programme (R2) ${kmuj} ${section} ${safeSdate} to ${safeEdate}`;
-
-                    // 1. Process Raw Data and Apply Multipliers
                     data.forEach(item => {
                         let row = {
                             work_cat_id: item.work_cat_id,
                             work_cat_name: item.work_cat_name,
                             work_name: item.work_name,
-                            TotalTime: 0
+                            TotalTime: 0 // Initialize as a number
                         };
 
-                        Object.keys(item).forEach(dateKey => {
-                            if (!["work_cat_id", "work_cat_name", "work_name", "TotalTime"].includes(dateKey)) {
-                                let rawValue = parseFloat(item[dateKey]) || 0;
+                        Object.keys(item).forEach(key => {
+                            const ignoredKeys = ["work_cat_id", "work_cat_name", "work_name", "TotalTime", "staff_name", "Staff_Name", "staffName", "rpt_code", "rptCode", "Rpt_Code", "verified_by", "Verified_By", "verifiedBy", "verifier_name", "Verifier_Name", "verifierName", "verified_at", "Verified_At"];
+                            if (!ignoredKeys.some(k => key.toLowerCase() === k.toLowerCase())) {
+                                let val = (parseFloat(item[key]) || 0);
                                 let calculatedValue = 0;
-
-                                if (rawValue > 0) {
-                                    const parts = dateKey.split('/');
-                                    const dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
-                                    const dayOfWeek = dateObj.getDay();
-
-                                    let multiplier = (dayOfWeek >= 1 && dayOfWeek <= 4) ? 8.75 : 6;
-                                    calculatedValue = rawValue * multiplier;
+                                if (val > 0) {
+                                    const parts = key.split('/');
+                                    const multiplier = (new Date(parts[2], parts[1] - 1, parts[0]).getDay() >= 1 && new Date(parts[2], parts[1] - 1, parts[0]).getDay() <= 4) ? 8.75 : 6;
+                                    calculatedValue = val * multiplier;
                                 }
-
-                                row[dateKey] = (calculatedValue === 0) ? '' : calculatedValue.toFixed(2);
-                                row.TotalTime += calculatedValue;
-                                uniqueDates.add(dateKey);
+                                row[key] = calculatedValue === 0 ? '' : calculatedValue.toFixed(2);
+                                row.TotalTime += calculatedValue; // Add as number
+                                uniqueDates.add(key);
                             }
                         });
 
+                        // Convert to string ONLY at the end of the row calculation
                         row.TotalTime = row.TotalTime.toFixed(2);
                         finalData.push(row);
                     });
 
-                    // 2. Sort Dates Chronologically for Table Columns
+                    // 5. AGGREGATIONS & CALCULATIONS
                     let sortedDates = Array.from(uniqueDates).sort((a, b) => {
-                        const partsA = a.split('/');
-                        const partsB = b.split('/');
-                        return new Date(partsA[2], partsA[1] - 1, partsA[0]) - new Date(partsB[2], partsB[1] - 1, partsB[0]);
+                        const pA = a.split('/'), pB = b.split('/');
+                        return new Date(pA[2], pA[1] - 1, pA[0]) - new Date(pB[2], pB[1] - 1, pB[0]);
                     });
 
-                    // 3. Calculate Global Summaries Before Modifying Array Structure
-                    let othersCategories = [11, 12, 14, 15, 16, 17];
                     let totalManHoursForGangs = finalData.reduce((sum, row) => sum + parseFloat(row.TotalTime || 0), 0);
+                    let offTrackWorksTotal = finalData.reduce((sum, row) => Number(row.work_cat_id) === 5 ? sum + parseFloat(row.TotalTime || 0) : sum, 0);
+                    let othersCategories = [11, 12, 14, 15, 16, 17];
+                    let totalOthers = finalData.reduce((sum, row) => othersCategories.includes(Number(row.work_cat_id)) ? sum + parseFloat(row.TotalTime || 0) : sum, 0);
+                    let totalOnTrackWorks = totalManHoursForGangs - offTrackWorksTotal - totalOthers;
 
-                    let offTrackWorksTotal = finalData.reduce((sum, row) => {
-                        return (Number(row.work_cat_id) === 5) ? sum + (parseFloat(row.TotalTime) || 0) : sum;
-                    }, 0);
-
-                    let totalOthers = finalData.reduce((sum, row) => {
-                        return (othersCategories.includes(Number(row.work_cat_id))) ? sum + (parseFloat(row.TotalTime) || 0) : sum;
-                    }, 0);
-
-                    let totalOnTrackWorks = finalData.reduce((sum, row) => {
-                        let id = Number(row.work_cat_id);
-                        return (id !== 5 && !othersCategories.includes(id)) ? sum + (parseFloat(row.TotalTime) || 0) : sum;
-                    }, 0);
-
-                    // Percentages Formatting
                     let perOnTrack = (totalManHoursForGangs > 0) ? ((totalOnTrackWorks / totalManHoursForGangs) * 100).toFixed(2) : "0.00";
                     let perOffTrack = (totalManHoursForGangs > 0) ? ((offTrackWorksTotal / totalManHoursForGangs) * 100).toFixed(2) : "0.00";
                     let perOthers = (totalManHoursForGangs > 0) ? ((totalOthers / totalManHoursForGangs) * 100).toFixed(2) : "0.00";
 
-                    // 4. Generate & Append Table Main Bottom Summary Row
+                    // Total Row
                     let totalRow = { work_cat_id: '', work_cat_name: 'TOTAL', work_name: '', TotalTime: totalManHoursForGangs.toFixed(2) };
                     sortedDates.forEach(date => {
                         let dateSum = finalData.reduce((sum, row) => sum + (parseFloat(row[date]) || 0), 0);
@@ -511,181 +546,34 @@
                     });
                     finalData.push(totalRow);
 
-                    const updateText = (id, val) => {
-                        if (document.getElementById(id)) document.getElementById(id).innerText = val;
-                    };
+                    // 6. UI UPDATES
+                    const updateText = (id, val) => { if (document.getElementById(id)) document.getElementById(id).innerText = val; };
+                    const ids = ["totalHours", "totalOnTrackWorks", "perOnTrack", "totalOffTrackWorks", "perOffTrack", "totalSpecificCategories", "perOthers", "veryLastTotal", "htmlPreparedByPWI", "htmlVerifiedByPW"];
+                    const values = [totalManHoursForGangs.toFixed(2), totalOnTrackWorks.toFixed(2), perOnTrack, offTrackWorksTotal.toFixed(2), perOffTrack, totalOthers.toFixed(2), perOthers, "100.00", updatedByPerson, verifiedByPerson];
 
-                    //Update Admin Dashboard Labels
-                    updateText("totalHours", totalManHoursForGangs.toFixed(2));
-                    updateText("totalOnTrackWorks", totalOnTrackWorks.toFixed(2));
-                    updateText("perOnTrack", perOnTrack);
-                    updateText("totalOffTrackWorks", offTrackWorksTotal.toFixed(2));
-                    updateText("perOffTrack", perOffTrack);
-                    updateText("totalSpecificCategories", totalOthers.toFixed(2));
-                    updateText("perOthers", perOthers);
-                    updateText("veryLastTotal", "100.00");
-
-                    //Update Normal Dashboard Labels
-                    updateText("totalHoursNormal", totalManHoursForGangs.toFixed(2));
-                    updateText("totalOnTrackWorksNormal", totalOnTrackWorks.toFixed(2));
-                    updateText("perOnTrackNormal", perOnTrack);
-                    updateText("totalOffTrackWorksNormal", offTrackWorksTotal.toFixed(2));
-                    updateText("perOffTrackNormal", perOffTrack);
-                    updateText("totalSpecificCategoriesNormal", totalOthers.toFixed(2));
-                    updateText("perOthersNormal", perOthers);
-                    updateText("veryLastTotalNormal", "100.00");
-
-                    let columns = [
-                        { data: "work_cat_id", title: "NO", className: "text-center" },
-                        { data: "work_cat_name", title: "CATEGORY" },
-                        { data: "work_name", title: "WORK DESCRIPTION" }
-                    ];
-
-                    sortedDates.forEach(date => {
-                        columns.push({
-                            data: date,
-                            title: date,
-                            className: "text-center",
-                            render: function (data) {
-                                return (data == 0 || data === "0.00" || data === "") ? "" : data;
-                            }
-                        });
+                    ids.forEach((id, i) => {
+                        updateText(id, values[i]);
+                        updateText(id + "Normal", values[i]);
                     });
 
-                    columns.push({
-                        data: "TotalTime",
-                        title: "GRAND TOTAL",
-                        className: "text-center",
-                        render: function (data) {
-                            return (data == 0 || data === "0.00" || data === "") ? "" : data;
-                        }
-                    });
+                    // 7. DATATABLE
+                    let columns = [{ data: "work_cat_id", title: "NO", className: "text-center" }, { data: "work_cat_name", title: "CATEGORY" }, { data: "work_name", title: "WORK DESCRIPTION" }];
+                    sortedDates.forEach(date => columns.push({ data: date, title: date, className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d }));
+                    columns.push({ data: "TotalTime", title: "GRAND TOTAL", className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d });
 
-                    // 6. Initialize DataTables Object Instance
-                    if ($.fn.DataTable.isDataTable('#tableRep, #tableRepNormal')) {
-                        $('#tableRep, #tableRepNormal').DataTable().clear().destroy();
-                    }
+                    if ($.fn.DataTable.isDataTable('#tableRep, #tableRepNormal')) $('#tableRep, #tableRepNormal').DataTable().clear().destroy();
 
                     $('#tableRep, #tableRepNormal').DataTable({
-                        ordering: false,
-                        paging: false,
-                        dom: 'Bfrtip',
-                        responsive: true,
-                        data: finalData,
-                        columns: columns,
-                        buttons: [
-                            {
-                                extend: 'csv',
-                                filename: function () { return 'WeeklyProgramme(R2) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                customize: function (csv) {
-                                    var summaryCsv =
-                                        '\n"SUMMARY CALCULATIONS",,\n' +
-                                        '"Description","Value","Percentage"\n' +
-                                        '"Total Man-Hours for the Gangs","' + totalManHoursForGangs.toFixed(2) + ' Mhrs","-"\n' +
-                                        '"On Track Works","' + totalOnTrackWorks.toFixed(2) + ' Mhrs","' + perOnTrack + '% Mhrs"\n' +
-                                        '"Off Track Works","' + offTrackWorksTotal.toFixed(2) + ' Mhrs","' + perOffTrack + '% Mhrs"\n' +
-                                        '"Others","' + totalOthers.toFixed(2) + ' Mhrs","' + perOthers + '% Mhrs"\n' +
-                                        '"Total","100.00 %","-"\n' +
-                                        '"Inspected by RE / CPWI on","-","-"\n';
-                                    return csv + summaryCsv;
-                                }
-                            },
-                            {
-                                extend: 'excel',
-                                filename: function () { return 'WeeklyProgramme(R2) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                customize: function (xlsx) {
-                                    var sheet = xlsx.xl.worksheets['sheet1.xml'];
-
-                                    var lastRowIdx = parseInt($('row', sheet).last().attr('r')) || $('row', sheet).length;
-
-                                    function getExcelColumnLetter(colIndex) {
-                                        let letter = '';
-                                        while (colIndex >= 0) {
-                                            letter = String.fromCharCode((colIndex % 26) + 65) + letter;
-                                            colIndex = Math.floor(colIndex / 26) - 1;
-                                        }
-                                        return letter;
-                                    }
-
-                                    function createExcelRow(rowIndex, cellValues) {
-                                        var rowEl = sheet.createElement('row');
-                                        rowEl.setAttribute('r', rowIndex);
-
-                                        cellValues.forEach(function (text, colIndex) {
-                                            var cellEl = sheet.createElement('c');
-                                            var cellRef = getExcelColumnLetter(colIndex) + rowIndex;
-
-                                            cellEl.setAttribute('r', cellRef);
-                                            cellEl.setAttribute('t', 'inlineStr');
-
-                                            var isEl = sheet.createElement('is');
-                                            var tEl = sheet.createElement('t');
-                                            tEl.textContent = text === null || text === undefined ? '' : text;
-
-                                            isEl.appendChild(tEl);
-                                            cellEl.appendChild(isEl);
-                                            rowEl.appendChild(cellEl);
-                                        });
-
-                                        return rowEl;
-                                    }
-
-                                    var summaryDataset = [
-                                        ['SUMMARY CALCULATIONS', '', ''],
-                                        ['Description', 'Value', 'Percentage'],
-                                        ['Total Man-Hours for the Gangs', totalManHoursForGangs.toFixed(2) + ' Mhrs', '-'],
-                                        ['On Track Works', totalOnTrackWorks.toFixed(2) + ' Mhrs', perOnTrack + '% Mhrs'],
-                                        ['Off Track Works', offTrackWorksTotal.toFixed(2) + ' Mhrs', perOffTrack + '% Mhrs'],
-                                        ['Others', totalOthers.toFixed(2) + ' Mhrs', perOthers + '% Mhrs'],
-                                        ['Total', '100.00 %', '-'],
-                                        ['Inspected by RE / CPWI on', '-', '-']
-                                    ];
-
-                                    var startRow = lastRowIdx + 2;
-                                    summaryDataset.forEach(function (rowDataValues, offset) {
-                                        var currentExcelRowNode = createExcelRow(startRow + offset, rowDataValues);
-                                        $('sheetData', sheet).append(currentExcelRowNode);
-                                    });
-                                }
-                            },
-                        ],
+                        ordering: false, paging: false, dom: 'Bfrtip', responsive: true, data: finalData, columns: columns,
+                        buttons: ['csv', 'excel'],
                         rowCallback: function (row, data, index) {
-                            const categoryCell = $('td', row).eq(1);
+                            const catCell = $('td', row).eq(1);
                             const noCell = $('td', row).eq(0);
-
-                            if (index < finalData.length - 1) {
-                                if (index === 0 || (finalData[index - 1] && finalData[index].work_cat_name !== finalData[index - 1].work_cat_name)) {
-                                    let rs = 1;
-                                    for (let i = index + 1; i < finalData.length - 1; i++) {
-                                        if (finalData[i] && finalData[i].work_cat_name === data.work_cat_name) rs++;
-                                    }
-                                    categoryCell.attr('rowspan', rs).css({ 'vertical-align': 'middle', 'background-color': '#f9f9f9' });
-                                } else {
-                                    categoryCell.hide();
-                                }
-
-                                if (index === 0 || (finalData[index - 1] && finalData[index].work_cat_id !== finalData[index - 1].work_cat_id)) {
-                                    let rs = 1;
-                                    for (let i = index + 1; i < finalData.length - 1; i++) {
-                                        if (finalData[i] && finalData[i].work_cat_id === data.work_cat_id) rs++;
-                                    }
-                                    noCell.attr('rowspan', rs).css({ 'vertical-align': 'middle', 'text-align': 'center' });
-                                } else {
-                                    noCell.hide();
-                                }
-                            }
-
-                            if (data.work_cat_name === 'TOTAL') {
-                                $(row).css('font-weight', 'bold').addClass('table-info');
-                                categoryCell.show().attr('colspan', 2).css('text-align', 'center');
-                                noCell.hide();
-                            }
+                            if (data.work_cat_name === 'TOTAL') { $(row).css('font-weight', 'bold').addClass('table-info'); catCell.attr('colspan', 2).css('text-align', 'center'); noCell.hide(); }
                         }
                     });
                 },
-                error: function (xhr) {
-                    console.error("Error fetching data:", xhr);
-                }
+                error: function (xhr) { console.error("Error fetching data:", xhr); }
             });
         }
 

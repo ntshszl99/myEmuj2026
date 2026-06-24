@@ -561,7 +561,7 @@
                     console.log(`Attendance Saved: ${emplid} on ${workDate} as ${cutiCode}`);
                 },
                 error: function () {
-                    alert("Failed to save attendance.");
+                    swarning("Failed to save attendance.");
                 }
             });
         }
@@ -649,7 +649,6 @@
                     const uniquework_name = [...new Set(data.map(item => item.work_name))];
 
                     const updatedByPerson = (data && data.length > 0 && data[0].staff_name) ? data[0].staff_name : "undefined";
-                    $('#screenUpdatedByText').text(updatedByPerson);
 
                     let headerRow1 = ['Staff No', 'Name', 'Designation'];
                     headerRow1.push('ATTENDANCE', '', '', '', '', '', '');
@@ -936,53 +935,54 @@
                                 dom: '<"selected-values"fB>rtip',
                                 buttons: [
                                     {
-                                    extend: 'csv',
-                                    filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
-                                    header: false,
-                                    exportOptions: {
-                                        rows: ':visible',
-                                        format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
-                                    },
-                                    customize: function (csv) {
-                                        let lines = csv.split('\n');
-                                        lines = lines.slice(0, lines.length - (footerMapping.length + 2));
-                                        let cleanBody = lines.join('\n');
+                                        extend: 'csv',
+                                        filename: function () { return 'WeeklyProgramme(R1) ' + kmuj + '-' + section + '_' + sdate + '_to_' + edate; },
+                                        header: false,
+                                        exportOptions: {
+                                            rows: ':visible',
+                                            format: { body: function (d, r, c, n) { return getCleanCellData(n); } }
+                                        },
+                                        customize: function (csv) {
+                                            let lines = csv.split('\n');
+                                            lines = lines.slice(0, lines.length - (footerMapping.length + 2));
+                                            let cleanBody = lines.join('\n');
 
-                                        let commasPadding = ", ".repeat(headerRow1.length - 1);
+                                            let commasPadding = ", ".repeat(headerRow1.length - 1);
 
-                                        // Structured line-by-line configuration for top alignments
-                                        let titleRow = `KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}${commasPadding}\n`;
-                                        let kmujRow = `KMUJ: ${kmuj}${commasPadding}\n`;
-                                        let sectionRow = `Section: ${section}${commasPadding}\n\n`;
+                                            // Structured line-by-line configuration for top alignments
+                                            let titleRow = `KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}${commasPadding}\n`;
+                                            let kmujRow = `KMUJ: ${kmuj}${commasPadding}\n`;
+                                            let sectionRow = `Section: ${section}${commasPadding}\n\n`;
 
-                                        let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
-                                        let baseCsv = titleRow + kmujRow + sectionRow + customHeader + cleanBody + "\n";
+                                            let customHeader = headerRow1.join(",") + "\n" + headerRow2.join(",") + "\n";
+                                            let baseCsv = titleRow + kmujRow + sectionRow + customHeader + cleanBody + "\n";
 
-                                        let footerRows = getFooterDataArray();
-                                        let footerCsv = "";
-                                        footerRows.forEach(row => {
-                                            let escapedRow = row.map(val => {
-                                                let stringVal = (val === null || val === undefined) ? "" : String(val);
-                                                return `"${stringVal.replace(/"/g, '""')}"`;
+                                            let footerRows = getFooterDataArray();
+                                            let footerCsv = "";
+                                            footerRows.forEach(row => {
+                                                let escapedRow = row.map(val => {
+                                                    let stringVal = (val === null || val === undefined) ? "" : String(val);
+                                                    return `"${stringVal.replace(/"/g, '""')}"`;
+                                                });
+                                                footerCsv += escapedRow.join(",") + "\n";
                                             });
-                                            footerCsv += escapedRow.join(",") + "\n";
-                                        });
 
-                                        // --- NEW: Add spacing row and Info Box Content to CSV ---
-                                        let spacerRowCsv = commasPadding + "\n";
+                                            // --- NEW: Add spacing row and Info Box Content to CSV ---
+                                            let spacerRowCsv = commasPadding + "\n";
 
-                                        let infoRowsCsv = "";
-                                        infoRowsCsv += `"C.E - Compassionate Leave",` + `,"PANDUAN WAKTU KERJA"` + ", ".repeat(Math.max(0, headerRow1.length - 3)) + "\n";
-                                        infoRowsCsv += `"C.T - Yearly Leave",` + `,"Isnin - Khamis","(0700 - 1645)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
-                                        infoRowsCsv += `"T.H - Not Present",` + `,"Waktu Rehat","(1200 - 1300)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
-                                        infoRowsCsv += `"S - Sick",` + `,"Jumaat","(0700 - 1300)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
-                                        infoRowsCsv += `"",` + `,"Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian","(0700 - 1500)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                            let infoRowsCsv = "";
+                                            infoRowsCsv += `"C.E - Compassionate Leave",` + `,"PANDUAN WAKTU KERJA"` + ", ".repeat(Math.max(0, headerRow1.length - 3)) + "\n";
+                                            infoRowsCsv += `"C.T - Yearly Leave",` + `,"Isnin - Khamis","(0700 - 1645)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                            infoRowsCsv += `"T.H - Not Present",` + `,"Waktu Rehat","(1200 - 1300)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                            infoRowsCsv += `"S - Sick",` + `,"Jumaat","(0700 - 1300)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
+                                            infoRowsCsv += `"",` + `,"Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian","(0700 - 1500)"` + ", ".repeat(Math.max(0, headerRow1.length - 4)) + "\n";
 
-                                        let updatedByCsvRow = `"PREPARED BY PWI: ${updatedByPerson.replace(/"/g, '""')}"` + commasPadding + "\n";
-                                        let receivedByCsvRow = `"RECEIVED BY GANGER"` + commasPadding + "\n";
+                                            let updatedByCsvRow = `"PREPARED BY PWI: ${updatedByPerson.replace(/"/g, '""')}"` + commasPadding + "\n";
+                                            let receivedByCsvRow = `"RECEIVED BY GANGER"` + commasPadding + "\n";
 
-                                        return baseCsv + footerCsv + spacerRowCsv + infoRowsCsv + spacerRowCsv + updatedByCsvRow + receivedByCsvRow;
-                                    }
+                                            return baseCsv + footerCsv + spacerRowCsv + infoRowsCsv + spacerRowCsv + updatedByCsvRow + receivedByCsvRow;
+                                        }
+                                   
                                 },
                                 {
                                     extend: 'excel',
@@ -1225,7 +1225,7 @@
                         autoSaveWorkPlan(empId, date, workName, $icon);
                     });
                 },
-                error: function () { alert("Failed to load reports."); }
+                error: function () { swarning("Failed to load reports."); }
             });
         }
 

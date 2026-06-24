@@ -254,6 +254,59 @@
         }
       }
     },
+    "/api/WebApi/UpdateVerifier": {
+      "post": {
+        "tags": [
+          "WebApi"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/R1FormCons"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/R1FormCons"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/R1FormCons"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/R1FormCons"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/WebApi/UpdateWorkPlan": {
       "post": {
         "tags": [
@@ -2674,6 +2727,10 @@
             "nullable": true
           },
           "updDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "verifiedBy": {
             "type": "string",
             "nullable": true
           },

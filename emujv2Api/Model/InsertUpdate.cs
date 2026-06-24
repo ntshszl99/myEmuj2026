@@ -322,6 +322,51 @@ namespace emujv2Api.Model
             else { return "0"; }
         }
 
+
+        [HttpPost]
+        public string UpdateVerifier(string verifiedBy, string rptCodes)
+        {
+            StringBuilder sqlStr = new StringBuilder();
+            DataTable recc = new DataTable();
+            MsSql dbCon = new MsSql();
+            string salah = "";
+            CommonFunc conn = new CommonFunc();
+            Dictionary<string, object> paramTmp = new Dictionary<string, object>();
+
+            if (string.IsNullOrEmpty(rptCodes))
+            {
+                return "No report codes provided for verification.";
+            }
+
+            string[] codesArray = rptCodes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> parameterNames = new List<string>();
+
+            paramTmp.Add("@VerifiedBy", !string.IsNullOrEmpty(verifiedBy) ? verifiedBy.Trim() : (object)DBNull.Value);
+
+            for (int i = 0; i < codesArray.Length; i++)
+            {
+                string paramName = "@RptCode" + i;
+                parameterNames.Add(paramName);
+                paramTmp.Add(paramName, codesArray[i].Trim());
+            }
+
+            sqlStr.Append(" UPDATE daily_form ");
+            sqlStr.Append(" SET verified_by = @VerifiedBy, ");
+            sqlStr.Append("     verified_at = GETDATE() ");
+            sqlStr.Append($" WHERE rpt_code IN ({string.Join(", ", parameterNames)}) ");
+
+            recc = dbCon.ExecuteReader(sqlStr.ToString(), paramTmp, conn.emujConn, ref salah);
+
+            if (!string.IsNullOrEmpty(salah))
+            {
+                return salah;
+            }
+            else
+            {
+                return "0";
+            }
+        }
+
         public string UpdateWorkPlan(string UpdBy, string StaffNo, string WorkDate, string PlanCode)
         {
             StringBuilder SqlStr = new StringBuilder();

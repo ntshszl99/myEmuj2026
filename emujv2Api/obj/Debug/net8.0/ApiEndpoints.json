@@ -1464,6 +1464,32 @@
   },
   {
     "ContainingType": "emujv2Api.Controller.WebApiController",
+    "Method": "UpdateVerifier",
+    "RelativePath": "api/WebApi/UpdateVerifier",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "data",
+        "Type": "emujv2Api.Constructor.R1FormCons",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "UpdateWorkPlan",
     "RelativePath": "api/WebApi/UpdateWorkPlan",
     "HttpMethod": "POST",
