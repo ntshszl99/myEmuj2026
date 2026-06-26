@@ -2,6 +2,16 @@
     ViewBag.Title = "RegisteredUser";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<style>
+    /* Ensure modal doesn't block the alert */
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+    .swal2-container {
+        z-index: 200000 !important; /* Higher than any standard Bootstrap modal */
+    }
+</style>
 <div class="app-content main-content">
     <div class="side-app">
         <div class="container-fluid main-container">
@@ -99,10 +109,17 @@
 
                                         <div class="p-4 rounded-3 bg-success-transparent-2 border border-success border-opacity-10">
 
+                                            <div class="mb-2">
+                                                <label for="userlevel" class="form-label fw-medium mb-1">Level Entitle</label>
+                                                <select id="userlevel" class="form-control form-select select2" required>
+                                                    <option value="-0">.: Select User Level :.</option>
+                                                </select>
+                                            </div>
+
                                             <div id="kmujdw" class="mb-4">
                                                 <label for="kmuj" class="form-label fw-medium mb-1">KMUJ</label>
                                                 <select id="kmuj" class="form-control form-select select2" required>
-                                                    <option value="-0">.: Select KMUJ :.</option>
+                                                    <option value="-0">.: Select Kmuj :.</option>
                                                 </select>
                                             </div>
 
@@ -113,12 +130,7 @@
                                                 </select>
                                             </div>
 
-                                            <div class="mb-2">
-                                                <label for="userlevel" class="form-label fw-medium mb-1">Level Entitle</label>
-                                                <select id="userlevel" class="form-control form-select select2" required>
-                                                    <option value="-0">.: Select Access Level :.</option>
-                                                </select>
-                                            </div>
+
 
                                         </div>
                                     </div>
@@ -188,11 +200,22 @@
                                     <div>
                                         <h5 class="mb-4 text-success fw-semibold">Update Fields</h5>
                                         <div class="p-4 rounded-3 bg-success-transparent-2 border border-success border-opacity-10">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-medium mb-1">New Level Entitle</label>
+                                                <select id="userlevelnew" class="form-control form-select select2" required="required">
+                                                    <option value="-0">.: Select User Level :.</option>
+                                                </select>
+                                            </div>
                                             <div id="regionnewdw">
                                                 <div class="mb-4">
                                                     <label class="form-label fw-medium mb-1">Region</label>
                                                     <select id="regionnew" class="form-control form-select select2" required="required">
                                                         <option value="-0">.: Select Region :.</option>
+                                                        <option value="North">North</option>
+                                                        <option value="South">South</option>
+                                                        <option value="East">East</option>
+                                                        <option value="Central">Central</option>
+                                                        <option value="HQ">HQ</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -200,7 +223,7 @@
                                                 <div class="mb-4">
                                                     <label class="form-label fw-medium mb-1">KMUJ</label>
                                                     <select id="kmujnew" class="form-control form-select select2" required="required" disabled>
-                                                        <option value="-0">.: Select KMUJ :.</option>
+                                                        <option value="-0">.: Select Kmuj :.</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -209,17 +232,14 @@
                                                     <label class="form-label fw-medium mb-1">Section</label>
                                                     <select id="sectionnew" class="form-control form-select select2" required="required" disabled>
                                                         <option value="-0">.: Select Section :.</option>
+
                                                     </select>
                                                 </div>
-                                            </div>
-                                            <div class="mb-4">
-                                                <label class="form-label fw-medium mb-1">New Level Entitle</label>
-                                                <select id="usrlevelnew" class="form-control form-select select2" required="required">
-                                                </select>
                                             </div>
                                             <div class="mb-2">
                                                 <label class="form-label fw-medium mb-1">Staff Status</label>
                                                 <select id="statusnew" class="form-control form-select select2" required="required">
+                                                    <option value="-0">.: Select Status :.</option>
                                                     <option value="active">Active</option>
                                                     <option value="inactive">Inactive</option>
                                                 </select>
@@ -251,79 +271,52 @@
         checkSess();
 
         $(document).ready(function () {
-            listRegion();
             listKMUJ();
             listSection();
             maklumatStf();
-            listUsrLevel();
+            listUserLevel();
             listReports();
 
-            //check access
+            // ---------  CHECK ACCESS ------------ //
             if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
                 $("#contentAdmin").show();
                 $("#contentOthers").hide();
+
+                if (localStorage.getItem("lvlI") === "5") {
+                    $('.btn-success[data-bs-target="#modalTambah"]').hide();
+                } else {
+                    $('.btn-success[data-bs-target="#modalTambah"]').show();
+                }
             }
             else {
                 $("#contentAdmin").hide();
                 $("#contentOthers").show();
             }
+  
 
-
-
-            //modal details user
-            $('#modalDetails').on('show.bs.modal', function (e) {
-                var ids = $(e.relatedTarget).data('id');
-                $(this).data('id', ids);
-                console.log('read ' + ids);
-                stfDet(ids);
+            // ----------- ADD MODAL ---------------- //
+            $('#region').on('change', function () {
+                listKMUJ($(this).val(), '#kmuj');
             });
 
-            //button submit update user
-            $("#submitUpdate").click(function () {
-                var ids = $('#modalDetails').data('id');
-                console.log('read ' + ids);
-                updateUser(ids);
-            });
+            $('#kmuj').on('change', function () {
+                var kmujName = $(this).find("option:selected").text();
+                var val = $(this).val();
 
-            //button submit add user
-            $('#submitNew').click(function () {
-                tambahUser();
-
-            });
-
-
-            $('#regionnew').on('change', function (e, selectedKmujValue) {
-                var selectedRegion = $(this).val();
-
-                if (selectedRegion && selectedRegion !== "" && selectedRegion !== "-0") {
-                    $('#kmuj, #kmujnew').prop('disabled', false);
-
-                    listKMUJ(selectedRegion, selectedKmujValue);
+                if (val && val !== "-0") {
+                    listSection(kmujName, '#section'); 
                 } else {
-                    $('#kmuj, #kmujnew').html('<option value="-0">.: Select KMUJ :.</option>').prop('disabled', true);
-                    $('#section, #sectionnew').html('<option value="-0">.: Select Section :.</option>').prop('disabled', true);
-                    $('#kmuj, #kmujnew, #section, #sectionnew').trigger('change');
-                }
-            });
-
-            $('#kmujnew').on('change', function (e, selectedSectionValue) {
-                var selectedKmuj = $(this).find('option:selected').text();
-                var selectedKmujVal = $(this).val();
-
-                console.log("Selected KMUJ Text:", selectedKmuj);
-                if (selectedKmujVal && selectedKmujVal !== "-0" && selectedKmuj !== ".: Select KMUJ :.") {
-                    $('#section, #sectionnew').prop('disabled', false);
-
-                    listSection(selectedKmuj, selectedSectionValue);
-                } else {
-                    $('#section, #sectionnew').html('<option value="-0">.: Select Section :.</option>').prop('disabled', true);
-                    $('#section, #sectionnew').trigger('change');
+                    $('#section').html('<option value="-0">.: Select Section :.</option>').prop('disabled', true).trigger('change.select2');
                 }
             });
 
 
-            //tambah user
+            //buka modal tambah user
             $('#modalTambah').on('shown.bs.modal', function () {
+                 if (localStorage.getItem("lvlI") === "5") {
+                    $("#contentAdmin").show();
+                    $("#contentOthers").hide();
+                }
                 $('#staffID').select2({
                     dropdownParent: $('#modalTambah'),
                     placeholder: "Type to search for Staff ID",
@@ -369,11 +362,97 @@
                     $("#section").val("-0").trigger("change.select2");
                     $("#userlevel").val("-0").trigger("change.select2");
                 }
+
             });
+
+            //button submit add user
+            $('#submitNew').click(function () {
+                tambahUser();
+
+            });
+
+
+
+
+
+
+
+
+            // ------------- UPDATE MODAL ----------- //
+            $('#regionnew').on('change', function () {
+                var selectedText = $(this).find(':selected').text();
+                var selectedValue = $(this).val();
+
+                console.log("Value:", selectedValue, "Text:", selectedText);
+
+                if (selectedText !== 'HQ') {
+                    $('#kmujnew').prop('disabled', false);
+                    listKMUJ(selectedValue, '#kmujnew');
+                } else {
+                    $('#kmujnew').prop('disabled', true);
+                }
+            });
+
+            $('#kmujnew').on('change', function () {
+                var kmujName = $(this).find("option:selected").text();
+                var val = $(this).val();
+
+                $('#sectionnew').val("-0").trigger('change.select2');
+
+                if (val && val !== "-0") {
+                    $('#sectionnew').prop('disabled', false);
+                    listSection(kmujName, '#sectionnew');
+                }
+            });
+
+
+            //modal details user
+            $('#modalDetails').on('show.bs.modal', function (e) {
+                $('#userlevelnew').val("-0").trigger('change.select2');
+                $('#regionnew').val("-0").trigger('change.select2');
+
+                $('#kmujnew').val("-0").trigger('change.select2');
+                $('#sectionnew').val("-0").trigger('change.select2');
+                $('#statusnew').val("-0").trigger('change.select2');
+
+                $('#kmujnewdw, #sectionnewdw').hide();
+
+                var ids = $(e.relatedTarget).data('id');
+                $(this).data('id', ids);
+
+                console.log('Opening modal for ID:', ids);
+
+                if (ids) {
+                    stfDet(ids);
+                }
+            });
+
+
+            //button submit update user
+            $("#submitUpdate").click(function () {
+                var ids = $('#modalDetails').data('id');
+                console.log('read ' + ids);
+                updateUser(ids);
+            });
+
+
+            $('#userlevelnew').on('change', function () {
+                updateVisibility();
+            });
+
+
+          
 
 
         });
 
+
+
+
+        //---------------- ADD NEW USER -------------------- //
+
+
+        //show maklumat staff on add user modal
         function maklumatStf(staffID) {
             console.log("maklumatStf called with staffID:", staffID);
             $.ajax({
@@ -383,121 +462,50 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    console.log("maklumatStf success callback data:", data);
                     if (data && Array.isArray(data) && data.length > 0) {
-                        for (let i = 0; i < 3 && i < data.length; i++) {
-                            console.log("Name:", data[i].Nama);
-                            console.log("Region:", data[i].RegDesc);
-                            console.log("Position:", data[i].JobDesc);
+                        let staff = data[0];
 
-                            $('#staffname').val(data[0].Nama);
-                            $('#region').val(data[0].RegDesc);
-                            $('#position').val(data[0].JobDesc);
+                        // Populate fields
+                        $('#staffname').val(staff.Nama);
+                        $('#region').val(staff.RegDesc);
+                        $('#position').val(staff.JobDesc);
 
-                            if (data[i].RegDesc === 'HQ') {
-                                console.log('Data region is HQ');
-                                $('#kmujdw').hide('fast');
-                                $('#sectiondw').hide('fast');
-                            } else {
-                                console.log('Data region is not HQ');
-                                $('#kmujdw').show('fast');
-                                $('#sectiondw').show('fast');
-                            }
-                        }
+                        // Run visibility logic
+                        updateFieldVisibility();
                     }
                 },
                 error: function (xhr) {
                     console.error("maklumatStf error callback:", xhr);
                     swarning();
-                },
-                complete: function () {
-                    console.log("maklumatStf complete callback");
                 }
             });
         }
 
-        //update hal user
-        function updateUser(ids) {
-            var userLevel = $('#usrlevelnew').val();
-            var status = $('#statusnew').val();
-            var region = $('#regionnew').val();
-            var kmuj = $('#kmujnew').val();
-            var section = $('#sectionnew').val();
+        $('#userlevel').on('change', function () {
+            updateFieldVisibility();
+        });
 
-            // Check the current staff's background data region description
-            var currentRegion2 = $('#regdesc2').val();
+        function updateFieldVisibility() {
+            var staffRegion = $('#region').val();
+            var selectedLevel = $('#userlevel').val();
 
-            // --- AUTOMATIC HQ REASSIGNMENT LOGIC ---
-            if (currentRegion2 === "HQ") {
-                region = "HQ";
-                kmuj = "";
-                section = "";
+            // Condition: HQ OR (Level 2 or 6)
+            if (staffRegion === 'HQ' || selectedLevel === '2' || selectedLevel === '6') {
+                $('#kmujdw').hide('fast');
+                $('#sectiondw').hide('fast');
+            } else {
+                $('#kmujdw').show('fast');
+                $('#sectiondw').show('fast');
+
+                // Only fetch list if visible and region is valid
+                if (staffRegion && staffRegion !== 'HQ') {
+                    listKMUJ(staffRegion, '#kmuj');
+                }
             }
-            // ----------------------------------------
-
-            // --- VALIDATION LOGIC ---
-            var invalidValues = ["", null, undefined, "0", "-0"];
-
-            // Check if any required field is left unselected/invalid
-            var hasInvalidField = invalidValues.includes(userLevel) ||
-                invalidValues.includes(region) ||
-                invalidValues.includes(kmuj) ||
-                invalidValues.includes(section);
-
-            // If it's NOT an HQ user, they must make valid selections for all fields
-            if (currentRegion2 !== "HQ" && hasInvalidField) {
-                swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Selection',
-                    text: 'Please ensure User Level, Region, Kmuj, and Section are all selected!',
-                    target: document.getElementById('modalDetails')
-                });
-                return; // Halt form submission
-            }
-            // ------------------------
-
-            var data = {
-                StaffId: ids,
-                UserLevel: userLevel,
-                Status: status,
-                Region: region,
-                Kmuj: kmuj,
-                Section: section,
-                UpdBy: localStorage.getItem('usrI')
-            };
-
-            $.ajax({
-                url: linkDepan + "UpdateUser",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (response) {
-                    var data;
-                    try {
-                        data = JSON.parse(response);
-                    } catch (error) {
-                        swarning();
-                        return;
-                    }
-                    if (data && data.status === "00") {
-                        $('#modalDetails').modal('hide');
-                        swal.fire('Success!', 'User details have been updated.', 'success');
-                        listReports();
-                    } else {
-                        $('#modalDetails').modal('hide');
-                        swarning();
-                    }
-                },
-            });
         }
 
 
-
-
-        //tamboh user dehh
+        //submit new user button
         function tambahUser() {
             var data = {
                 Userid: $('#staffID').val(),
@@ -509,31 +517,37 @@
                 UserLevel: $("#userlevel option:selected").val(),
             };
 
-            if (data.Region == 'HQ') {
-                if ($("#kmuj option:selected").val() == '-0' || $("#section option:selected").val() == '-0') {
-                    data.Kmuj = ' ';
-                    data.Section = ' ';
-                    if ($("#userlevel option:selected").val() == '-0') {
-                        alert('Please select User Level.');
-                    }
-                    else executeUser(data);
-                }
+            var shouldBeEmpty = (data.Region === 'HQ' || data.UserLevel === '2' || data.UserLevel === '6');
 
+            if (shouldBeEmpty) {
+                if (data.KMUJ === '-0') data.KMUJ = ' ';
+                if (data.Section === '-0') data.Section = ' ';
+
+                if (data.UserLevel === '-0') {
+                    swal.fire('Error!', 'Please ensure User Level is selected!', 'error');
+                    return;
+                }
             }
-            else if (data.Region != 'HQ') {
-                if ($("#kmuj option:selected").val() == '-0') {
-                    alert('Please select KMUJ.');
+            else {
+                if (data.KMUJ === '-0') {
+                    swal.fire('Error!', 'Please ensure KMUJ is selected!', 'error');
+                    return;
                 }
-                else if ($("#section option:selected").val() == '-0') {
-                    alert('Please select Section.');
+                if (data.Section === '-0') {
+                    swal.fire('Error!', 'Please ensure Section is selected!', 'error');
+                    return;
                 }
-                else if ($("#userlevel option:selected").val() == '-0') {
-                    alert('Please select User Level.');
+                if (data.UserLevel === '-0') {
+                    swal.fire('Error!', 'Please ensure User Level is selected!', 'error');
+                    return;
                 }
-                else executeUser(data);
             }
+
+            executeUser(data);
         }
 
+
+        //fx add new user 
         function executeUser(data) {
             console.log("UPDATING USER:", data.Userid);
             console.log("Nama:", data.Nama);
@@ -573,58 +587,168 @@
             });
         }
 
+
+
+    // ------------------ UPDATE USER ------------------ //
+
+
+        //show data on update details user modal
         function stfDet(ids) {
-            var staffID = $("staffID" + ids).html();
-            console.log(staffID);
             $.ajax({
                 url: linkDepan + "Get?StaffId=" + ids,
                 type: 'GET',
                 dataType: 'json',
-                data: {},
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
+                beforeSend: (request) => request.setRequestHeader("Token", localStorage.getItem('main')),
                 success: function (data) {
-                    if (data && Array.isArray(data) && data.length > 0) {
+                    if (data && data.length > 0) {
                         var staff = data[0];
 
+                        // Populate fields
                         $('#staffID2').val(staff.staff_id);
                         $('#staffname2').val(staff.staff_name);
                         $('#dept2').val(staff.dept);
                         $('#position2').val(staff.position);
                         $('#level2').val(staff.ref_level_name);
-                        $('#regdesc2').val(staff.regdesc);
+                        $('#regdesc2').val(staff.section);
                         $('#kmuj2').val(staff.kmuj_name);
                         $('#section2').val(staff.section_name);
 
-                        $('#regionnew, #kmujnew, #sectionnew').val('-0').trigger('change.select2');
+                        // Set values and trigger change
+                        $('#userlevelnew').val().trigger('change.select2');
+                        $('#statusnew').val().trigger('change.select2');
 
-                        if (staff.regdesc === 'HQ') {
-                            $('#regionnewdw, #kmujnewdw, #sectionnewdw').hide('fast');
-                        }
-                        else {
-                            $('#regionnewdw, #kmujnewdw, #sectionnewdw').show('fast');
-
-                            $('#regionnew').val(staff.section);
-                            $('#regionnew').trigger('change', [staff.muj]);
-                            $('#kmujnew').trigger('change', [staff.kmuj]);
-                        }
-
-                        $('#usrlevelnew').val(staff.usrlevel).trigger('change');
-                        if (staff.staff_status) {
-                            $('#statusnew').val(staff.staff_status.toLowerCase()).trigger('change');
-                        }
+                        // Run the visibility logic
+                        updateVisibility();
                     }
-                },
-                error: function (xhr) {
-                    swarning();
-                },
-                complete: function () {
                 }
             });
         }
 
-        function listUsrLevel() {
+        // Function to handle field visibility
+        function updateVisibility() {
+            var userLevel = $('#userlevelnew').val();
+            var sectionVal = $('#regionnew').val();
+
+            // Log the captured values to the console
+            console.log("--- Visibility Update Check ---");
+            console.log("Selected User Level:", userLevel);
+            console.log("Selected Region:", sectionVal);
+
+            // 1. Define conditions for hiding
+            var isRestrictedLevel = (userLevel === "2" || userLevel === "6");
+            var isHQ = (sectionVal === 'HQ');
+
+            if (isRestrictedLevel || isHQ) {
+                console.log("Logic: Hiding kmujnewdw and sectionnewdw");
+
+                $('#regionnewdw').show('fast');
+                $('#kmujnewdw, #sectionnewdw').hide('fast');
+
+                $('#kmujnew').val("-0").trigger('change');
+                $('#sectionnew').val("-0").trigger('change');
+            } else {
+                console.log("Logic: Showing all fields");
+                $('#regionnewdw, #kmujnewdw, #sectionnewdw').show('fast');
+            }
+        }
+
+
+        //update hal user
+        function updateUser(ids) {
+            var userLevel = $('#userlevelnew').val();
+            var status = $('#statusnew').val();
+            var region = $('#regionnew').val();
+            var kmuj = $('#kmujnew').val();
+            var section = $('#sectionnew').val();
+
+            // Define business rules
+            var isHQ = (region === "HQ");
+            var isSpecialLevel = (userLevel === "2" || userLevel === "6");
+
+            // Clear values if they meet the criteria for being empty
+            if (isHQ || isSpecialLevel) {
+                kmuj = "";
+                section = "";
+            }
+
+            // Define what is actually considered a "missing" field
+            // We only check for invalidity if it's NOT HQ and NOT a special level
+            var isInvalid = function (val) {
+                return ["", null, undefined, "0", "-0"].includes(val);
+            };
+
+            var hasInvalidField = isInvalid(userLevel) ||
+                isInvalid(region) ||
+                (!isHQ && !isSpecialLevel && (isInvalid(kmuj) || isInvalid(section)));
+
+            if (hasInvalidField) {
+                swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Selection',
+                    text: 'Please ensure all required fields are selected!',
+                    target: document.getElementById('modalDetails')
+                });
+                return;
+            }
+
+
+            var data = {
+                StaffId: ids,
+                UserLevel: userLevel,
+                Status: status,
+                Region: region,
+                Kmuj: kmuj, 
+                Section: section,
+                UpdBy: localStorage.getItem('usrI')
+            };
+
+            $.ajax({
+                url: linkDepan + "UpdateUser",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    var data;
+                    try {
+                        data = JSON.parse(response);
+                    } catch (error) {
+                        swarning();
+                        return;
+                    }
+                    if (data && data.status === "00") {
+                        $('#modalDetails').modal('hide');
+                        swal.fire('Success!', 'User details have been updated.', 'success');
+                        listReports();
+                    } else {
+                        $('#modalDetails').modal('hide');
+                        swarning();
+                    }
+                },
+            });
+        }
+
+
+
+
+       
+
+
+      
+
+
+
+
+
+
+
+
+
+     
+
+        function listUserLevel() {
             $.ajax({
                 url: linkDepan + "GetUserLevelList",
                 dataType: "json",
@@ -632,14 +756,16 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
+                    $('#userlevel, #userlevelnew').html('<option value="-0">.: Select User Level :.</option>');
+
                     if (data.length >= 1) {
                         auxArr = [];
                         $.each(data, function (index, value) {
                             auxArr[index] = "<option value='" + value.ref_level_no + "'>" + value.ref_level_name + "</option>";
                         });
-                        $('#userlevel, #userlevel2, #usrlevelnew').append(auxArr.join(''));
+                        $('#userlevel, #userlevelnew').append(auxArr.join(''));
                     } else {
-                        $("#userlevel, #userlevel2, #usrlevelnew").addClass(" is-invalid");
+                        $("#userlevel, #userlevelnew").addClass(" is-invalid");
 
                     }
                 },
@@ -651,34 +777,37 @@
             });
         }
 
-        function listRegion() {
-            $.ajax({
-                url: linkDepan + "GetRegionList",
-                dataType: "json",
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (data) {
-                    if (data.length >= 1) {
-                        auxArr = [];
-                        $.each(data, function (index, value) {
-                            auxArr[index] = "<option value='" + value.region_nameE + "'>" + value.region_nameE + "</option>";
-                        });
-                        $('#regionnew').append(auxArr.join(''));
-                    } else {
-                        $("#regionnew").addClass(" is-invalid");
+        //function listRegion() {
+        //    $.ajax({
+        //        url: linkDepan + "GetRegionList",
+        //        dataType: "json",
+        //        beforeSend: function (request) {
+        //            request.setRequestHeader("Token", localStorage.getItem('main'));
+        //        },
+        //        success: function (data) {
+        //            $('#regionnew').html('<option value="-0">.: Select Region :.</option>');
 
-                    }
-                },
-                error: function (xhr) {
-                    swarning();
-                },
-                complete: function () {
-                }
-            });
-        }
+        //            if (data.length >= 1) {
+        //                auxArr = [];
+        //                $.each(data, function (index, value) {
+        //                    auxArr[index] = "<option value='" + value.region_nameE + "'>" + value.region_nameE + "</option>";
+        //                });
+        //                $('#regionnew').append(auxArr.join(''));
+        //            } else {
+        //                $("#regionnew").addClass(" is-invalid");
 
-        function listKMUJ(region) {
+        //            }
+        //        },
+        //        error: function (xhr) {
+        //            swarning();
+        //        },
+        //        complete: function () {
+        //        }
+        //    });
+        //}
+
+        // UPDATED FUNCTIONS
+        function listKMUJ(region, targetID) {
             $.ajax({
                 url: linkDepan + "Reg?Region=" + region,
                 dataType: "json",
@@ -686,33 +815,27 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    $("#kmuj, #kmujnew").removeClass("is-invalid");
-
-                    var auxArr = [];
-                    auxArr.push("<option value='-0'>.: Select KMUJ :.</option>");
+                    var $target = $(targetID); // Use the specific target provided
+                    var auxArr = ["<option value='-0'>.: Select KMUJ :.</option>"];
 
                     if (data && data.length >= 1) {
                         $.each(data, function (index, value) {
                             auxArr.push("<option value='" + value.kmuj_value + "'>" + value.kmuj_name + "</option>");
                         });
-                        $('#kmuj, #kmujnew').html('').append(auxArr.join(''));
+                        $target.html(auxArr.join('')).prop('disabled', false);
                     } else {
-                        $('#kmuj, #kmujnew').html('<option value="-0">.: Select KMUJ :.</option>')
-                            .addClass("is-invalid")
-                            .prop('disabled', true);
+                        $target.html('<option value="-0">.: Select KMUJ :.</option>').prop('disabled', true);
                     }
 
-                    if ($('#kmujnew').hasClass("select2-hidden-accessible")) {
-                        $('#kmuj, #kmujnew').trigger('change');
+                    // REFRESH SELECT2
+                    if ($target.hasClass("select2-hidden-accessible")) {
+                        $target.trigger('change.select2');
                     }
-                },
-                error: function (xhr) {
-                    swarning();
                 }
             });
         }
 
-        function listSection(kmuj) {
+        function listSection(kmuj, targetID) {
             $.ajax({
                 url: linkDepan + "Kmuj?Kmuj=" + kmuj,
                 dataType: "json",
@@ -720,28 +843,21 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    $("#section, #sectionnew").removeClass("is-invalid");
-
-                    var auxArr = [];
-                    auxArr.push("<option value='-0'>.: Select Section :.</option>");
+                    var $target = $(targetID);
+                    var auxArr = ["<option value='-0'>.: Select Section :.</option>"];
 
                     if (data && data.length >= 1) {
                         $.each(data, function (index, value) {
                             auxArr.push("<option value='" + value.section_val + "'>" + value.section_name + "</option>");
                         });
-                        $('#section, #sectionnew').html('').append(auxArr.join(''));
+                        $target.html(auxArr.join('')).prop('disabled', false);
                     } else {
-                        $('#section, #sectionnew').html('<option value="-0">.: Select Section :.</option>')
-                            .addClass("is-invalid")
-                            .prop('disabled', true);
+                        $target.html('<option value="-0">.: Select Section :.</option>').prop('disabled', true);
                     }
 
-                    if ($('#sectionnew').hasClass("select2-hidden-accessible")) {
-                        $('#section, #sectionnew').trigger('change');
+                    if ($target.hasClass("select2-hidden-accessible")) {
+                        $target.trigger('change.select2');
                     }
-                },
-                error: function (xhr) {
-                    swarning();
                 }
             });
         }
@@ -774,7 +890,7 @@
                             { data: "Nama" },
                             { data: "JobDesc" },
                             { data: "LocDesc" },
-                            { data: "RegDesc" },
+                            { data: "section" },
                             { data: "ref_level_name" },
                             { data: "staff_status" },
                             { data: "Emplid" },
@@ -783,13 +899,11 @@
                             {
                                 targets: -1,
                                 title: "Actions",
+                                // Add this line to hide the column if level is 5
+                                visible: localStorage.getItem("lvlI") !== "5",
                                 render: function (data, type, full, meta) {
                                     countStf++;
-
-                                    /*return '<a href="..' + data + '" id="BviewRes" class="btn btn-primary"><i class="fe fe-edit font-16"></i>';*/
-                                    return '<a class="btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-toggle="modal" class="btn btn-primary"><i class="fe fe-edit font-16"></i></a>'
-                                    //return '<button type="button" data-id="' + data + '" class="btn btn-gradient-secondary waves-effect" data-toggle="modal" data-animation="bounce" data-target="#modalDetails">Late Details</button>';
-
+                                    return '<a class="btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-toggle="modal"><i class="fe fe-edit font-16"></i></a>';
                                 },
                             },
                             {

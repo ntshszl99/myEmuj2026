@@ -80,17 +80,18 @@
                 </div>
             </div>
 
-            <div class="" id="contentOthers">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="mb-3 m-0">
-                            <div class="row">
-                                <div class="card-body">
-                                    <h4 class="text-muted">Alert</h4>
-                                    <p class="text-muted">Sorry, no data found.</p>
-                                </div>
-                            </div>
+            <div class="container-fluid" id="contentOthers">
+                <div class="card border-0 shadow-sm ">
+                    <div class="card-body p-4 text-center mt-5 mb-5">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-circle p-3 mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+                                <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06c-.01.006-.017.01-.023.013a.17.17 0 0 1-.054.015H1.515a.17.17 0 0 1-.054-.015 1 1 0 0 1-.023-.013.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L8.244 2.073a.15.15 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z" />
+                                <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+                            </svg>
                         </div>
+
+                        <h4 class="fw-bold text-dark mb-2">Access Denied</h4>
+                        <p class="text-secondary mb-0">Sorry, you do not have permission to view this section.</p>
                     </div>
                 </div>
             </div>
@@ -197,6 +198,7 @@
 
 
 @section scripts{
+    <a href="~/Views/Gang/GangList.cshtml">~/Views/Gang/GangList.cshtml</a>
     <script src="~/assets/plugins/select2/select2.min.js"></script>
     <script src="~/assets/scripts/semua.js"></script>
     <script src="~/assets/scripts/dashboard.js"></script>
@@ -211,7 +213,7 @@
             listReportsAdmin();
             listReportsNormal();
 
-            if (localStorage.getItem("lvlI") === "1") {
+            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5" ) {
                 $("#contentAdmin").show();
                 $("#contentNormal").hide();
                 $("#contentOthers").hide();
@@ -219,7 +221,6 @@
             else if (localStorage.getItem("lvlI") === "2" ||
                 localStorage.getItem("lvlI") === "3" ||
                 localStorage.getItem("lvlI") === "4" ||
-                localStorage.getItem("lvlI") === "5" ||
                 localStorage.getItem("lvlI") === "6") {
 
                 scn = localStorage.getItem("scn");
@@ -264,7 +265,7 @@
 
                 listReportsAdmin(kmj, scn, gng);
 
-                if (scn !== "" || kmj !== "" || gng !== "" ) {
+                if (scn !== "" || kmj !== "" || gng !== "") {
                     salertSave('Searching for: ' + kmj + ' and ' + scn + ' for ' + gng);
                 } else {
                     salertSave('Searching all dates for ' + gng);

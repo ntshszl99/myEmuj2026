@@ -449,7 +449,7 @@ namespace emujv2Api.Model
 
             SqlStr.Append(" select a.Emplid, a.Nama,  ");
             SqlStr.Append(" (select concat(a.JobDesc, ' | ', a.Grade)) as JobDesc, ");
-            SqlStr.Append(" a.LocDesc, a.RegDesc, c.ref_level_name, b.staff_status ");
+            SqlStr.Append(" a.LocDesc, b.section, c.ref_level_name, b.staff_status ");
             SqlStr.Append(" from[HR_MAIN].[dbo].[HR_MAIN] as a, staff_login as b, Ref_userlevel as c ");
             SqlStr.Append(" where a.Emplid = b.staff_id ");
             SqlStr.Append(" and b.usrlevel = c.ref_level_no ");
@@ -526,7 +526,7 @@ namespace emujv2Api.Model
 
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append(" SELECT a.*, b.*, c.kmuj_name, d.section_name, hr.regdesc  "); 
+            SqlStr.Append(" SELECT a.*, b.*, c.kmuj_name, d.section_name, a.section  "); 
             SqlStr.Append(" FROM staff_login as a ");
             SqlStr.Append(" INNER JOIN Ref_userlevel as b ON a.usrlevel = b.ref_level_no ");
             SqlStr.Append(" LEFT JOIN [HR_MAIN].[dbo].[HR_MAIN] as hr ON a.staff_id = hr.emplid ");
