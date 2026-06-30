@@ -1296,6 +1296,34 @@ namespace emujv2Api.Controller
         }
 
         [HttpGet]
+        public string RegMalay(string Region)
+        {
+            TokenFunc Token = new TokenFunc();
+            PublicCons RetDat = new PublicCons();
+            string conn = _config.GetValue<string>("KTMBParam:DbConnection");
+            string Salah = "";
+            String Data = Token.ValidateToken(httpContextAccessor.HttpContext.Request.Headers["Token"], ref Salah);
+            Lookup ret = new Lookup();
+            if (string.IsNullOrEmpty(Data))
+            {
+                HttpContext.Response.StatusCode = 401;
+                return null;
+            }
+            UserCons User = JsonConvert.DeserializeObject<UserCons>(Data);
+
+            if (!string.IsNullOrEmpty(User.Userid))
+            {
+                return ret.RegMalay(Region);
+            }
+            else
+            {
+                RetDat.status = "99";
+                RetDat.StatusDetail = "Error : Not Authorize User.";
+                return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
+            }
+        }
+
+        [HttpGet]
         public string Kmuj(string Kmuj)
         {
             TokenFunc Token = new TokenFunc();
@@ -1718,7 +1746,7 @@ namespace emujv2Api.Controller
         }
 
         [HttpGet]
-        public string GetDailyReportEngineer(string Region, string Category, string Kmuj, string SDate, string EDate)
+        public string GetDailyReportEngineer(string Region, string Kmuj, string SDate, string EDate)
         {
             TokenFunc Token = new TokenFunc();
             PublicCons RetDat = new PublicCons();
@@ -1735,7 +1763,7 @@ namespace emujv2Api.Controller
 
             if (!string.IsNullOrEmpty(User.Userid))
             {
-                return ret.GetDailyReportEngineer(Region, Category, Kmuj, SDate, EDate);
+                return ret.GetDailyReportEngineer(Region, Kmuj, SDate, EDate);
             }
             else
             {

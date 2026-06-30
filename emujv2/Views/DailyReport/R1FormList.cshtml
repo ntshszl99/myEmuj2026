@@ -15,6 +15,8 @@
             </div>
 
             <!--End Page header-->
+
+
             <!--1-Admin && 5-HQ-->
             <div class="" id=contentAdmin>
                 <div class="col-lg-12 col-md-12">
@@ -77,20 +79,14 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="mb-3 m-0">
-                                <div class="row">
-                                    <div class="col-4">
+                                <div class="row ">
+                                    <div class="col-5">
                                         <label class="mt-5 form-label">KMUJ</label>
                                         <select id="kmujEng" class="form-control form-select select2">
                                             <option value="-0">Select KMUJ</option>
                                         </select>
                                     </div>
-                                    <div class="col-4">
-                                        <label class="mt-5 form-label">Section</label>
-                                        <select id="sectionEng" class="form-control form-select select2">
-                                            <option value="-0">Select Section</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-3">
+                                    <div class="col-5">
                                         <label class="mt-5 form-label">Work Date (From - To)</label>
                                         <div class="input-group">
                                             <div class="input-group-append">
@@ -99,7 +95,7 @@
                                             <input type="text" class="form-control" id="txtDateEng" placeholder="Select Work Date" required="required" autocomplete="off" />
                                         </div>
                                     </div>
-                                    <div class="col-1">
+                                    <div class="col-2">
                                         <label class="mt-5 form-label text-white">.</label>
                                         <button id="btnSearchEng" class="btn btn-primary">Search</button>
                                     </div>
@@ -121,30 +117,36 @@
                 </div>
             </div>
 
-            <!-- 4- MUJ-->
-            <div class="" id=contentNormal>
+            <!-- 3- CI-->
+            <div class="" id=contentCI>
                 <div class="col-lg-12 col-md-12">
                     <div class="card">
                         <div class="card-body">
                             <div class="mb-3 m-0">
-                                <div class="row justify-content-end">
-                                    <div class="col-2">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <label class="mt-5 form-label">Section</label>
+                                        <select id="sectionCI" class="form-control form-select select2">
+                                            <option value="-0">Select Section</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-5">
                                         <label class="mt-5 form-label">Work Date (From - To)</label>
                                         <div class="input-group">
                                             <div class="input-group-append">
                                                 <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
                                             </div>
-                                            <input type="text" class="form-control" id="txtDate3" placeholder="Select Work Date" required="required" autocomplete="off" />
+                                            <input type="text" class="form-control" id="txtDateCI" placeholder="Select Work Date" required="required" autocomplete="off" />
                                         </div>
                                     </div>
-                                    <div class="col-1">
+                                    <div class="col-2">
                                         <label class="mt-5 form-label text-white">.</label>
-                                        <button id="btnSearch3" class="btn btn-primary">Search</button>
+                                        <button id="btnSearchCI" class="btn btn-primary">Search</button>
                                     </div>
                                     <div class="card-body">
                                         <div class="col-lg-12">
                                             <div class="table-responsive table-lg">
-                                                <table id="tableNormal" class="table table-striped table-bordered text-nowrap">
+                                                <table id="tableCI" class="table table-striped table-bordered text-nowrap">
                                                     <thead>
                                                     </thead>
                                                     <tbody></tbody>
@@ -159,6 +161,45 @@
                 </div>
             </div>
 
+            <!-- 4 - MUJ -->
+            <div class="" id=contentMuj>
+                <div class="col-lg-12 col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3 m-0">
+                                <div class="row justify-content-end">
+                                    <div class="col-3">
+                                        <label class="mt-5 form-label">Work Date (From - To)</label>
+                                        <div class="input-group">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
+                                            </div>
+                                            <input type="text" class="form-control" id="txtDateMuj" placeholder="Select Work Date" required="required" autocomplete="off" />
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <label class="mt-5 form-label text-white">.</label>
+                                        <button id="btnSearchMuj" class="btn btn-primary">Search</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="col-lg-12">
+                                            <div class="table-responsive table-lg">
+                                                <table id="tableMuj" class="table table-striped table-bordered text-nowrap">
+                                                    <thead>
+                                                    </thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Others-->
             <div class="container-fluid" id="contentOthers">
                 <div class="card border-0 shadow-sm ">
                     <div class="card-body p-4 text-center mt-5 mb-5">
@@ -369,17 +410,22 @@
             listWorkUnit();
             listLocation();
             checkSess();
+            listSectionOnKMUJ();
+            listKMUJonReg();
             listRegion();
             listKMUJ();
-            listKMUJonReg();
             listSection();
+
+            console.log("Current value of lvlI:", localStorage.getItem("lvlI"));
 
             //CHECK USER LEVEL
             //user level == 1 & 5
-            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
+            var lvl = localStorage.getItem("lvlI");
+
+            $("#contentAdmin, #contentEngineer, #contentCI, #contentMuj, #contentOthers").hide();
+
+            if (lvl === "1" || lvl === "5") {
                 $("#contentAdmin").show();
-                $("#contentNormal").hide();
-                $("#contentOthers").hide();
 
                 $('#txtDate').daterangepicker({
                     autoUpdateInput: false,
@@ -431,17 +477,15 @@
                 });
             }
 
-            //user level - 2
-            if (localStorage.getItem("lvlI") === "2" ) {
+            else if (lvl === "2" || lvl === "6") {
                 $("#contentEngineer").show();
-                $("#contentAdmin").hide();
-                $("#contentNormal").hide();
-                $("#contentOthers").hide();
-
 
                 console.log("Full LocalStorage:", localStorage);
-                var rgn = localStorage.getItem("usrRE");
-                console.log("Value of usrRE:", rgn);
+                var rgn = localStorage.getItem("usrR");
+                console.log("Value of usrR:", rgn);
+
+                listKMUJonReg(rgn, '#kmujEng');
+
 
                 if (rgn === null) {
                     console.warn("DEBUG: 'usrRE' is missing! Check where you set this value.");
@@ -456,8 +500,8 @@
                 });
 
                 $('#txtDateEng').on('apply.daterangepicker', function (ev, picker) {
-                    var sdate = picker.startDate.format('YYYY/MM/DD');
-                    var edate = picker.endDate.format('YYYY/MM/DD');
+                    var sdate = picker.startDate.format('YYYY-MM-DD');
+                    var edate = picker.endDate.format('YYYY-MM-DD');
 
                     $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
 
@@ -465,7 +509,10 @@
                     localStorage.setItem("selHarE", edate);
                 });
 
-                $("#kmujEng, #sectionEng").on('change', function () {
+                $("#kmujEng").on('change', function () {
+
+                    var rgn = localStorage.getItem("usrR");
+
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
                     $('#txtDateEng').val('');
@@ -476,36 +523,35 @@
                 });
 
                 $('#btnSearchEng').on('click', function () {
-                    var rgn = localStorage.getItem("usrRE");
+                    var rgn = localStorage.getItem("usrR");
 
                     var kmj = $("#kmujEng option:selected").text();
-                    var scn = $("#sectionEng option:selected").text();
 
                     localStorage.setItem("selRgn", rgn);
                     localStorage.setItem("selKmj", kmj);
-                    localStorage.setItem("selScn", scn);
 
                     var sdate = localStorage.getItem("selHar") || "";
                     var edate = localStorage.getItem("selHarE") || "";
 
-                    listReportsEngineer(kmj, scn, sdate, edate);
-
-                    if (sdate !== "") {
-                        salertSave('Searching for: ' + sdate + ' to ' + edate);
-                    } else {
-                        salertSave('Searching all dates for ' + rgn);
-                    }
+                    listReportsEngineer(rgn, kmj, sdate, edate);
                 });
             }
 
-            //userlevel == 4
-            else if (localStorage.getItem("lvlI") === "4") {
-                $("#contentEngineer").hide();
-                $("#contentAdmin").hide();
-                $("#contentNormal").show();
-                $("#contentOthers").hide();
+            else if (lvl === "3") {
+                $("#contentCI").show();
 
-                $('#txtDate3').daterangepicker({
+                console.log("Full LocalStorage:", localStorage);
+                var kmj = localStorage.getItem("kmuj");
+                console.log("Value of kmuj:", kmj);
+
+                listSectionOnKMUJ(kmj, '#sectionCI');
+
+
+                if (kmj === null) {
+                    console.warn("DEBUG: 'kmuj' is missing! Check where you set this value.");
+                }
+
+                $('#txtDateCI').daterangepicker({
                     autoUpdateInput: false,
                     minYear: 2021,
                     locale: {
@@ -513,9 +559,9 @@
                     }
                 });
 
-                $('#txtDate3').on('apply.daterangepicker', function (ev, picker) {
-                    var sdate = picker.startDate.format('YYYY/MM/DD');
-                    var edate = picker.endDate.format('YYYY/MM/DD');
+                $('#txtDateCI').on('apply.daterangepicker', function (ev, picker) {
+                    var sdate = picker.startDate.format('YYYY-MM-DD');
+                    var edate = picker.endDate.format('YYYY-MM-DD');
 
                     $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
 
@@ -523,28 +569,87 @@
                     localStorage.setItem("selHarE", edate);
                 });
 
-                $('#btnSearch3').on('click', function () {
-                    var scn = localStorage.getItem("scn")
-                    localStorage.setItem("selScn", scn);
+                $("#sectionCI").on('change', function () {
+
+                    var kmj = localStorage.getItem("kmuj");
+
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDateCI').val('');
+
+                    var drp = $('#txtDateCI').data('daterangepicker');
+                    drp.setStartDate(moment());
+                    drp.setEndDate(moment());
+                });
+
+                $('#btnSearchCI').on('click', function () {
+                    var kmj = localStorage.getItem("kmuj");
+
+                    var scn = $("#sectionCI option:selected").text();
+
+                    localStorage.setItem("selRgn", kmj);
+                    localStorage.setItem("selKmj", scn);
 
                     var sdate = localStorage.getItem("selHar") || "";
                     var edate = localStorage.getItem("selHarE") || "";
 
-                    listReportsNormal(scn, sdate, edate);
+                    listReportsCI(kmj, scn, sdate, edate);
+                });
 
-                    if (sdate !== "") {
-                        salertSave('Searching for: ' + sdate + ' to ' + edate);
-                    } else {
-                        salertSave('Searching all dates for ' + scn);
+            }
+
+            else if (lvl === "4") {
+                $("#contentMuj").show();
+
+                console.log("Full LocalStorage:", localStorage);
+                var kmj = localStorage.getItem("kmuj");
+                var scn = localStorage.getItem("scn");
+                console.log("Value of kmuj:", kmj);
+                console.log("Value of section:", scn);
+
+                if (kmj === null) {
+                    console.warn("DEBUG: 'kmuj' is missing! Check where you set this value.");
+                }
+
+                $('#txtDateMuj').daterangepicker({
+                    autoUpdateInput: false,
+                    minYear: 2021,
+                    locale: {
+                        format: 'DD/MM/YYYY'
                     }
                 });
+
+                $('#txtDateMuj').on('apply.daterangepicker', function (ev, picker) {
+                    var sdate = picker.startDate.format('YYYY-MM-DD');
+                    var edate = picker.endDate.format('YYYY-MM-DD');
+
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+
+                    localStorage.setItem("selHar", sdate);
+                    localStorage.setItem("selHarE", edate);
+                });
+
+                $('#btnSearchMuj').on('click', function () {
+                    var kmj = localStorage.getItem("kmuj");
+                    var scn = localStorage.getItem("scn");
+
+                    localStorage.setItem("selRgn", kmj);
+                    localStorage.setItem("selKmj", scn);
+
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
+
+                    listReportsMuj(kmj, scn, sdate, edate);
+                });
+
             }
 
-            //not authorized user
+
             else {
-                $("#contentAdmin").hide();
-                $("#contentNormal").hide();
+                $("#contentOthers").show();
             }
+           
+
 
             $("#datepicker, #dateEdit").datepicker({
                 singleDatePicker: true,
@@ -808,8 +913,8 @@
                         );
                     } else if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "6") {
                         listReportsEngineer(
+                            localStorage.getItem("seRgn"),
                             localStorage.getItem("selKmj"),
-                            localStorage.getItem("selScn"),
                             localStorage.getItem("selHar"),
                             localStorage.getItem("selHarE")
                         );
@@ -899,38 +1004,58 @@
             });
         }
 
-        function listKMUJonReg(region) {
+        function listSectionOnKMUJ(kmuj, targetID) {
             $.ajax({
-                url: linkDepan + "Reg?Region=" + region,
+                url: linkDepan + "Kmuj?Kmuj=" + kmuj,
                 dataType: "json",
                 beforeSend: function (request) {
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
-                    var $select = $('#kmujEng');
+                    var $target = $(targetID); 
+                    var auxArr = ["<option value='-0'>.: Select Section :.</option>"];
 
-                    // 1. Clear existing options (keep the default "Select KMUJ" if you want)
-                    $select.find('option:not([value="-0"])').remove();
+                    if (data && data.length >= 1) {
+                        $.each(data, function (index, value) {
+                            auxArr.push("<option value='" + value.section_val + "'>" + value.section_name + "</option>");
+                        });
+                        $target.html(auxArr.join('')).prop('disabled', false);
+                    } else {
+                        $target.html('<option value="-0">.: Select Section :.</option>').prop('disabled', true);
+                    }
 
-                    if (data.length >= 1) {
-                        var auxArr = [];
+                    // REFRESH SELECT2
+                    if ($target.hasClass("select2-hidden-accessible")) {
+                        $target.trigger('change.select2');
+                    }
+                }
+            });
+        }
+
+        function listKMUJonReg(region, targetID) {
+            $.ajax({
+                url: linkDepan + "RegMalay?Region=" + region,
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    var $target = $(targetID); // Use the specific target provided
+                    var auxArr = ["<option value='-0'>.: Select KMUJ :.</option>"];
+
+                    if (data && data.length >= 1) {
                         $.each(data, function (index, value) {
                             auxArr.push("<option value='" + value.kmuj_value + "'>" + value.kmuj_name + "</option>");
                         });
-
-                        $select.append(auxArr.join(''));
-
-                        // 2. Trigger the change event so Select2 updates its UI
-                        $select.trigger('change');
-                        $select.removeClass("is-invalid");
+                        $target.html(auxArr.join('')).prop('disabled', false);
                     } else {
-                        $select.addClass("is-invalid");
+                        $target.html('<option value="-0">.: Select KMUJ :.</option>').prop('disabled', true);
                     }
-                },
-                error: function (xhr) {
-                    swarning();
-                },
-                complete: function () {
+
+                    // REFRESH SELECT2
+                    if ($target.hasClass("select2-hidden-accessible")) {
+                        $target.trigger('change.select2');
+                    }
                 }
             });
         }
@@ -1261,6 +1386,7 @@
                             { data: "no" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
+                            { data: "kmuj_name" },
                             { data: "section_name" },
                             { data: "upd_user" },
                             { data: "upd_date" },
@@ -1273,6 +1399,248 @@
                                 render: function (data, type, full, meta) {
                                     return '<a class="modal-effect btn btn-success" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-eye font-10"></i></a>' +
                                         //' <a class="btn btn-primary" href="/DailyReport/Form?id=' + data + '"><i class="fe fe-edit font-10"></i></a>' +
+                                        ' <a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-trash font-10"></i></a>';
+                                },
+                            },
+                            {
+                                targets: -2,
+                                title: "Update Date",
+                                render: function (data, type, full, meta) {
+                                    return moment(data).format('DD/MM/YYYY HH:mm:ss');
+                                },
+                            },
+                            {
+                                targets: -3,
+                                title: "Submitted By",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -4,
+                                title: "Section",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -5,
+                                title: "KMUJ",
+                                render: function (data, type, full, meta) {
+                                    return moment(data).format('DD/MM/YYYY');
+                                },
+                            },
+                            {
+                                targets: -6,
+                                title: "Work Date",
+                                render: function (data, type, full, meta) {
+                                    return moment(data).format('DD/MM/YYYY');
+                                },
+                            },
+                            {
+                                targets: -7,
+                                title: "Report ID",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -8,
+                                title: "No",
+                                render: function (data, type, full, meta) {
+                                    return counter++;
+                                },
+                            }
+                        ],
+                        createdRow: function (row, data, dataIndex) {
+                            $('td', row).addClass('text-nowrap align-middle');
+                        }
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error: ' + error);
+                    console.error('Status: ' + status);
+                    console.dir(xhr);
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+        //report engineer & Pentadbir Kanan
+        function listReportsEngineer(region, kmuj, mdate, edate) {
+
+            if (!mdate || !edate) {
+                console.log("Waiting for user to select dates...");
+                return;
+            }
+
+            // Ensure 'region' is passed as a string, not an object
+            var url = linkDepan + "GetDailyReportEngineer?SDate=" + mdate + "&EDate=" + edate;
+
+            if (region) url += "&Region=" + encodeURIComponent(region);
+            if (kmuj) url += "&Kmuj=" + encodeURIComponent(kmuj);
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    console.log('mana : ' + data);
+                    var counter = 1;
+                    $.fn.dataTable.ext.errMode = 'throw';
+                    if ($.fn.dataTable.isDataTable("#tableEngineer")) {
+                        $("#tableEngineer").DataTable().destroy();
+                    }
+                    $("#tableEngineer").DataTable({
+                        dom: 'Bfrtip',
+                        buttons: [
+                            'copy', 'csv', 'excel', 'pdf', 'print'
+                        ],
+                        responsive: true,
+                        data: data,
+                        columns: [
+                            { data: "no" },
+                            { data: "rpt_code" },
+                            { data: "daily_date" },
+                            { data: "kmuj_name" },
+                            { data: "section_name" },
+                            { data: "upd_user" },
+                            { data: "upd_date" },
+                            { data: "rpt_code" },
+                        ],
+                        columnDefs: [
+                            {
+                                targets: -1,
+                                title: "Action",
+                                render: function (data, type, full, meta) {
+                                    return '<a class="modal-effect btn btn-success" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-eye font-10"></i></a>' +
+                                        //' <a class="btn btn-primary" href="/DailyReport/Form?id=' + data + '"><i class="fe fe-edit font-10"></i></a>' +
+                                        ' <a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-trash font-10"></i></a>';
+                                },
+                            },
+                            {
+                                targets: -2,
+                                title: "Update Date",
+                                render: function (data, type, full, meta) {
+                                    return moment(data).format('DD/MM/YYYY HH:mm:ss');
+                                },
+                            },
+                            {
+                                targets: -3,
+                                title: "Submitted By",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -4,
+                                title: "Section",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -5,
+                                title: "KMUJ",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -6,
+                                title: "Work Date",
+                                render: function (data, type, full, meta) {
+                                    return moment(data).format('DD/MM/YYYY');
+                                },
+                            },
+                            {
+                                targets: -7,
+                                title: "Report ID",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -8,
+                                title: "No",
+                                render: function (data, type, full, meta) {
+                                    return counter++;
+                                },
+                            }
+                        ],
+                        createdRow: function (row, data, dataIndex) {
+                            $('td', row).addClass('text-nowrap align-middle');
+                        }
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error: ' + error);
+                    console.error('Status: ' + status);
+                    console.dir(xhr);
+                    swarning();
+                },
+                complete: function () {
+                }
+            });
+        }
+
+
+        //report CI
+        function listReportsCI(kmuj, section, mdate, edate) {
+
+            if (mdate === undefined || edate === undefined) {
+                console.log("Waiting for user to select dates...");
+                return;
+            }
+
+            var url = linkDepan + "GetDailyReportNormal?SDate=" + mdate + "&EDate=" + edate;
+            if (section) url += "&Section=" + encodeURIComponent(section);
+            if (kmuj) url += "&Kmuj=" + encodeURIComponent(kmuj);
+
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    console.log('mana : ' + data);
+                    var counter = 1;
+                    $.fn.dataTable.ext.errMode = 'throw';
+                    if ($.fn.dataTable.isDataTable("#tableCI")) {
+                        $("#tableCI").DataTable().destroy();
+                    }
+                    $("#tableCI").DataTable({
+                        dom: 'Bfrtip',
+                        buttons: [
+                            'copy', 'csv', 'excel', 'pdf', 'print'
+                        ],
+                        responsive: true,
+                        data: data,
+                        columns: [
+                            { data: "no" },
+                            { data: "rpt_code" },
+                            { data: "daily_date" },
+                            { data: "section_name" },
+                            { data: "upd_user" },
+                            { data: "upd_date" },
+                            { data: "rpt_code" },
+                        ],
+                        columnDefs: [
+                            {
+                                targets: -1,
+                                title: "Action",
+                                render: function (data, type, full, meta) {
+                                    return '<a class="modal-effect btn btn-success" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-eye font-10"></i></a>' +
                                         ' <a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-trash font-10"></i></a>';
                                 },
                             },
@@ -1335,8 +1703,8 @@
             });
         }
 
-        //report engineer
-        function listReportsEngineer(kmuj, section, mdate, edate) {
+        //report MUJ
+        function listReportsMuj(kmuj, section, mdate, edate) {
 
             if (!mdate || !edate) {
                 console.log("Waiting for user to select dates...");
@@ -1344,7 +1712,6 @@
             }
 
             var url = linkDepan + "GetDailyReport?SDate=" + mdate + "&EDate=" + edate;
-            if (region) url += "&Region=" + region;
             if (kmuj) url += "&Kmuj=" + kmuj;
             if (section) url += "&Section=" + section;
 
@@ -1360,10 +1727,10 @@
                     console.log('mana : ' + data);
                     var counter = 1;
                     $.fn.dataTable.ext.errMode = 'throw';
-                    if ($.fn.dataTable.isDataTable("#tableAdmin")) {
-                        $("#tableAdmin").DataTable().destroy();
+                    if ($.fn.dataTable.isDataTable("#tableMuj")) {
+                        $("#tableMuj").DataTable().destroy();
                     }
-                    $("#tableAdmin").DataTable({
+                    $("#tableMuj").DataTable({
                         dom: 'Bfrtip',
                         buttons: [
                             'copy', 'csv', 'excel', 'pdf', 'print'
@@ -1374,6 +1741,7 @@
                             { data: "no" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
+                            { data: "kmuj_name" },
                             { data: "section_name" },
                             { data: "upd_user" },
                             { data: "upd_date" },
@@ -1412,131 +1780,27 @@
                             },
                             {
                                 targets: -5,
-                                title: "Work Date",
+                                title: "KMUJ",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY');
                                 },
                             },
                             {
                                 targets: -6,
-                                title: "Report ID",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -7,
-                                title: "No",
-                                render: function (data, type, full, meta) {
-                                    return counter++;
-                                },
-                            }
-                        ],
-                        createdRow: function (row, data, dataIndex) {
-                            $('td', row).addClass('text-nowrap align-middle');
-                        }
-                    });
-                },
-                error: function (xhr, status, error) {
-                    console.error('Error: ' + error);
-                    console.error('Status: ' + status);
-                    console.dir(xhr);
-                    swarning();
-                },
-                complete: function () {
-                }
-            });
-        }
-
-
-        //report normal
-        function listReportsNormal(section, mdate, edate) {
-
-            if (mdate === undefined || edate === undefined) {
-                console.log("Waiting for user to select dates...");
-                return;
-            }
-
-            var url = linkDepan + "GetDailyReportNormal?SDate=" + mdate + "&EDate=" + edate;
-            if (section) url += "&Section=" + section;
-
-            $.ajax({
-                url: url,
-                type: 'GET',
-                dataType: 'json',
-                data: {},
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (data) {
-                    console.log('mana : ' + data);
-                    var counter = 1;
-                    $.fn.dataTable.ext.errMode = 'throw';
-                    if ($.fn.dataTable.isDataTable("#tableNormal")) {
-                        $("#tableNormal").DataTable().destroy();
-                    }
-                    $("#tableNormal").DataTable({
-                        dom: 'Bfrtip',
-                        buttons: [
-                            'copy', 'csv', 'excel', 'pdf', 'print'
-                        ],
-                        responsive: true,
-                        data: data,
-                        columns: [
-                            { data: "no" },
-                            { data: "rpt_code" },
-                            { data: "daily_date" },
-                            { data: "section_name" },
-                            { data: "upd_user" },
-                            { data: "upd_date" },
-                            { data: "rpt_code" },
-                        ],
-                        columnDefs: [
-                            {
-                                targets: -1,
-                                title: "Action",
-                                render: function (data, type, full, meta) {
-                                    return '<a class="modal-effect btn btn-success" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-eye font-10"></i></a>' +
-                                        ' <a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-trash font-10"></i></a>';
-                                },
-                            },
-                            {
-                                targets: -2,
-                                title: "Update Date",
-                                render: function (data, type, full, meta) {
-                                    return moment(data).format('DD/MM/YYYY HH:mm:ss');
-                                },
-                            },
-                            {
-                                targets: -3,
-                                title: "Submitted By",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -4,
-                                title: "Section",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -5,
                                 title: "Work Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY');
                                 },
                             },
                             {
-                                targets: -6,
+                                targets: -7,
                                 title: "Report ID",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -7,
+                                targets: -8,
                                 title: "No",
                                 render: function (data, type, full, meta) {
                                     return counter++;

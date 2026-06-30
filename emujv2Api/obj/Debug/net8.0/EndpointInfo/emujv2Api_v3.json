@@ -1711,6 +1711,44 @@
         }
       }
     },
+    "/api/WebApi/RegMalay": {
+      "get": {
+        "tags": [
+          "WebApi"
+        ],
+        "parameters": [
+          {
+            "name": "Region",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/WebApi/Kmuj": {
       "get": {
         "tags": [
@@ -2245,13 +2283,6 @@
         "parameters": [
           {
             "name": "Region",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Category",
             "in": "query",
             "schema": {
               "type": "string"

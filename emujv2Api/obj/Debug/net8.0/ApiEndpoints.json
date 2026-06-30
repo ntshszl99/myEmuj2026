@@ -398,11 +398,6 @@
         "IsRequired": false
       },
       {
-        "Name": "Category",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
         "Name": "Kmuj",
         "Type": "System.String",
         "IsRequired": false
@@ -1269,6 +1264,32 @@
     "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "Reg",
     "RelativePath": "api/WebApi/Reg",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Region",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "emujv2Api.Controller.WebApiController",
+    "Method": "RegMalay",
+    "RelativePath": "api/WebApi/RegMalay",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

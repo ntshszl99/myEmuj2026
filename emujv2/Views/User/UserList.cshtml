@@ -777,35 +777,6 @@
             });
         }
 
-        //function listRegion() {
-        //    $.ajax({
-        //        url: linkDepan + "GetRegionList",
-        //        dataType: "json",
-        //        beforeSend: function (request) {
-        //            request.setRequestHeader("Token", localStorage.getItem('main'));
-        //        },
-        //        success: function (data) {
-        //            $('#regionnew').html('<option value="-0">.: Select Region :.</option>');
-
-        //            if (data.length >= 1) {
-        //                auxArr = [];
-        //                $.each(data, function (index, value) {
-        //                    auxArr[index] = "<option value='" + value.region_nameE + "'>" + value.region_nameE + "</option>";
-        //                });
-        //                $('#regionnew').append(auxArr.join(''));
-        //            } else {
-        //                $("#regionnew").addClass(" is-invalid");
-
-        //            }
-        //        },
-        //        error: function (xhr) {
-        //            swarning();
-        //        },
-        //        complete: function () {
-        //        }
-        //    });
-        //}
-
         // UPDATED FUNCTIONS
         function listKMUJ(region, targetID) {
             $.ajax({
