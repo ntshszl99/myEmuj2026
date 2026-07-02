@@ -1013,7 +1013,7 @@
                 },
                 success: function (data) {
                     var $target = $(targetID); 
-                    var auxArr = ["<option value='-0'>.: Select Section :.</option>"];
+                    var auxArr = ["<option value='-0'>Select Section</option>"];
 
                     if (data && data.length >= 1) {
                         $.each(data, function (index, value) {
@@ -1021,7 +1021,7 @@
                         });
                         $target.html(auxArr.join('')).prop('disabled', false);
                     } else {
-                        $target.html('<option value="-0">.: Select Section :.</option>').prop('disabled', true);
+                        $target.html('<option value="-0">Select Section</option>').prop('disabled', true);
                     }
 
                     // REFRESH SELECT2
@@ -1041,7 +1041,7 @@
                 },
                 success: function (data) {
                     var $target = $(targetID); // Use the specific target provided
-                    var auxArr = ["<option value='-0'>.: Select KMUJ :.</option>"];
+                    var auxArr = ["<option value='-0'>Select KMUJ</option>"];
 
                     if (data && data.length >= 1) {
                         $.each(data, function (index, value) {
@@ -1049,7 +1049,7 @@
                         });
                         $target.html(auxArr.join('')).prop('disabled', false);
                     } else {
-                        $target.html('<option value="-0">.: Select KMUJ :.</option>').prop('disabled', true);
+                        $target.html('<option value="-0">Select KMUJ</option>').prop('disabled', true);
                     }
 
                     // REFRESH SELECT2
