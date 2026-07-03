@@ -4,6 +4,15 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .datepicker-container .daterangepicker {
+        left: 0 !important;
+        right: auto !important;
+        width: auto !important;
+        min-width: 250px; /* Adjust based on your preferred calendar size */
+    }
+</style>
+
 <div class="app-content main-content">
     <div class="side-app">
         <div class="container-fluid main-container">
@@ -104,99 +113,6 @@
                                                         <span id="htmlVerifiedByPW">-</span>
                                                     </td>
                                                     <td id="tdVerifyAction" style="width: 150px; vertical-align: middle;">
-                                                        <button type="button" id="btnVerify" class="btn btn-sm btn-success w-100" style="font-size: 13px;">Verify</button>
-                                                        <span id="htmlVerifiedAt" ></span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="" id="contentNormal">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="mb-3 m-0">
-                            <div class="row justify-content-end">
-                                <div class="col-3">
-                                    <label class="mt-3 form-label">Date (From - To)</label>
-                                    <div class="input-group">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
-                                        </div>
-                                        <input type="text" class="form-control" id="txtDateNormal" name="txtDate" required="required" autocomplete="off" />
-                                    </div>
-                                </div>
-                                <div class="col-1">
-                                    <label class="mt-3 form-label text-white">.</label>
-                                    <button id="btnSearchNormal" class="btn btn-primary">Search</button>
-                                </div>
-                                <div class="card-body">
-                                    <div class="col-lg-12">
-                                        <div class="col-4">
-                                            <div id="selectedValues" class="mb-3"></div>
-                                        </div>
-
-                                        <div class="table-responsive table-lg">
-                                            <table id="tableRepNormal" class="table table-bordered text-nowrap hover">
-                                                <thead></thead>
-                                                <tbody></tbody>
-                                            </table>
-                                        </div>
-
-                                        <table class="table table-bordered table-striped mt-5" id="summarySectionTableNormal">
-                                            <thead>
-                                                <tr class="table-warning font-weight-bold">
-                                                    <th colspan="3" class="text-left">SUMMARY CALCULATIONS</th>
-                                                </tr>
-                                                <tr class="text-center">
-                                                    <th scope="col" style="width: 50%;">Description</th>
-                                                    <th scope="col" style="width: 25%;">Value</th>
-                                                    <th scope="col" style="width: 25%;">Percentage</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Total Man-Hours for the Gangs</td>
-                                                    <td><span id="totalHoursNormal"></span> Mhrs</td>
-                                                    <td>-</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>On Track Works</td>
-                                                    <td><span id="totalOnTrackWorksNormal"></span> Mhrs</td>
-                                                    <td><span id="perOnTrackNormal"></span> % Mhrs</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Off Track Works</td>
-                                                    <td><span id="totalOffTrackWorksNormal"></span> Mhrs</td>
-                                                    <td><span id="perOffTrackNormal"></span> % Mhrs</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Others</td>
-                                                    <td><span id="totalSpecificCategoriesNormal"></span> Mhrs</td>
-                                                    <td><span id="perOthersNormal"></span> % Mhrs</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Total</td>
-                                                    <td><span id="veryLastTotalNormal"></span> %</td>
-                                                    <td>-</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Prepared By PWI On</td>
-                                                    <td id="htmlPreparedByPWI">-</td>
-                                                    <td></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Verified By JW/KMUJ on</td>
-                                                    <td style="vertical-align: middle;">
-                                                        <span id="htmlVerifiedByPWNormal">-</span>
-                                                    </td>
-                                                    <td id="tdVerifyActionNormal" style="width: 150px; vertical-align: middle;">
-                                                        <button type="button" id="btnVerifyNormal" class="btn btn-sm btn-success w-100" style="font-size: 13px;">Verify</button>
                                                         <span id="htmlVerifiedAt"></span>
                                                     </td>
                                                 </tr>
@@ -210,6 +126,294 @@
                 </div>
             </div>
 
+            <!-- ENGINEER SECTION -->
+            <div id="contentEngineer">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-4">
+                                <label for="kmujEng" class="form-label">KMUJ</label>
+                                <select id="kmujEng" class="form-control form-select select2">
+                                    <option value="-0">Select KMUJ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="sectionEng" class="form-label">Section</label>
+                                <select id="sectionEng" class="form-control form-select select2">
+                                    <option value="-0">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="txtDateEng" class="form-label">Date (From - To)</label>
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="mt-1 mb-1 fa fa-solid fa-calendar font-20"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="txtDateEng" name="txtDateEng" required="required" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <button id="btnSearchEng" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="selectedValuesEng" class="mb-3"></div>
+
+                                <div class="table-responsive table-lg">
+                                    <table id="tableRepEng" class="table table-bordered text-nowrap hover">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+
+                                <table class="table table-bordered table-striped mt-5" id="summarySectionTableEng">
+                                    <thead>
+                                        <tr class="table-warning font-weight-bold">
+                                            <th colspan="3" class="text-left">SUMMARY CALCULATIONS</th>
+                                        </tr>
+                                        <tr class="text-center">
+                                            <th scope="col" style="width: 50%;">Description</th>
+                                            <th scope="col" style="width: 25%;">Value</th>
+                                            <th scope="col" style="width: 25%;">Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Total Man-Hours for the Gangs</td>
+                                            <td><span id="totalHoursEng"></span> Mhrs</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>On Track Works</td>
+                                            <td><span id="totalOnTrackWorksEng"></span> Mhrs</td>
+                                            <td><span id="perOnTrackEng"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Off Track Works</td>
+                                            <td><span id="totalOffTrackWorksEng"></span> Mhrs</td>
+                                            <td><span id="perOffTrackEng"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Others</td>
+                                            <td><span id="totalSpecificCategoriesEng"></span> Mhrs</td>
+                                            <td><span id="perOthersEng"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td><span id="veryLastTotalEng"></span> %</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prepared By PWI On</td>
+                                            <td id="htmlPreparedByPWIEng">-</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Verified By PW/KMUJ On</td>
+                                            <td style="vertical-align: middle;">
+                                                <span id="htmlVerifiedByPWEng">-</span>
+                                            </td>
+                                            <td id="tdVerifyActionEng" style="width: 150px; vertical-align: middle;">
+                                                <button type="button" id="btnVerifyEng" class="btn btn-sm btn-success w-100" style="font-size: 13px;">Verify</button>
+                                                <span id="htmlVerifiedAtEng"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CI SECTION -->
+            <div id="contentCI">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-5">
+                                <label for="sectionCI" class="form-label">Section</label>
+                                <select id="sectionCI" class="form-control form-select select2">
+                                    <option value="-0">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="txtDateCI" class="form-label">Date (From - To)</label>
+                                <div class="datepicker-container position-relative">
+                                    <div class="input-group">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text"><i class="mt-1 mb-1 fa fa-solid fa-calendar font-20"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" id="txtDateCI" name="txtDateCI" required="required" autocomplete="off" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="btnSearchCI" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="selectedValuesCI" class="mb-3"></div>
+
+                                <div class="table-responsive table-lg">
+                                    <table id="tableRepCI" class="table table-bordered text-nowrap hover">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+
+                                <table class="table table-bordered table-striped mt-5" id="summarySectionTableCI">
+                                    <thead>
+                                        <tr class="table-warning font-weight-bold">
+                                            <th colspan="3" class="text-left">SUMMARY CALCULATIONS</th>
+                                        </tr>
+                                        <tr class="text-center">
+                                            <th scope="col" style="width: 50%;">Description</th>
+                                            <th scope="col" style="width: 25%;">Value</th>
+                                            <th scope="col" style="width: 25%;">Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Total Man-Hours for the Gangs</td>
+                                            <td><span id="totalHoursCI"></span> Mhrs</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>On Track Works</td>
+                                            <td><span id="totalOnTrackWorksCI"></span> Mhrs</td>
+                                            <td><span id="perOnTrackCI"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Off Track Works</td>
+                                            <td><span id="totalOffTrackWorksCI"></span> Mhrs</td>
+                                            <td><span id="perOffTrackCI"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Others</td>
+                                            <td><span id="totalSpecificCategoriesCI"></span> Mhrs</td>
+                                            <td><span id="perOthersCI"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td><span id="veryLastTotalCI"></span> %</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prepared By PWI On</td>
+                                            <td id="htmlPreparedByPWICI">-</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Verified By PW/KMUJ On</td>
+                                            <td style="vertical-align: middle;">
+                                                <span id="htmlVerifiedByPWCI">-</span>
+                                            </td>
+                                            <td id="tdVerifyActionCI" style="width: 150px; vertical-align: middle;">
+                                                <button type="button" id="btnVerifyCI" class="btn btn-sm btn-success w-100" style="font-size: 13px;">Verify</button>
+                                                <span id="htmlVerifiedAtCI"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NORMAL SECTION -->
+            <div id="contentNormal">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3 justify-content-end align-items-end">
+                            <div class="col-md-3">
+                                <label for="txtDateNormal" class="form-label">Date (From - To)</label>
+                                <div class="input-group">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text"><i class="mt-1 mb-1 fa fa-solid fa-calendar font-20"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="txtDateNormal" name="txtDateNormal" required="required" autocomplete="off" />
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <button id="btnSearchNormal" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="selectedValuesNormal" class="mb-3"></div>
+
+                                <div class="table-responsive table-lg">
+                                    <table id="tableRepNormal" class="table table-bordered text-nowrap hover">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+
+                                <table class="table table-bordered table-striped mt-5" id="summarySectionTableNormal">
+                                    <thead>
+                                        <tr class="table-warning font-weight-bold">
+                                            <th colspan="3" class="text-left">SUMMARY CALCULATIONS</th>
+                                        </tr>
+                                        <tr class="text-center">
+                                            <th scope="col" style="width: 50%;">Description</th>
+                                            <th scope="col" style="width: 25%;">Value</th>
+                                            <th scope="col" style="width: 25%;">Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Total Man-Hours for the Gangs</td>
+                                            <td><span id="totalHoursNormal"></span> Mhrs</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>On Track Works</td>
+                                            <td><span id="totalOnTrackWorksNormal"></span> Mhrs</td>
+                                            <td><span id="perOnTrackNormal"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Off Track Works</td>
+                                            <td><span id="totalOffTrackWorksNormal"></span> Mhrs</td>
+                                            <td><span id="perOffTrackNormal"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Others</td>
+                                            <td><span id="totalSpecificCategoriesNormal"></span> Mhrs</td>
+                                            <td><span id="perOthersNormal"></span> % Mhrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td><span id="veryLastTotalNormal"></span> %</td>
+                                            <td>-</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Prepared By PWI On</td>
+                                            <td id="htmlPreparedByPWINormal">-</td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Verified By JW/KMUJ on</td>
+                                            <td style="vertical-align: middle;">
+                                                <span id="htmlVerifiedByPWNormal">-</span>
+                                            </td>
+                                            <td id="tdVerifyActionNormal" style="width: 150px; vertical-align: middle;">
+                                                <span id="htmlVerifiedAtNormal"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="container-fluid" id="contentOthers">
                 <div class="card border-0 shadow-sm ">
                     <div class="card-body p-4 text-center mt-5 mb-5">
@@ -237,16 +441,16 @@
     <script type="text/javascript">
         $(document).ready(function () {
             checkSess();
+            listKMUJonReg();
             listSection();
             listKMUJ();
 
-            // ==========================================
-            // ADMIN / POWER USER VIEWS (lvlI: 1 or 5)
-            // ==========================================
-            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
+            var lvl = localStorage.getItem("lvlI");
+
+            $("#contentAdmin, #contentEngineer, #contentCI, #contentNormal, #contentOthers").hide();
+
+            if (lvl === "1" || lvl === "5") {
                 $("#contentAdmin").show();
-                $("#contentOthers").hide();
-                $("#contentNormal").hide();
 
                 $('#txtDate').daterangepicker({
                     autoUpdateInput: false,
@@ -296,8 +500,67 @@
                     listReports(kmj, scn, sdate, edate);
                     salertSave(sdate !== "" ? 'Searching for: ' + sdate + ' to ' + edate : 'Searching all dates for ' + kmj);
                 });
+            }
 
-                $('#btnVerify').off('click').on('click', function () {
+            else if (lvl === "2" || lvl === "6") {
+                $("#contentEngineer").show();
+
+                console.log("Full LocalStorage:", localStorage);
+                var rgn = localStorage.getItem("usrR");
+                console.log("Value of usrR:", rgn);
+
+                listKMUJonReg(rgn, '#kmujEng');
+
+                $('#txtDateEng').daterangepicker({
+                    autoUpdateInput: false,
+                    singleDatePicker: true,
+                    minYear: 2021,
+                    locale: { format: 'DD/MM/YYYY' }
+                });
+
+                $('#txtDateEng').on('apply.daterangepicker', function (ev, picker) {
+                    var newEndDate = moment(picker.startDate).add(6, 'days');
+                    $(this).data('daterangepicker').setEndDate(newEndDate);
+                    var sdate = picker.startDate.format('YYYY/MM/DD');
+                    var edate = newEndDate.format('YYYY/MM/DD');
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
+                    localStorage.setItem("selHar", sdate);
+                    localStorage.setItem("selHarE", edate);
+                });
+
+                $("#kmujEng, #sectionEng").on('change', function () {
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDateEng').val('');
+                    var drp = $('#txtDateEng').data('daterangepicker');
+                    drp.setStartDate(moment());
+                    drp.setEndDate(moment());
+                });
+
+                $('#kmujEng').on('change', function (e, selectedSectionValue) {
+                    var selectedKmuj = $(this).find('option:selected').text();
+                    var selectedKmujVal = $(this).val();
+
+                    if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmuj.includes("Select KMUJ")) {
+                        $('#section').prop('disabled', false).trigger('change.select2');
+                        listSection(selectedKmuj, selectedSectionValue);
+                    } else {
+                        $('#section').html('<option value="-0">Select Section</option>').prop('disabled', true).trigger('change').trigger('change.select2');
+                    }
+                });
+
+                $('#btnSearchEng').on('click', function () {
+                    var kmj = $("#kmujEng option:selected").text();
+                    var scn = $("#sectionEng option:selected").text();
+                    localStorage.setItem("selKmj", kmj);
+                    localStorage.setItem("selScn", scn);
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
+                    listReports(kmj, scn, sdate, edate);
+                    salertSave(sdate !== "" ? 'Searching for: ' + sdate + ' to ' + edate : 'Searching all dates for ' + kmj);
+                });
+
+                $('#btnVerifyEng').off('click').on('click', function () {
                     let rptCodesArray = $(this).data('rpt-codes');
                     if (!rptCodesArray || !Array.isArray(rptCodesArray) || rptCodesArray.length === 0) {
                         alert("Report reference codes not found.");
@@ -307,12 +570,69 @@
                 });
             }
 
-            // ==========================================
-            // NORMAL USER VIEWS (lvlI: 2, 3, or 4)
-            // ==========================================
-            else if (["2", "3", "4"].includes(localStorage.getItem("lvlI"))) {
-                $("#contentAdmin").hide();
-                $("#contentOthers").hide();
+            else if (lvl === "3") {
+                $("#contentCI").show();
+
+                console.log("Full LocalStorage:", localStorage);
+                var kmj = localStorage.getItem("kmuj");
+                console.log("Value of kmuj:", kmj);
+
+                listSection(kmj, '#sectionCI');
+
+                if (kmj === null) {
+                    console.warn("DEBUG: 'kmuj' is missing! Check where you set this value.");
+                }
+
+                $('#txtDateCI').daterangepicker({
+                    autoUpdateInput: false,
+                    singleDatePicker: true,
+                    minYear: 2021,
+                    locale: { format: 'DD/MM/YYYY' },
+                    parentEl: '.datepicker-container',
+                    drops: 'auto', // Can be set explicitly to 'down' if auto fails
+                    opens: 'left'
+                });
+
+                $('#txtDateCI').on('apply.daterangepicker', function (ev, picker) {
+                    var newEndDate = moment(picker.startDate).add(6, 'days');
+                    $(this).data('daterangepicker').setEndDate(newEndDate);
+                    var sdate = picker.startDate.format('YYYY/MM/DD');
+                    var edate = newEndDate.format('YYYY/MM/DD');
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
+                    localStorage.setItem("selHar", sdate);
+                    localStorage.setItem("selHarE", edate);
+                });
+
+                $("#sectionCI").on('change', function () {
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDateCI').val('');
+                    var drp = $('#txtDateCI').data('daterangepicker');
+                    drp.setStartDate(moment());
+                    drp.setEndDate(moment());
+                });
+
+                $('#btnSearchCI').on('click', function () {
+                    var scn = $("#sectionCI option:selected").text();
+                    localStorage.setItem("selScn", scn);
+                    var sdate = localStorage.getItem("selHar") || "";
+                    var edate = localStorage.getItem("selHarE") || "";
+                    listReports(kmj, scn, sdate, edate);
+                    salertSave(sdate !== "" ? 'Searching for: ' + sdate + ' to ' + edate : 'Searching all dates for ' + kmj);
+                });
+
+                $('#btnVerifyCI').off('click').on('click', function () {
+                    let rptCodesArray = $(this).data('rpt-codes');
+                    if (!rptCodesArray || !Array.isArray(rptCodesArray) || rptCodesArray.length === 0) {
+                        alert("Report reference codes not found.");
+                        return;
+                    }
+                    executeReportVerification(rptCodesArray.join(','));
+                });
+            }
+
+
+            else if (lvl === "4") {
                 $("#contentNormal").show();
 
                 $('#txtDateNormal').daterangepicker({
@@ -338,15 +658,42 @@
                 });
             }
 
-            // ==========================================
-            // FALLBACK / GUEST VIEWS
-            // ==========================================
             else {
-                $("#contentAdmin").hide();
                 $("#contentOthers").show();
-                $("#contentNormal").hide();
+
             }
         });
+
+
+
+        function listKMUJonReg(region, targetID) {
+            $.ajax({
+                url: linkDepan + "RegMalay?Region=" + region,
+                dataType: "json",
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (data) {
+                    var $target = $(targetID); // Use the specific target provided
+                    var auxArr = ["<option value='-0'>Select KMUJ</option>"];
+
+                    if (data && data.length >= 1) {
+                        $.each(data, function (index, value) {
+                            auxArr.push("<option value='" + value.kmuj_value + "'>" + value.kmuj_name + "</option>");
+                        });
+                        $target.html(auxArr.join('')).prop('disabled', false);
+                    } else {
+                        $target.html('<option value="-0">Select KMUJ</option>').prop('disabled', true);
+                    }
+
+                    // REFRESH SELECT2
+                    if ($target.hasClass("select2-hidden-accessible")) {
+                        $target.trigger('change.select2');
+                    }
+                }
+            });
+        }
+
 
         // Helper: Fetch Section List
         function listSection(kmuj, selectedSectionValue) {
@@ -359,12 +706,12 @@
                     var auxArr = ["<option value='-0'>Select Section</option>"];
                     if (data && data.length > 0) {
                         $.each(data, (i, v) => auxArr.push("<option value='" + v.section_val + "'>" + v.section_name + "</option>"));
-                        $('#section').html(auxArr.join('')).prop('disabled', false);
+                        $('#section, #sectionEng, #sectionCI').html(auxArr.join('')).prop('disabled', false);
                         if (selectedSectionValue) $('#section').val(selectedSectionValue);
                     } else {
-                        $('#section').html(auxArr.join('')).addClass("is-invalid").prop('disabled', true);
+                        $('#section, #sectionEng, #sectionCI').html(auxArr.join('')).addClass("is-invalid").prop('disabled', true);
                     }
-                    $('#section').trigger('change').trigger('change.select2');
+                    $('#section, #sectionEng, #sectionCI').trigger('change').trigger('change.select2');
                 },
                 error: () => swarning()
             });
@@ -421,6 +768,10 @@
                             $('#btnSearch').click();
                         } else if ($('#btnSearchNormal').is(':visible')) {
                             $('#btnSearchNormal').click();
+                        } else if ($('#btnSearchEng').is(':visible')) {
+                            $('#btnSearchEng').click();
+                        } else if ($('#btnSearchCI').is(':visible')) {
+                            $('#btnSearchCI').click();
                         } else {
                             window.location.reload();
                         }
@@ -474,18 +825,18 @@
                     }
 
                     // 2. UPDATE UI (ADMIN & NORMAL)
-                    $('#htmlVerifiedByPW, #htmlVerifiedByPWNormal').text(verifiedByPerson);
-                    $('#htmlVerifiedAt, #htmlVerifiedAtNormal').text(verifiedAtDate);
+                    $('#htmlVerifiedByPW, #htmlVerifiedByPWNormal, #htmlVerifiedByPWEng, #htmlVerifiedByPWCI').text(verifiedByPerson);
+                    $('#htmlVerifiedAt, #htmlVerifiedAtNormal, #htmlVerifiedAtEng, htmlVerifiedAtCI').text(verifiedAtDate);
 
                     if (verifiedByPerson !== "-") {
-                        $('#btnVerify, #btnVerifyNormal').hide();
+                        $('#btnVerifyEng, #btnVerifyCI').hide();
                     } else {
-                        $('#btnVerify, #btnVerifyNormal').show();
+                        $('#btnVerifyEng, #btnVerifyCI').show();
                     }
 
                     // 3. CAPTURE REPORT CODES FOR BUTTON
                     let uniqueReportCodes = [...new Set(data.map(i => (i.rpt_code || "").trim()).filter(i => i))];
-                    $('#btnVerify, #btnVerifyNormal').data('rpt-codes', uniqueReportCodes);
+                    $('#btnVerifyEng, #btnVerifyCI').data('rpt-codes', uniqueReportCodes);
 
                     // 4. PREPARE DATA
                     let finalData = [];
@@ -561,9 +912,9 @@
                     sortedDates.forEach(date => columns.push({ data: date, title: date, className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d }));
                     columns.push({ data: "TotalTime", title: "GRAND TOTAL", className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d });
 
-                    if ($.fn.DataTable.isDataTable('#tableRep, #tableRepNormal')) $('#tableRep, #tableRepNormal').DataTable().clear().destroy();
+                    if ($.fn.DataTable.isDataTable('#tableRep, #tableRepNormal, #tableRepEng, #tableRepCI')) $('#tableRep, #tableRepNormal, #tableRepEng, #tableRepCI').DataTable().clear().destroy();
 
-                    $('#tableRep, #tableRepNormal').DataTable({
+                    $('#tableRep, #tableRepNormal, #tableRepEng, #tableRepCI').DataTable({
                         ordering: false, paging: false, dom: 'Bfrtip', responsive: true, data: finalData, columns: columns,
                         buttons: ['csv', 'excel'],
                         rowCallback: function (row, data, index) {
