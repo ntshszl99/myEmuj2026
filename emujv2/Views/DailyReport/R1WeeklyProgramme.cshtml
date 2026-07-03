@@ -92,51 +92,52 @@
                                         <input type="text" class="form-control" id="txtDate" name="txtDate" required="required" autocomplete="off" />
                                     </div>
                                 </div>
-                                <div class="col-1">
-                                    <label class="mt-3 form-label text-white">.</label>
-                                    <button id="btnSearch" class="btn btn-primary">Search</button>
-                                </div>
-                                <div class="card-body">
-                                    <div class="col-lg-12">
-                                        <div class="table-responsive table-lg">
-                                            <table id="tableRep" class="table table-striped table-bordered text-nowrap hover">
-                                                <thead></thead>
-                                                <tbody></tbody>
-                                            </table>
+                                <div class="col-md-2">
+                                    <div class="d-grid">
+                                        <button id="btnSearch" class="btn btn-primary">Search</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="col-lg-12">
+                                            <div class="table-responsive table-lg">
+                                                <table id="tableRep" class="table table-striped table-bordered text-nowrap hover">
+                                                    <thead></thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="text-center">
-                                    <button type="button" id="btnBulkSave" class='btn btn-success'>Submit Weekly Programme</button>
-                                </div>
-                                <div class="card-body">
-                                    <div style="margin: 15px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
-                                        <div class="row mt-3 mx-5">
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <h6>C.E - Compassionate Leave</h6>
-                                                    <h6>C.T - Yearly Leave</h6>
-                                                    <h6>T.H - Not Present</h6>
-                                                    <h6>S - Sick</h6>
+                                    <div class="text-center">
+                                        <button type="button" id="btnBulkSave" class='btn btn-success'>Submit Weekly Programme</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="margin: 15px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
+                                            <div class="row mt-3 mx-5">
+                                                <div class="col-6">
+                                                    <div class="row">
+                                                        <h6>C.E - Compassionate Leave</h6>
+                                                        <h6>C.T - Yearly Leave</h6>
+                                                        <h6>T.H - Not Present</h6>
+                                                        <h6>S - Sick</h6>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <div class="col-md-12 ms-auto text-end">
-                                                        <h6 class="mb-2 mt-3">PANDUAN WAKTU KERJA</h6>
-                                                        <div class="d-flex justify-content-end">
-                                                            <div class="me-3">
-                                                                <h6>Isnin - Khamis</h6>
-                                                                <h6>Waktu Rehat</h6>
-                                                                <h6>Jumaat</h6>
-                                                                <h6>Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian</h6>
-                                                                <h6></h6>
-                                                            </div>
-                                                            <div>
-                                                                <h6>(0700 - 1645)</h6>
-                                                                <h6>(1200 - 1300)</h6>
-                                                                <h6>(0700 - 1300)</h6>
-                                                                <h6>(0700 - 1500)</h6>
+                                                <div class="col-6">
+                                                    <div class="row">
+                                                        <div class="col-md-12 ms-auto text-end">
+                                                            <h6 class="mb-2 mt-3">PANDUAN WAKTU KERJA</h6>
+                                                            <div class="d-flex justify-content-end">
+                                                                <div class="me-3">
+                                                                    <h6>Isnin - Khamis</h6>
+                                                                    <h6>Waktu Rehat</h6>
+                                                                    <h6>Jumaat</h6>
+                                                                    <h6>Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian</h6>
+                                                                    <h6></h6>
+                                                                </div>
+                                                                <div>
+                                                                    <h6>(0700 - 1645)</h6>
+                                                                    <h6>(1200 - 1300)</h6>
+                                                                    <h6>(0700 - 1300)</h6>
+                                                                    <h6>(0700 - 1500)</h6>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -154,161 +155,136 @@
             <div class="" id="contentEngineer">
                 <div class="card">
                     <div class="card-body">
-                        <div class="mb-3 m-0">
-                            <div class="row">
-                                <div class="col-4">
-                                    <label class="mt-3 form-label">KMUJ</label>
-                                    <select id="kmujEng" class="form-control form-select select2">
-                                        <option value="-0">Select KMUJ</option>
-                                    </select>
+                        <div class="row g-3 align-items-end mb-4">
+                            <div class="col-md-4">
+                                <label for="kmujEng" class="form-label">KMUJ</label>
+                                <select id="kmujEng" class="form-control form-select select2">
+                                    <option value="-0">Select KMUJ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="sectionEng" class="form-label">Section</label>
+                                <select id="sectionEng" class="form-control form-select select2">
+                                    <option value="-0">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="txtDateEng" class="form-label">Date (From - To)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-solid fa-calendar"></i></span>
+                                    <input type="text" class="form-control" id="txtDateEng" name="txtDateEng" required="required" autocomplete="off" />
                                 </div>
-                                <div class="col-4">
-                                    <label class="mt-3 form-label">Section</label>
-                                    <select id="sectionEng" class="form-control form-select select2">
-                                        <option value="-0">Select Section</option>
-                                    </select>
+                            </div>
+
+                            <div class="col-md-1">
+                                <div class="d-grid">
+                                    <button id="btnSearchEng" class="btn btn-primary px-3">Search</button>
                                 </div>
-                                <div class="col-3">
-                                    <label class="mt-3 form-label">Date (From - To)</label>
-                                    <div class="input-group">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive table-lg mb-4">
+                            <table id="tableRepEng" class="table table-striped table-bordered text-nowrap hover w-100">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin: 15px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <h6>C.E - Compassionate Leave</h6>
+                                    <h6>C.T - Yearly Leave</h6>
+                                    <h6>T.H - Not Present</h6>
+                                    <h6>S - Sick</h6>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <h6 class="mb-2 fw-bold">PANDUAN WAKTU KERJA</h6>
+                                    <div class="d-flex justify-content-md-end gap-3">
+                                        <div class="text-start text-md-end">
+                                            <h6>Isnin - Khamis</h6>
+                                            <h6>Waktu Rehat</h6>
+                                            <h6>Jumaat</h6>
+                                            <h6>Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian</h6>
                                         </div>
-                                        <input type="text" class="form-control" id="txtDateEng" name="txtDateEng" required="required" autocomplete="off" />
-                                    </div>
-                                </div>
-                                <div class="col-1">
-                                    <label class="mt-3 form-label text-white">.</label>
-                                    <button id="btnSearchEng" class="btn btn-primary">Search</button>
-                                </div>
-                                <div class="card-body">
-                                    <div class="col-lg-12">
-                                        <div class="table-responsive table-lg">
-                                            <table id="tableRepEng" class="table table-striped table-bordered text-nowrap hover">
-                                                <thead></thead>
-                                                <tbody></tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div style="margin: 15px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
-                                        <div class="row mt-3 mx-5">
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <h6>C.E - Compassionate Leave</h6>
-                                                    <h6>C.T - Yearly Leave</h6>
-                                                    <h6>T.H - Not Present</h6>
-                                                    <h6>S - Sick</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <div class="col-md-12 ms-auto text-end">
-                                                        <h6 class="mb-2 mt-3">PANDUAN WAKTU KERJA</h6>
-                                                        <div class="d-flex justify-content-end">
-                                                            <div class="me-3">
-                                                                <h6>Isnin - Khamis</h6>
-                                                                <h6>Waktu Rehat</h6>
-                                                                <h6>Jumaat</h6>
-                                                                <h6>Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian</h6>
-                                                                <h6></h6>
-                                                            </div>
-                                                            <div>
-                                                                <h6>(0700 - 1645)</h6>
-                                                                <h6>(1200 - 1300)</h6>
-                                                                <h6>(0700 - 1300)</h6>
-                                                                <h6>(0700 - 1500)</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="text-start">
+                                            <h6>(0700 - 1645)</h6>
+                                            <h6>(1200 - 1300)</h6>
+                                            <h6>(0700 - 1300)</h6>
+                                            <h6>(0700 - 1500)</h6>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
+
 
             <div class="" id="contentCI">
                 <div class="card">
                     <div class="card-body">
-                        <div class="mb-3 m-0">
-                            <div class="row">
-                                <div class="col-4">
-                                    <label class="mt-3 form-label">Section</label>
-                                    <select id="sectionCI" class="form-control form-select select2">
-                                        <option value="-0">Select Section</option>
-                                    </select>
+                        <div class="row g-3 align-items-end mb-4">
+                            <div class="col-md-5">
+                                <label for="sectionCI" class="form-label">Section</label>
+                                <select id="sectionCI" class="form-control form-select select2">
+                                    <option value="-0">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="txtDateCI" class="form-label">Date (From - To)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fa fa-solid fa-calendar"></i></span>
+                                    <input type="text" class="form-control" id="txtDateCI" name="txtDateCI" required="required" autocomplete="off" />
                                 </div>
-                                <div class="col-3">
-                                    <label class="mt-3 form-label">Date (From - To)</label>
-                                    <div class="input-group">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class=" mt-1 mb-1 fa fa-solid fa fa-calendar font-20"></i></span>
-                                        </div>
-                                        <input type="text" class="form-control" id="txtDateCI" name="txtDateCI" required="required" autocomplete="off" />
-                                    </div>
-                                </div>
-                                <div class="col-1">
-                                    <label class="mt-3 form-label text-white">.</label>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="d-grid">
                                     <button id="btnSearchCI" class="btn btn-primary">Search</button>
                                 </div>
-                                <div class="card-body">
-                                    <div class="col-lg-12">
-                                        <div class="table-responsive table-lg">
-                                            <table id="tableRepCI" class="table table-striped table-bordered text-nowrap hover">
-                                                <thead></thead>
-                                                <tbody></tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive table-lg mb-4">
+                            <table id="tableRepCI" class="table table-striped table-bordered text-nowrap hover w-100">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin: 15px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <h6>C.E - Compassionate Leave</h6>
+                                    <h6>C.T - Yearly Leave</h6>
+                                    <h6>T.H - Not Present</h6>
+                                    <h6>S - Sick</h6>
                                 </div>
-                                <div class="card-body">
-                                    <div style="margin: 15px 0; padding: 10px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9f9f9;">
-                                        <div class="row mt-3 mx-5">
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <h6>C.E - Compassionate Leave</h6>
-                                                    <h6>C.T - Yearly Leave</h6>
-                                                    <h6>T.H - Not Present</h6>
-                                                    <h6>S - Sick</h6>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="row">
-                                                    <div class="col-md-12 ms-auto text-end">
-                                                        <h6 class="mb-2 mt-3">PANDUAN WAKTU KERJA</h6>
-                                                        <div class="d-flex justify-content-end">
-                                                            <div class="me-3">
-                                                                <h6>Isnin - Khamis</h6>
-                                                                <h6>Waktu Rehat</h6>
-                                                                <h6>Jumaat</h6>
-                                                                <h6>Perondaan Landasan, Off Day, Rehat Minggu, Cuti Umum dan Gantian</h6>
-                                                                <h6></h6>
-                                                            </div>
-                                                            <div>
-                                                                <h6>(0700 - 1645)</h6>
-                                                                <h6>(1200 - 1300)</h6>
-                                                                <h6>(0700 - 1300)</h6>
-                                                                <h6>(0700 - 1500)</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                <div class="col-md-6 text-md-end">
+                                    <h6 class="mb-2 fw-bold">PANDUAN WAKTU KERJA</h6>
+                                    <div class="d-flex justify-content-md-end gap-3">
+                                        <div class="text-start text-md-end">
+                                            <h6>Isnin - Khamis</h6>
+                                            <h6>Waktu Rehat</h6>
+                                            <h6>Jumaat</h6>
+                                            <h6>Perondaan Landasan, Off Day...</h6>
+                                        </div>
+                                        <div class="text-start">
+                                            <h6>(0700 - 1645)</h6>
+                                            <h6>(1200 - 1300)</h6>
+                                            <h6>(0700 - 1300)</h6>
+                                            <h6>(0700 - 1500)</h6>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
-
 
             <div class="" id="contentNormal">
                 <div class="card">
@@ -401,6 +377,7 @@
         </div>
     </div>
 </div>
+    </div>
 
 
 @section scripts{
@@ -475,6 +452,69 @@
                         salertSave('Searching all dates for ' + rgn);
                     }
                 });
+
+                $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
+                    e.preventDefault();
+                    const $btn = $(this);
+                    if ($btn.attr('disabled')) return false;
+
+                    const $span = $btn.find('.attendance-text');
+                    const date = $btn.data('date');
+                    const empId = $btn.data('emplid');
+                    const dayIndex = moment(date).diff(startDate, 'days');
+                    const oldType = $btn.data('leavetype') || 'valid';
+
+                    let newType, newDisplay;
+                    if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
+                    else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
+                    else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
+                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
+                    else { newType = 'valid'; newDisplay = ''; }
+
+                    attStats[oldType][dayIndex]--;
+                    attStats[newType][dayIndex]++;
+
+                    $btn.data('leavetype', newType);
+                    $span.text(newDisplay);
+
+                    footerMapping.forEach(f => {
+                        let val = attStats[f.attKey][dayIndex];
+                        $(`.summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(val === 0 ? '' : val);
+                    });
+
+                    let dbCutiCode = "valid";
+                    if (newType === 'al') dbCutiCode = "CT";
+                    else if (newType === 'mc') dbCutiCode = "S";
+                    else if (newType === 'ab') dbCutiCode = "TH";
+                    else if (newType === 'cs') dbCutiCode = "CS";
+
+                    autoSaveStaffAttendance(empId, date, dbCutiCode);
+                });
+
+                $(document).off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
+                    e.preventDefault();
+                    const $btn = $(this); const $icon = $btn.find('i');
+                    const empId = $btn.data('emplid'); const date = $btn.data('date'); const workName = $btn.data('workname');
+                    let oldCode = $btn.data('code'); const dayIndex = moment(date).diff(startDate, 'days');
+                    let newCode, newIcon;
+
+                    if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
+                    else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
+                    else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
+
+                    if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
+                    if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
+
+                    $btn.data('code', newCode); $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
+                    const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
+
+                    const $attendanceFooterCells = $(`.total-cell[data-rowtype="attendance"][data-workname="${workName}"][data-day="${dayIndex}"]`);
+                    $attendanceFooterCells.text(newTotal > 0 ? newTotal : "");
+
+                    autoSaveWorkPlan(empId, date, workName, $icon);
+                });
+
+
             }
 
             else if (lvl === "2" || lvl === "6") {
@@ -490,28 +530,6 @@
                 if (rgn === null) {
                     console.warn("DEBUG: 'usrRE' is missing! Check where you set this value.");
                 }
-
-                $('#txtDateEng').daterangepicker({
-                    autoUpdateInput: false,
-                    singleDatePicker: true,
-                    minYear: 2021,
-                    locale: {
-                        format: 'DD/MM/YYYY'
-                    }
-                });
-
-                $('#txtDateEng').on('apply.daterangepicker', function (ev, picker) {
-                    var newEndDate = moment(picker.startDate).add(7, 'days');
-                    $(this).data('daterangepicker').setEndDate(newEndDate);
-
-                    var sdate = picker.startDate.format('YYYY/MM/DD');
-                    var edate = newEndDate.format('YYYY/MM/DD');
-
-                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
-
-                    localStorage.setItem("selHar", sdate);
-                    localStorage.setItem("selHarE", edate);
-                });
 
                 $('#kmujEng').on('change', function (e, selectedSectionValue) {
                     var selectedKmujText = $(this).find('option:selected').text(); // e.g., "Gemas"
@@ -577,28 +595,6 @@
                     console.warn("DEBUG: 'kmuj' is missing! Check where you set this value.");
                 }
 
-                $('#txtDateCI').daterangepicker({
-                    autoUpdateInput: false,
-                    singleDatePicker: true,
-                    minYear: 2021,
-                    locale: {
-                        format: 'DD/MM/YYYY'
-                    }
-                });
-
-                $('#txtDateCI').on('apply.daterangepicker', function (ev, picker) {
-                    var newEndDate = moment(picker.startDate).add(7, 'days');
-                    $(this).data('daterangepicker').setEndDate(newEndDate);
-
-                    var sdate = picker.startDate.format('YYYY/MM/DD');
-                    var edate = newEndDate.format('YYYY/MM/DD');
-
-                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
-
-                    localStorage.setItem("selHar", sdate);
-                    localStorage.setItem("selHarE", edate);
-                });
-
                 $("#sectionCI").on('change', function () {
 
                     var kmj = localStorage.getItem("kmuj");
@@ -628,30 +624,8 @@
             }
 
 
-            else if (llvl === "4") {
+            else if (lvl === "4") {
                 $("#contentNormal").show();
-
-                $('#txtDateNormal').daterangepicker({
-                    autoUpdateInput: false,
-                    singleDatePicker: true,
-                    minYear: 2021,
-                    locale: {
-                        format: 'DD/MM/YYYY'
-                    }
-                });
-
-                $('#txtDateNormal').on('apply.daterangepicker', function (ev, picker) {
-                    var newEndDate = moment(picker.startDate).add(7, 'days');
-                    $(this).data('daterangepicker').setEndDate(newEndDate);
-
-                    var sdate = picker.startDate.format('YYYY/MM/DD');
-                    var edate = newEndDate.format('YYYY/MM/DD');
-
-                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + newEndDate.format('DD/MM/YYYY'));
-
-                    localStorage.setItem("selHar", sdate);
-                    localStorage.setItem("selHarE", edate);
-                });
 
                 $('#btnSearchNormal').on('click', function () {
                     var scn = localStorage.getItem("scn");
@@ -671,16 +645,76 @@
                         salertSave('Searching all dates for ' + rgn);
                     }
                 });
+
+                $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
+                    e.preventDefault();
+                    const $btn = $(this);
+                    if ($btn.attr('disabled')) return false;
+
+                    const $span = $btn.find('.attendance-text');
+                    const date = $btn.data('date');
+                    const empId = $btn.data('emplid');
+                    const dayIndex = moment(date).diff(startDate, 'days');
+                    const oldType = $btn.data('leavetype') || 'valid';
+
+                    let newType, newDisplay;
+                    if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
+                    else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
+                    else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
+                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
+                    else { newType = 'valid'; newDisplay = ''; }
+
+                    attStats[oldType][dayIndex]--;
+                    attStats[newType][dayIndex]++;
+
+                    $btn.data('leavetype', newType);
+                    $span.text(newDisplay);
+
+                    footerMapping.forEach(f => {
+                        let val = attStats[f.attKey][dayIndex];
+                        $(`.summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(val === 0 ? '' : val);
+                    });
+
+                    let dbCutiCode = "valid";
+                    if (newType === 'al') dbCutiCode = "CT";
+                    else if (newType === 'mc') dbCutiCode = "S";
+                    else if (newType === 'ab') dbCutiCode = "TH";
+                    else if (newType === 'cs') dbCutiCode = "CS";
+
+                    autoSaveStaffAttendance(empId, date, dbCutiCode);
+                });
+
+                $(document).off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
+                    e.preventDefault();
+                    const $btn = $(this); const $icon = $btn.find('i');
+                    const empId = $btn.data('emplid'); const date = $btn.data('date'); const workName = $btn.data('workname');
+                    let oldCode = $btn.data('code'); const dayIndex = moment(date).diff(startDate, 'days');
+                    let newCode, newIcon;
+
+                    if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
+                    else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
+                    else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
+
+                    if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
+                    if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
+
+                    $btn.data('code', newCode); $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
+                    const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
+
+                    const $attendanceFooterCells = $(`.total-cell[data-rowtype="attendance"][data-workname="${workName}"][data-day="${dayIndex}"]`);
+                    $attendanceFooterCells.text(newTotal > 0 ? newTotal : "");
+
+                    autoSaveWorkPlan(empId, date, workName, $icon);
+                });
+
             }
 
             else {
-                $("#contentAdmin").hide();
+                $("#contentOthers").show();
             }
 
 
-
-
-            $('#txtDate, #txtDateNormal').daterangepicker({
+            $('#txtDate, #txtDateNormal, #txtDateEng, #txtDateCI').daterangepicker({
                 autoUpdateInput: false,
                 singleDatePicker: true,
                 minYear: 2021,
@@ -689,7 +723,7 @@
                 }
             });
 
-            $('#txtDate, #txtDateNormal').on('apply.daterangepicker', function (ev, picker) {
+            $('#txtDate, #txtDateNormal, #txtDateEng, #txtDateCI').on('apply.daterangepicker', function (ev, picker) {
                 var newEndDate = moment(picker.startDate).add(6, 'days');
                 $(this).data('daterangepicker').setEndDate(newEndDate);
 
@@ -706,51 +740,51 @@
                 bulkSaveTotals();
             });
 
-            $('#tableRep, #tableRepNormal').on('click', '.attendance-toggle', function (e) {
-                e.preventDefault();
-                var btn = $(this);
-                var span = btn.find('.attendance-text');
-                var currentText = span.text().trim();
+            //$('#tableRep, #tableRepNormal').on('click', '.attendance-toggle', function (e) {
+            //    e.preventDefault();
+            //    var btn = $(this);
+            //    var span = btn.find('.attendance-text');
+            //    var currentText = span.text().trim();
 
-                // Define the cycle order
-                const cycle = ['','CE', 'CT', 'TH', 'S'];
+            //    // Define the cycle order
+            //    const cycle = ['','CE', 'CT', 'TH', 'S'];
 
-                // Determine next state
-                var currentIndex = cycle.indexOf(currentText);
-                var nextValue = cycle[(currentIndex + 1) % cycle.length];
+            //    // Determine next state
+            //    var currentIndex = cycle.indexOf(currentText);
+            //    var nextValue = cycle[(currentIndex + 1) % cycle.length];
 
-                // Update UI
-                span.text(nextValue);
+            //    // Update UI
+            //    span.text(nextValue);
 
-                // Call your auto-save function
-                autoSaveStaffAttendance(
-                    btn.data('emplid'),
-                    btn.data('date'),
-                    nextValue
-                );
-            });
+            //    // Call your auto-save function
+            //    autoSaveStaffAttendance(
+            //        btn.data('emplid'),
+            //        btn.data('date'),
+            //        nextValue
+            //    );
+            //});
 
-            $('#tableRep, #tableRepNormal').on('click', '.workplan-toggle', function () {
-                var btn = $(this);
-                var icon = btn.find('i');
+            //$('#tableRep, #tableRepNormal').on('click', '.workplan-toggle', function () {
+            //    var btn = $(this);
+            //    var icon = btn.find('i');
 
-                if (icon.hasClass('fa-blank')) {
-                    icon.removeClass('fa-blank').addClass('fa-minus fa-rotate-90');
-                } else if (icon.hasClass('fa-rotate-90')) {
-                    icon.removeClass('fa-minus fa-rotate-90').addClass('fa-plus');
-                } else if (icon.hasClass('fa-plus')) {
-                    icon.removeClass('fa-plus').addClass('fa-minus');
-                } else {
-                    icon.removeClass('fa-minus').addClass('fa-blank');
-                }
+            //    if (icon.hasClass('fa-blank')) {
+            //        icon.removeClass('fa-blank').addClass('fa-minus fa-rotate-90');
+            //    } else if (icon.hasClass('fa-rotate-90')) {
+            //        icon.removeClass('fa-minus fa-rotate-90').addClass('fa-plus');
+            //    } else if (icon.hasClass('fa-plus')) {
+            //        icon.removeClass('fa-plus').addClass('fa-minus');
+            //    } else {
+            //        icon.removeClass('fa-minus').addClass('fa-blank');
+            //    }
 
-                autoSaveWorkPlan(
-                    btn.data('emplid'),
-                    btn.data('date'),
-                    btn.data('workname'),
-                    icon
-                );
-            });
+            //    autoSaveWorkPlan(
+            //        btn.data('emplid'),
+            //        btn.data('date'),
+            //        btn.data('workname'),
+            //        icon
+            //    );
+            //});
         });
 
 
@@ -1525,66 +1559,6 @@
                     // Event delegation triggers (Stay unchanged)
                     // ==========================================
 
-                    $(document).off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
-                        e.preventDefault();
-                        const $btn = $(this);
-                        if ($btn.attr('disabled')) return false;
-
-                        const $span = $btn.find('.attendance-text');
-                        const date = $btn.data('date');
-                        const empId = $btn.data('emplid');
-                        const dayIndex = moment(date).diff(startDate, 'days');
-                        const oldType = $btn.data('leavetype') || 'valid';
-
-                        let newType, newDisplay;
-                        if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
-                        else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
-                        else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
-                        else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
-                        else { newType = 'valid'; newDisplay = ''; }
-
-                        attStats[oldType][dayIndex]--;
-                        attStats[newType][dayIndex]++;
-
-                        $btn.data('leavetype', newType);
-                        $span.text(newDisplay);
-
-                        footerMapping.forEach(f => {
-                            let val = attStats[f.attKey][dayIndex];
-                            $(`.summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(val === 0 ? '' : val);
-                        });
-
-                        let dbCutiCode = "valid";
-                        if (newType === 'al') dbCutiCode = "CT";
-                        else if (newType === 'mc') dbCutiCode = "S";
-                        else if (newType === 'ab') dbCutiCode = "TH";
-                        else if (newType === 'cs') dbCutiCode = "CS";
-
-                        autoSaveStaffAttendance(empId, date, dbCutiCode);
-                    });
-
-                    $(document).off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
-                        e.preventDefault();
-                        const $btn = $(this); const $icon = $btn.find('i');
-                        const empId = $btn.data('emplid'); const date = $btn.data('date'); const workName = $btn.data('workname');
-                        let oldCode = $btn.data('code'); const dayIndex = moment(date).diff(startDate, 'days');
-                        let newCode, newIcon;
-
-                        if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
-                        else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
-                        else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
-
-                        if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
-                        if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
-
-                        $btn.data('code', newCode); $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
-                        const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
-
-                        const $attendanceFooterCells = $(`.total-cell[data-rowtype="attendance"][data-workname="${workName}"][data-day="${dayIndex}"]`);
-                        $attendanceFooterCells.text(newTotal > 0 ? newTotal : "");
-
-                        autoSaveWorkPlan(empId, date, workName, $icon);
-                    });
                 },
                 error: function () { swarning("Failed to load reports."); }
             });
