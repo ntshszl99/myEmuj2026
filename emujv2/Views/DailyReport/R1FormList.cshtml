@@ -1587,7 +1587,7 @@
                 return;
             }
 
-            var url = linkDepan + "GetDailyReportNormal?SDate=" + mdate + "&EDate=" + edate;
+            var url = linkDepan + " ?SDate=" + mdate + "&EDate=" + edate;
             if (section) url += "&Section=" + encodeURIComponent(section);
             if (kmuj) url += "&Kmuj=" + encodeURIComponent(kmuj);
 
@@ -1617,6 +1617,7 @@
                             { data: "no" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
+                            { data: "kmuj_name" },
                             { data: "section_name" },
                             { data: "upd_user" },
                             { data: "upd_date" },
@@ -1654,20 +1655,27 @@
                             },
                             {
                                 targets: -5,
+                                title: "KMUJ",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -6,
                                 title: "Work Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY');
                                 },
                             },
                             {
-                                targets: -6,
+                                targets: -7,
                                 title: "Report ID",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -7,
+                                targets: -8,
                                 title: "No",
                                 render: function (data, type, full, meta) {
                                     return counter++;
@@ -1760,7 +1768,7 @@
                             {
                                 targets: -4,
                                 title: "Section",
-                                render: function (data, type, full, meta) {
+                                render: function (data, type, full, meta) { 
                                     return data;
                                 },
                             },
@@ -1768,7 +1776,7 @@
                                 targets: -5,
                                 title: "KMUJ",
                                 render: function (data, type, full, meta) {
-                                    return moment(data).format('DD/MM/YYYY');
+                                    return data;
                                 },
                             },
                             {
