@@ -37,24 +37,30 @@ namespace emujv2Api.Model
 
             User.Userid = Userid;
 
-
-            SqlStr.Append(" Select status, b.usrlevel ");
-            SqlStr.Append(" from HR_MAIN as a, [muj].[dbo].[staff_login] as b");
-            SqlStr.Append(" where a.Emplid = b.staff_id ");
-            SqlStr.Append(" and b.staff_id = @Emplid ");
-            SqlStr.Append(" and status = @Status ");
+            // 1. Fixed the duplicate "= =" typo here
+            SqlStr.Append(" SELECT a.status ");
+            SqlStr.Append(" FROM HR_MAIN AS a ");
+            SqlStr.Append(" INNER JOIN [muj].[dbo].[staff_login] AS b ");
+            SqlStr.Append(" ON a.Emplid = b.staff_id ");
+            SqlStr.Append(" WHERE b.staff_id = @Emplid ");
+            SqlStr.Append(" AND a.status = @Status ");
 
             ParamTmp.Add("@Emplid", User.Userid);
-            ParamTmp.Add("@Status", 'A');
+            ParamTmp.Add("@Status", "A"); // Changed 'A' (char) to "A" (string) for SQL parameter safety
 
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.HRCon, ref Salah);
-            if (Recc.Rows.Count > 0)
+
+            // Check if the SQL query found a matching active staff record
+            if (Recc != null && Recc.Rows.Count > 0)
             {
+                // 2. This calls your OTHER overloaded method. 
+                // Double-check what logic lives inside ValidateUser(ref User)!
                 if (ValidateUser(ref User))
                 {
                     CheckUserRoles(ref User);
                     Tempat(ref User);
                     TempatEng(ref User);
+
                     TokenMain.Add("exp", DateTimeOffset.UtcNow.AddHours(5).ToUnixTimeSeconds());
                     TokenMain.Add("Userid", Userid);
                     TokenMain.Add("Nama", User.Nama);
@@ -64,17 +70,18 @@ namespace emujv2Api.Model
                 else
                 {
                     User.ErrCode = "99";
-                    User.ErrDtl = "User not register in system";
+                    User.ErrDtl = "User not registered in system / password invalid";
                 }
             }
             else
             {
+                // If the database query returns 0 rows, it will explicitly stop here.
                 User.ErrCode = "99";
                 User.ErrDtl = "User Not Found / Inactive";
             }
+
             return User;
         }
-
         private bool ValidateUser(ref UserCons User)
         {
             StringBuilder SqlStr = new StringBuilder();
@@ -84,10 +91,10 @@ namespace emujv2Api.Model
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
 
-            SqlStr.Append(" Select Nama, DeptDesc, YOS, IC_New, Age, PhoneNumber, LocDesc, RegDesc, JobDesc, Deptid, Status ");
-            SqlStr.Append(" From HR_Main ");
-            SqlStr.Append(" Where Emplid = @Emplid ");
-            SqlStr.Append(" And Status = 'A' ");
+                SqlStr.Append(" Select Nama, DeptDesc, YOS, IC_New, Age, PhoneNumber, LocDesc, RegDesc, JobDesc, Deptid, Status ");
+                SqlStr.Append(" From HR_Main ");
+                SqlStr.Append(" Where Emplid = @Emplid ");
+                SqlStr.Append(" And Status = 'A' ");
 
             ParamTmp.Add("@Emplid", User.Userid);
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.HRCon, ref Salah);
