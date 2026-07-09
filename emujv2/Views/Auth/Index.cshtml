@@ -148,8 +148,7 @@
                             localStorage.setItem("main", data.TokenAdmin);
 
                             setWithExpiry('perang', data.Userid, 300);//5jam
-                            setTimeout(window.location.replace("/Home/Index"), 20000);
-
+                            setTimeout(window.location.replace("../Home/Index"), 20000);
                         },
                         error: function (xhr) {
                             $('#masukkk').show();

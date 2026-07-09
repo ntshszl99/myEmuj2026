@@ -256,6 +256,7 @@
     <script type="text/javascript">
 
         $(document).ready(function () {
+            initDatePicker();
             listGang();
             listLnCondition();
             listCategory();
@@ -285,18 +286,6 @@
             $('#id_radio2').click(function () {
                 $('#station').hide('fast');
                 $('#point').hide('fast');
-            });
-
-            $("#txtDate").daterangepicker({
-                autoUpdateInput: false,
-                singleDatePicker: true,
-                parentEl: "#workDateContainer",
-                opens: 'left',
-                minYear: 2021,
-                maxDate: new Date(),
-                locale: {
-                    format: 'DD/MM/YYYY'
-                }
             });
 
             $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
@@ -348,6 +337,22 @@
                 }
             });
 
+            $('#tableRep').on('click', '.btn-danger', function (e) {
+                e.preventDefault();
+
+                var table = $('#tableRep').DataTable();
+                var tr = $(this).closest('tr');
+
+                if (tr.hasClass('child')) {
+                    tr = tr.prev();
+                }
+
+                table.row(tr).remove().draw(false);
+
+                console.log("Row removed client-side.");
+            });
+
+                
             //automatic show workunit when select worktype
             $("#worktype").on('change', function () {
                 wrk = $("#worktype option:selected").text();
@@ -365,9 +370,9 @@
                 }
             });
 
-            $('#startKM, #endKM').on('change', function () {
-                validateKM();
-            });
+            //$('#startKM, #endKM').on('change', function () {
+            //    validateKM();
+            //});
 
             $('#startTime, #endTime').on('change', function () {
                 validateTime();
@@ -411,6 +416,31 @@
             });
 
         });
+
+        function initDatePicker() {
+            var today = new Date();
+            var dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 4 = Thursday, 6 = Saturday
+
+            // Calculate how many days until next week's Saturday (July 18th)
+            var daysUntilNextSaturday = 6 - dayOfWeek + 7;
+
+            var nextWeekSaturday = new Date();
+            nextWeekSaturday.setDate(today.getDate() + daysUntilNextSaturday);
+            nextWeekSaturday.setHours(23, 59, 59, 999);
+
+            // Initialize the daterangepicker
+            $("#txtDate").daterangepicker({
+                autoUpdateInput: false,
+                singleDatePicker: true,
+                parentEl: "#workDateContainer",
+                opens: 'left',
+                minYear: 2021,
+                maxDate: nextWeekSaturday, // Everything after July 18th will be disabled
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+        }
 
         function stfDetails(ids) {
             var staffID = $(".staffID" + ids).html();
@@ -494,43 +524,43 @@
             );
         }
 
-        function validateKM() {
-            const startKM = parseFloat($('#startKM').val());
-            const endKM = parseFloat($('#endKM').val());
-            var linecond = $("#linecond option:selected").text();
-            localStorage.setItem("selLine", linecond);
+        //function validateKM() {
+        //    const startKM = parseFloat($('#startKM').val());
+        //    const endKM = parseFloat($('#endKM').val());
+        //    var linecond = $("#linecond option:selected").text();
+        //    localStorage.setItem("selLine", linecond);
 
-            if (isNaN(startKM) || isNaN(endKM)) {
-                $('#totalKM').val('');
-                return;
-            }
+        //    if (isNaN(startKM) || isNaN(endKM)) {
+        //        $('#totalKM').val('');
+        //        return;
+        //    }
 
-            const totalKM = (endKM - startKM).toFixed(3);
+        //    const totalKM = (endKM - startKM).toFixed(3);
 
-            if (linecond === "UpLine") {
-                if (startKM > endKM) {
-                    $('#totalKM').val(totalKM);
-                }
-                else {
-                    Swal.fire('Invalid KM Range', 'End KM must be smaller than Start KM.', 'warning');
-                    $('#totalKM').val('');
-                }
-            } else if (linecond === "DownLine") {
-                if (startKM < endKM) {
-                    $('#totalKM').val(totalKM);
-                }
-                else {
+        //    if (linecond === "UpLine") {
+        //        if (startKM > endKM) {
+        //            $('#totalKM').val(totalKM);
+        //        }
+        //        else {
+        //            Swal.fire('Invalid KM Range', 'End KM must be smaller than Start KM.', 'warning');
+        //            $('#totalKM').val('');
+        //        }
+        //    } else if (linecond === "DownLine") {
+        //        if (startKM < endKM) {
+        //            $('#totalKM').val(totalKM);
+        //        }
+        //        else {
 
-                    Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
-                    $('#totalKM').val('');
-                }
-            } else if (endKM < startKM) {
-                Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
-                $('#totalKM').val('');
-            }
-            else $('#totalKM').val(totalKM);
+        //            Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
+        //            $('#totalKM').val('');
+        //        }
+        //    } else if (endKM < startKM) {
+        //        Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
+        //        $('#totalKM').val('');
+        //    }
+        //    else $('#totalKM').val(totalKM);
 
-        }
+        //}
 
         function validateTime() {
             const startTime = $('#startTime').val();
@@ -869,7 +899,7 @@
                                     { data: "JobGrade" },
                                     { data: "JobDesc" },
                                     { data: "Gang" },
-                                    { data: "cuti_name" },
+                                    //{ data: "cuti_name" },
                                     { data: "Emplid" },
                                 ],
                                 columnDefs: [
@@ -883,60 +913,61 @@
                                         render: function (data, type, full, meta) {
                                             countStf++;
                                             /*return '<a href="..' + data + '" id="BviewRes" class="btn btn-primary"><i class="fe fe-edit font-16"></i>';*/
-                                            return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>'
-
+                                            //return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>'
+                                            //return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>'
+                                            return '<a class="modal-effect btn btn-danger btn-remove-row" data-id="' + data + '">Remove <i class="fe fe-x font-16 ms-1"></i></a>';
                                         },
                                     },
+                                    //{
+                                    //    targets: -2,
+                                    //    title: "Leave Status",
+                                    //    render: function (data, type, full, meta) {
+                                    //        var status = '';
+                                    //        if (data == 'VALID') {
+                                    //            status = '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a></p>';
+                                    //        } else {
+                                    //            status = '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a></p>';
+                                    //        }
+                                    //        return status;
+                                    //    },
+                                    //},
                                     {
                                         targets: -2,
-                                        title: "Leave Status",
-                                        render: function (data, type, full, meta) {
-                                            var status = '';
-                                            if (data == 'VALID') {
-                                                status = '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a></p>';
-                                            } else {
-                                                status = '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a></p>';
-                                            }
-                                            return status;
-                                        },
-                                    },
-                                    {
-                                        targets: -3,
                                         title: "Gang",
                                         render: function (data, type, full, meta) {
                                             return data;
                                         },
                                     },
                                     {
-                                        targets: -4,
+                                        targets: -3,
                                         title: "Position",
                                         render: function (data, type, full, meta) {
                                             return data;
                                         },
                                     },
                                     {
-                                        targets: -5,
+                                        targets: -4,
                                         title: "Grade",
                                         render: function (data, type, full, meta) {
                                             return data;
                                         },
                                     },
                                     {
-                                        targets: -6,
+                                        targets: -5,
                                         title: "Name",
                                         render: function (data, type, full, meta) {
                                             return data;
                                         },
                                     },
                                     {
-                                        targets: -7,
+                                        targets: -6,
                                         title: "Staff ID",
                                         render: function (data, type, full, meta) {
                                             return data;
                                         },
                                     },
                                     {
-                                        targets: -8,
+                                        targets: -7,
                                         title: "No",
                                         render: function (data, type, full, meta) {
                                             return counter++;

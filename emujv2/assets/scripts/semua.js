@@ -1,5 +1,6 @@
 ﻿//linkDepan = "https://webapi.ktmb.com.my/emujv2api/api/webapi/";
 linkDepan = "http://localhost:16053/api/webapi/";
+//linkDepan = https://spot.ktmb.com.my/emujapi/api/webapi/;
 
 $(document).ready(function () {
     var x = localStorage.getItem("usrN");
@@ -174,23 +175,42 @@ function jenisTarikh(valx) {//
 }
 function checkSess() {
 
+
+
     uriR = window.location.pathname;
+
     ptgs = uriR.split("/");
+
     pnjg = (ptgs.length);
 
+
+
     const value = getWithExpiry('perang');
+
     if (!value) {
+
         localStorage.clear();// alert(pnjg);
+
         if (pnjg <= 3) {
-            setTimeout(window.location.replace("emujv2/Auth/Index"), 20000);
+
+            setTimeout(window.location.replace("Auth/Index"), 20000);
+
         }
+
         else if (pnjg == 4) {
-            setTimeout(window.location.replace("../Auth/Index"), 20000);
+
+            setTimeout(window.location.replace("emuj/Auth/Index"), 20000);
+
         }
+
         else if (pnjg == 5) {
-            setTimeout(window.location.replace("../../Auth/Index"), 20000);
+
+            setTimeout(window.location.replace("./emuj/Auth/Index"), 20000);
+
         }
+
     }
+
 }
 
 function checkStore() {
@@ -226,24 +246,42 @@ function getWithExpiry(key) {
     return item.value
 }
 function checkExt() {
+
     uriR = window.location.pathname;
+
     ptgs = uriR.split("/");
+
     pnjg = ptgs.length;
+
     if (localStorage.getItem("main") === null) {
+
         if (pnjg == 2) {
-            setTimeout(window.location.replace("emujv2/Auth/Index"), 20000);
+
+            setTimeout(window.location.replace("emuj/Auth/Index"), 20000);
+
         }
+
         else if (pnjg > 2) {
-            setTimeout(window.location.replace("../emujv2/Auth/Index"), 20000);
+
+            setTimeout(window.location.replace("../emuj/Auth/Index"), 20000);
+
         }
+
     }
+
 }
+
+
 function buangParts(valx) {
     return valx.replace(/([\[\]]+)/g, "\\$1");
 }
+
+
 function bersihInp(valx) {
     return $.trim(valx);
 }
+
+
 function ptongAyat(str, length, ending) {
     if (length == null) {
         length = 100;
