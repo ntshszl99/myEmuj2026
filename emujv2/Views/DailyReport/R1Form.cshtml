@@ -370,9 +370,9 @@
                 }
             });
 
-            //$('#startKM, #endKM').on('change', function () {
-            //    validateKM();
-            //});
+            $('#startKM, #endKM').on('change', function () {
+                validateKM();
+            });
 
             $('#startTime, #endTime').on('change', function () {
                 validateTime();
@@ -524,43 +524,25 @@
             );
         }
 
-        //function validateKM() {
-        //    const startKM = parseFloat($('#startKM').val());
-        //    const endKM = parseFloat($('#endKM').val());
-        //    var linecond = $("#linecond option:selected").text();
-        //    localStorage.setItem("selLine", linecond);
+        function validateKM() {
+            const startKM = parseFloat($('#startKM').val());
+            const endKM = parseFloat($('#endKM').val());
 
-        //    if (isNaN(startKM) || isNaN(endKM)) {
-        //        $('#totalKM').val('');
-        //        return;
-        //    }
+            if (isNaN(startKM) || isNaN(endKM)) {
+                $('#totalKM').val('');
+                return;
+            }
 
-        //    const totalKM = (endKM - startKM).toFixed(3);
+            let totalKM;
 
-        //    if (linecond === "UpLine") {
-        //        if (startKM > endKM) {
-        //            $('#totalKM').val(totalKM);
-        //        }
-        //        else {
-        //            Swal.fire('Invalid KM Range', 'End KM must be smaller than Start KM.', 'warning');
-        //            $('#totalKM').val('');
-        //        }
-        //    } else if (linecond === "DownLine") {
-        //        if (startKM < endKM) {
-        //            $('#totalKM').val(totalKM);
-        //        }
-        //        else {
+            if (startKM > endKM) {
+                totalKM = (startKM - endKM).toFixed(3);
+            } else {
+                totalKM = (endKM - startKM).toFixed(3);
+            }
 
-        //            Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
-        //            $('#totalKM').val('');
-        //        }
-        //    } else if (endKM < startKM) {
-        //        Swal.fire('Invalid KM Range', 'End KM must be greater than Start KM.', 'warning');
-        //        $('#totalKM').val('');
-        //    }
-        //    else $('#totalKM').val(totalKM);
-
-        //}
+            $('#totalKM').val(totalKM);
+        }
 
         function validateTime() {
             const startTime = $('#startTime').val();
@@ -886,7 +868,7 @@
                             $.fn.dataTable.ext.errMode = 'throw';
                             if ($.fn.dataTable.isDataTable('#tableRep')) {
                                 $('#tableRep').DataTable().destroy();
-                                $('#tableRep').empty(); // Clear the table contents
+                                $('#tableRep').empty();  
                             }
                             $('#tableRep').DataTable({
                                 responsive: true,
@@ -899,7 +881,6 @@
                                     { data: "JobGrade" },
                                     { data: "JobDesc" },
                                     { data: "Gang" },
-                                    //{ data: "cuti_name" },
                                     { data: "Emplid" },
                                 ],
                                 columnDefs: [
@@ -911,78 +892,56 @@
                                         targets: -1,
                                         title: "Actions",
                                         render: function (data, type, full, meta) {
-                                            countStf++;
-                                            /*return '<a href="..' + data + '" id="BviewRes" class="btn btn-primary"><i class="fe fe-edit font-16"></i>';*/
-                                            //return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>'
-                                            //return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>'
                                             return '<a class="modal-effect btn btn-danger btn-remove-row" data-id="' + data + '">Remove <i class="fe fe-x font-16 ms-1"></i></a>';
                                         },
                                     },
-                                    //{
-                                    //    targets: -2,
-                                    //    title: "Leave Status",
-                                    //    render: function (data, type, full, meta) {
-                                    //        var status = '';
-                                    //        if (data == 'VALID') {
-                                    //            status = '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a></p>';
-                                    //        } else {
-                                    //            status = '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a></p>';
-                                    //        }
-                                    //        return status;
-                                    //    },
-                                    //},
                                     {
                                         targets: -2,
                                         title: "Gang",
-                                        render: function (data, type, full, meta) {
-                                            return data;
-                                        },
+                                        render: function (data, type, full, meta) { return data; },
                                     },
                                     {
                                         targets: -3,
                                         title: "Position",
-                                        render: function (data, type, full, meta) {
-                                            return data;
-                                        },
+                                        render: function (data, type, full, meta) { return data; },
                                     },
                                     {
                                         targets: -4,
                                         title: "Grade",
-                                        render: function (data, type, full, meta) {
-                                            return data;
-                                        },
+                                        render: function (data, type, full, meta) { return data; },
                                     },
                                     {
                                         targets: -5,
                                         title: "Name",
-                                        render: function (data, type, full, meta) {
-                                            return data;
-                                        },
+                                        render: function (data, type, full, meta) { return data; },
                                     },
                                     {
                                         targets: -6,
                                         title: "Staff ID",
-                                        render: function (data, type, full, meta) {
-                                            return data;
-                                        },
+                                        render: function (data, type, full, meta) { return data; },
                                     },
                                     {
                                         targets: -7,
                                         title: "No",
                                         render: function (data, type, full, meta) {
-                                            return counter++;
+                                            return meta.row + 1; 
                                         }
                                     }
                                 ],
                                 createdRow: function (row, data, dataIndex) {
                                     $('td', row).addClass('text-nowrap align-middle');
+                                },
+                                drawCallback: function (settings) {
+                                    var api = this.api();
+                                    var totalRows = api.rows({ page: 'current' }).count();
+                                    $('#gangno').val(totalRows);
                                 }
                             });
                         } catch (error) {
                             console.error("Error parsing JSON:", error);
                             if ($.fn.dataTable.isDataTable('#tableRep')) {
                                 $('#tableRep').DataTable().destroy();
-                                $('#tableRep').empty(); // Clear the table contents
+                                $('#tableRep').empty(); 
                             }
 
                         }
@@ -991,7 +950,7 @@
                         console.error("AJAX request failed:", textStatus, errorThrown);
                         if ($.fn.dataTable.isDataTable('#tableRep')) {
                             $('#tableRep').DataTable().destroy();
-                            $('#tableRep').empty(); // Clear the table contents
+                            $('#tableRep').empty(); 
                         }
 
                     }
