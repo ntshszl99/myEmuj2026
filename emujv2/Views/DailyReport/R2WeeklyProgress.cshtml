@@ -859,7 +859,7 @@
                                 let calculatedValue = 0;
                                 if (val > 0) {
                                     const parts = key.split('/');
-                                    const multiplier = (new Date(parts[2], parts[1] - 1, parts[0]).getDay() >= 1 && new Date(parts[2], parts[1] - 1, parts[0]).getDay() <= 4) ? 8.75 : 6;
+                                    const multiplier = (new Date(parts[2], parts[1] - 1, parts[0]).getDay() >= 1 && new Date(parts[2], parts[1] - 1, parts[0]).getDay() <= 4) ? 8.75 : 5;
                                     calculatedValue = val * multiplier;
                                 }
                                 row[key] = calculatedValue === 0 ? '' : calculatedValue.toFixed(2);
