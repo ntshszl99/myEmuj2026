@@ -429,8 +429,38 @@
     <script src="~/assets/plugins/select2/select2.min.js"></script>
     <script type="text/javascript">
 
+        let isFormSubmitted = false;
 
-     $(document).ready(function () {
+        window.addEventListener('beforeunload', function (e) {
+            if (isFormSubmitted) {
+                return; 
+            }
+            e.preventDefault();
+            e.returnValue = ''; 
+        });
+
+        $(document).ready(function () {
+            $(document).on('click', 'a', function (e) {
+                const $anchor = $(this).closest('a');
+                const href = $anchor.attr('href');
+        
+                if (!isFormSubmitted && href && href !== '#' && !href.startsWith('javascript:') && !$anchor.attr('data-toggle')) { 
+            
+                    e.preventDefault(); 
+                    e.stopImmediatePropagation(); 
+
+                    Swal.fire({
+                        title: 'Warning!',
+                        text: 'You have not submitted your Weekly Programme yet. Please click "Submit Weekly Programme" before leaving this page.',
+                        icon: 'warning',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+            
+                }
+            });
+
+
             checkSess();
             listSection();
             listKMUJ();
@@ -442,6 +472,9 @@
 
             $("#contentAdmin, #contentEngineer, #contentCI, #contentNormal, #contentOthers").hide();
 
+            // ==========================================
+            // ROLE: ADMIN (LEVEL 1 OR 5)
+            // ==========================================
             if (lvl === "1" || lvl === "5") {
                 $("#contentAdmin").show();
 
@@ -501,7 +534,7 @@
                     const date = $btn.data('date');
                     const empId = $btn.data('emplid');
                     const dayIndex = moment(date).diff(startDate, 'days');
-            
+
                     let oldType = $btn.data('leavetype') || 'valid';
                     if (oldType === '' || oldType === 'NULL' || oldType === 'null') {
                         oldType = 'valid';
@@ -509,7 +542,7 @@
 
                     // Unify Admin codes with Normal block (using CE)
                     let newType, newDisplay;
-                    if (oldType === 'valid')      { newType = 'al'; newDisplay = 'CT'; }
+                    if (oldType === 'valid')       { newType = 'al'; newDisplay = 'CT'; }
                     else if (oldType === 'al')   { newType = 'mc'; newDisplay = 'S'; }
                     else if (oldType === 'mc')   { newType = 'ab'; newDisplay = 'TH'; }
                     else if (oldType === 'ab')   { newType = 'cs'; newDisplay = 'CE'; } 
@@ -569,6 +602,9 @@
                 });
             }
 
+            // ==========================================
+            // ROLE: ENGINEER (LEVEL 2 OR 6)
+            // ==========================================
             else if (lvl === "2" || lvl === "6") {
                 $("#contentEngineer").show();
 
@@ -631,6 +667,9 @@
                 });
             }
 
+            // ==========================================
+            // ROLE: CI (LEVEL 3)
+            // ==========================================
             else if (lvl === "3") {
                 $("#contentCI").show();
 
@@ -668,6 +707,9 @@
                 });
             }
 
+            // ==========================================
+            // ROLE: NORMAL USER (LEVEL 4)
+            // ==========================================
             else if (lvl === "4") {
                 $("#contentNormal").show();
 
@@ -706,7 +748,7 @@
                     }
 
                     let newType, newDisplay;
-                    if (oldType === 'valid')      { newType = 'al'; newDisplay = 'CT'; }
+                    if (oldType === 'valid')       { newType = 'al'; newDisplay = 'CT'; }
                     else if (oldType === 'al')   { newType = 'mc'; newDisplay = 'S'; }
                     else if (oldType === 'mc')   { newType = 'ab'; newDisplay = 'TH'; }
                     else if (oldType === 'ab')   { newType = 'cs'; newDisplay = 'CE'; }
@@ -759,22 +801,25 @@
                 });
             }
 
+            // ==========================================
+            // OTHER ROLES
+            // ==========================================
             else {
                 $("#contentOthers").show();
             }
 
-
-           $('#txtDate, #txtDateNormal, #txtDateEng, #txtDateCI').daterangepicker({
+            // ==========================================
+            // DATE RANGE PICKER INITIALIZATION
+            // ==========================================
+            $('#txtDate, #txtDateNormal, #txtDateEng, #txtDateCI').daterangepicker({
                 autoUpdateInput: false,
                 singleDatePicker: true,
                 minYear: 2026,
                 locale: { format: 'DD/MM/YYYY' },
-                opens: 'right', // Aligns the left edge of the picker with the left edge of your text field
+                opens: 'right', 
                 drops: 'auto',
-                // Tells the plugin to attach the popup directly inside your relative wrapper wrapper
-                    parentEl: '.datepicker-container',
+                parentEl: '.datepicker-container',
             });
-
 
             $('#txtDate, #txtDateNormal, #txtDateEng, #txtDateCI').on('apply.daterangepicker', function (ev, picker) {
                 var newEndDate = moment(picker.startDate).add(6, 'days');
@@ -789,11 +834,18 @@
                 localStorage.setItem("selHarE", edate);
             });
 
+            // ==========================================
+            // BULK SAVE CLICKS (MODIFIED TO UNBLOCK WARN)
+            // ==========================================
             $('#btnBulkSave, #btnBulkSaveNormal').on('click', function () {
+                // Set flag to true so browser allows navigation away safely now
+                isFormSubmitted = true;
                 bulkSaveTotals();
             });
 
-            // Global Fallback Tables Listener
+            // ==========================================
+            // GLOBAL FALLBACK TABLES LISTENER
+            // ==========================================
             $('#tableRep, #tableRepNormal').off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
                 e.preventDefault();
                 var btn = $(this);
@@ -822,12 +874,11 @@
                 );
             });
 
-           $('#tableRepNormal').on('click', '.workplan-toggle', function () {
+            $('#tableRepNormal').on('click', '.workplan-toggle', function () {
                 var btn = $(this);
                 var icon = btn.find('i');
-                var nextCode = "pl"; // Default fallback
+                var nextCode = "pl"; 
 
-                // 1. Cycle the icons AND update the corresponding string code matching your listReports logic
                 if (icon.hasClass('fa-blank')) {
                     icon.removeClass('fa-blank').addClass('fa-minus fa-rotate-90');
                     nextCode = "pl";
@@ -839,20 +890,17 @@
                     nextCode = "up";
                 } else {
                     icon.removeClass('fa-minus').addClass('fa-blank');
-                    nextCode = "pl"; // assuming a blank space also means 'pl' or unassigned
+                    nextCode = "pl"; 
                 }
 
-                // Update the data-code attribute immediately so the counting logic sees the change
                 btn.data('code', nextCode);
                 btn.attr('data-code', nextCode);
 
-                // 2. RUN THE LIVE RE-CALCULATION FOR THIS COLUMN
                 var td = btn.closest('td');
-                var colIndex = td.index(); // Find which column was clicked
+                var colIndex = td.index(); 
                 var table = btn.closest('table');
                 var columnTotal = 0;
 
-                // Loop through all data rows in this column and sum up 'dp' and 'up'
                 table.find('tbody tr').not('.summary-row').each(function () {
                     var cellBtn = $(this).find('td').eq(colIndex).find('.workplan-toggle');
                     if (cellBtn.length > 0) {
@@ -863,15 +911,13 @@
                     }
                 });
 
-                // 3. Find the "TOTAL ATTENDANCE" row and update its cell for this column
                 var attendanceRow = table.find('tbody tr.summary-row').filter(function () {
                     return $(this).find('td').first().text().trim() === 'TOTAL ATTENDANCE';
                 });
-    
+
                 var targetTotalCell = attendanceRow.find('td').eq(colIndex);
                 targetTotalCell.text(columnTotal > 0 ? columnTotal : "");
 
-                // 4. Trigger your existing save function
                 autoSaveWorkPlan(
                     btn.data('emplid'),
                     btn.data('date'),
