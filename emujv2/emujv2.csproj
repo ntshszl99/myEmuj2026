@@ -3142,9 +3142,10 @@
     <Content Include="Views\DailyReport\R1Form - Copy.cshtml" />
     <Content Include="Views\Gang\GangList.cshtml" />
     <Content Include="Views\DailyReport\R1FormList.cshtml" />
-    <Content Include="Views\DailyReport\R1WeeklyProgramme.cshtml" />
-    <Content Include="Views\DailyReport\R2WeeklyProgramme.cshtml" />
+    <Content Include="Views\DailyReport\R1ActualWeeklyProgramme.cshtml" />
+    <Content Include="Views\DailyReport\R2WeeklyProgress.cshtml" />
     <Content Include="Views\Home\Inventory.cshtml" />
+    <Content Include="Views\DailyReport\R1PlanWeeklyProgramme.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".vs\themeforest-0yBMtiGd-dashtic-html-admin-template\FileContentIndex\merges\" />

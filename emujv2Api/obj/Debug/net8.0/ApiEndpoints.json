@@ -827,6 +827,47 @@
   },
   {
     "ContainingType": "emujv2Api.Controller.WebApiController",
+    "Method": "GetR1Plan",
+    "RelativePath": "api/WebApi/GetR1Plan",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Kmuj",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Section",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "SDate",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "EDate",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "GetRegionList",
     "RelativePath": "api/WebApi/GetRegionList",
     "HttpMethod": "GET",

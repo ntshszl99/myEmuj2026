@@ -18,12 +18,16 @@ namespace emujv2.Controllers
             return View();
         }
 
-        public ActionResult R1WeeklyProgramme()
+        public ActionResult R1ActualWeeklyProgramme()
+        {
+            return View();
+        }
+        public ActionResult R1PlanWeeklyProgramme()
         {
             return View();
         }
 
-        public ActionResult R2WeeklyProgramme()
+        public ActionResult R2WeeklyProgress()
         {
             return View();
         }

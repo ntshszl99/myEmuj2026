@@ -814,6 +814,9 @@ namespace emujv2Api.Model
                 SqlStr.Append(" INSERT INTO staff_leave ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code]) ");
                 SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode)");
 
+                SqlStr.Append(" INSERT INTO staff_leave_plan ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code]) ");
+                SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode)");
+
                 ParamTmp.Add("@StaffNo", staff.StaffNo ?? (object)DBNull.Value);
                 ParamTmp.Add("@Date", formCons.Date ?? (object)DBNull.Value);
                 ParamTmp.Add("@LeaveTypeId", staff.LeaveTypeId ?? (object)DBNull.Value);
@@ -844,6 +847,9 @@ namespace emujv2Api.Model
                 SqlStr.Append(" INSERT INTO work_plan ([work_date], [staff_no], [rpt_code], [created_by], [created_at]) ");
                 SqlStr.Append(" VALUES (@Date, @StaffNo, @RptCode, @CreatedBy, GETDATE())");
 
+                SqlStr.Append(" INSERT INTO work_plan_plan ([work_date], [staff_no], [rpt_code], [created_by], [created_at]) ");
+                SqlStr.Append(" VALUES (@Date, @StaffNo, @RptCode, @CreatedBy, GETDATE())");
+
                 ParamTmp.Add("@Date", formCons.Date ?? (object)DBNull.Value);
                 ParamTmp.Add("@StaffNo", staff.StaffNo ?? (object)DBNull.Value);
                 ParamTmp.Add("@CreatedBy", formCons.UpdBy ?? (object)DBNull.Value);
@@ -862,9 +868,12 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
             string Salah = "";
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
-
             StringBuilder SqlStr = new StringBuilder();
+
             SqlStr.Append(" INSERT INTO work_plan_total_pax ([work_date], [rpt_code], [work_dp], [work_up], [work_pl], [created_by], [created_at]) ");
+            SqlStr.Append(" VALUES (@Date, @RptCode, @WorkDp, @WorkUp, @WorkPl, @CreatedBy, GETDATE())");
+
+            SqlStr.Append(" INSERT INTO work_plan_total_pax_plan ([work_date], [rpt_code], [work_dp], [work_up], [work_pl], [created_by], [created_at]) ");
             SqlStr.Append(" VALUES (@Date, @RptCode, @WorkDp, @WorkUp, @WorkPl, @CreatedBy, GETDATE())");
 
             ParamTmp.Add("@Date", workplantotalCons.Date ?? (object)DBNull.Value);
@@ -905,20 +914,30 @@ namespace emujv2Api.Model
             var validStaffIds = Recc.AsEnumerable().Select(row => row["staff_no"].ToString()).ToList();
             var validAttIds = formCons.AttId?.Where(id => validStaffIds.Contains(id)).ToList() ?? new List<string>();
 
-            // Insert into table
-            Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>();
-            string SqlInsert = "INSERT INTO [dbo].[daily_form_attendancelist] ([staff_attd_no], [staff_attd_updatedate], [staff_attd_updby], [staff_attd_total], [staff_attd_gang], [rpt_code]) " +
-                               "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            // Setup parameters
+            Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>
+            {
+                { "@AttId", validAttIds.Any() ? string.Join(",", validAttIds) : (object)DBNull.Value },
+                { "@UpdBy", formCons.UpdBy ?? (object)DBNull.Value },
+                { "@Gang", string.Join(",", formCons.Gang) },
+                { "@Workers", validStaffIds.Count },
+                { "@RptCode", formCons.RptCode ?? (object)DBNull.Value }
+            };
 
-            ParamInsert.Add("@AttId", validAttIds.Any() ? string.Join(",", validAttIds) : (object)DBNull.Value);
-            ParamInsert.Add("@UpdBy", formCons.UpdBy ?? (object)DBNull.Value);
-            ParamInsert.Add("@Gang", string.Join(",", formCons.Gang));
-            ParamInsert.Add("@Workers", validStaffIds.Count);
-            ParamInsert.Add("@RptCode", formCons.RptCode ?? (object)DBNull.Value);
+            // 1. Insert into Main Table
+            string SqlInsertActual = "INSERT INTO [dbo].[daily_form_attendancelist] ([staff_attd_no], [staff_attd_updatedate], [staff_attd_updby], [staff_attd_total], [staff_attd_gang], [rpt_code]) " +
+                                     "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            DbCon.ExecuteNonQuery(SqlInsertActual, ParamInsert, Conn.emujConn, ref Salah);
+            if (!string.IsNullOrEmpty(Salah)) return Salah;
 
-            DbCon.ExecuteNonQuery(SqlInsert, ParamInsert, Conn.emujConn, ref Salah);
+            // 2. Insert into Plan Table
+            string SqlInsertPlan = "INSERT INTO [dbo].[daily_form_attendancelist_plan] ([staff_attd_no], [staff_attd_updatedate], [staff_attd_updby], [staff_attd_total], [staff_attd_gang], [rpt_code]) " +
+                                   "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            DbCon.ExecuteNonQuery(SqlInsertPlan, ParamInsert, Conn.emujConn, ref Salah);
+
             return string.IsNullOrEmpty(Salah) ? "0" : Salah;
         }
+
 
         // 6. ATTENDANCE LIST (NOT VALID)
         public string DailyAttendListNo([FromBody] MasukCons formCons)
@@ -946,17 +965,27 @@ namespace emujv2Api.Model
             var validStaffIds = Recc.AsEnumerable().Select(row => row["staff_no"].ToString()).ToList();
             var validAttIds = formCons.AttId?.Where(id => validStaffIds.Contains(id)).ToList() ?? new List<string>();
 
-            Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>();
-            string SqlInsert = "INSERT INTO [dbo].[daily_form_attendancelistno] ([staff_attdno_no], [staff_attdno_updatedate], [staff_attdno_updby], [staff_attdno_total], [staff_attdno_gang], [rpt_code]) " +
-                               "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            // Prepare parameters (Reusable for both inserts)
+            Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>
+            {
+                { "@AttId", validAttIds.Any() ? string.Join(",", validAttIds) : (object)DBNull.Value },
+                { "@UpdBy", formCons.UpdBy ?? (object)DBNull.Value },
+                { "@Gang", string.Join(",", formCons.Gang) },
+                { "@Workers", validStaffIds.Count },
+                { "@RptCode", formCons.RptCode ?? (object)DBNull.Value }
+            };
 
-            ParamInsert.Add("@AttId", validAttIds.Any() ? string.Join(",", validAttIds) : (object)DBNull.Value);
-            ParamInsert.Add("@UpdBy", formCons.UpdBy ?? (object)DBNull.Value);
-            ParamInsert.Add("@Gang", string.Join(",", formCons.Gang));
-            ParamInsert.Add("@Workers", validStaffIds.Count);
-            ParamInsert.Add("@RptCode", formCons.RptCode ?? (object)DBNull.Value);
+            // 1. Insert into daily_form_attendancelistno
+            string SqlInsertActual = "INSERT INTO [dbo].[daily_form_attendancelistno] ([staff_attdno_no], [staff_attdno_updatedate], [staff_attdno_updby], [staff_attdno_total], [staff_attdno_gang], [rpt_code]) " +
+                                     "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            DbCon.ExecuteNonQuery(SqlInsertActual, ParamInsert, Conn.emujConn, ref Salah);
+            if (!string.IsNullOrEmpty(Salah)) return Salah;
 
-            DbCon.ExecuteNonQuery(SqlInsert, ParamInsert, Conn.emujConn, ref Salah);
+            // 2. Insert into daily_form_attendancelistno_plan
+            string SqlInsertPlan = "INSERT INTO [dbo].[daily_form_attendancelistno_plan] ([staff_attdno_no], [staff_attdno_updatedate], [staff_attdno_updby], [staff_attdno_total], [staff_attdno_gang], [rpt_code]) " +
+                                   "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            DbCon.ExecuteNonQuery(SqlInsertPlan, ParamInsert, Conn.emujConn, ref Salah);
+
             return string.IsNullOrEmpty(Salah) ? "0" : Salah;
         }
 

@@ -308,7 +308,7 @@ namespace emujv2Api.Model
             SqlStr.Append("), ");
             SqlStr.Append("ParsedAttendance AS ( ");
             SqlStr.Append("    SELECT LTRIM(RTRIM(m.n.value('.[1]', 'varchar(8000)'))) AS staff_id, rpt_code ");
-            SqlStr.Append("    FROM ( "); 
+            SqlStr.Append("    FROM ( ");
             SqlStr.Append("        SELECT staff_id, rpt_code, CAST('<XMLRoot><RowData>' + REPLACE(staff_id, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
             SqlStr.Append("        FROM CombinedAttendance WHERE staff_id IS NOT NULL ");
             SqlStr.Append("    ) AS s CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
@@ -339,6 +339,56 @@ namespace emujv2Api.Model
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);
         }
+
+        public string GetR1Plan(string Kmuj, string Section, string SDate, string EDate)
+        {
+            StringBuilder SqlStr = new StringBuilder();
+            DataTable Recc = new DataTable();
+            MsSql DbCon = new MsSql();
+            string Salah = "";
+            CommonFunc Conn = new CommonFunc();
+            Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
+
+            SqlStr.Append("WITH CombinedAttendance AS ( ");
+            SqlStr.Append("    SELECT staff_attd_no AS staff_id, rpt_code FROM [daily_form_attendancelist_plan] ");
+            SqlStr.Append("    UNION ALL ");
+            SqlStr.Append("    SELECT staff_attdno_no AS staff_id, rpt_code FROM [daily_form_attendancelistno_plan] ");
+            SqlStr.Append("), ");
+            SqlStr.Append("ParsedAttendance AS ( ");
+            SqlStr.Append("    SELECT LTRIM(RTRIM(m.n.value('.[1]', 'varchar(8000)'))) AS staff_id, rpt_code ");
+            SqlStr.Append("    FROM ( ");
+            SqlStr.Append("        SELECT staff_id, rpt_code, CAST('<XMLRoot><RowData>' + REPLACE(staff_id, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
+            SqlStr.Append("        FROM CombinedAttendance WHERE staff_id IS NOT NULL ");
+            SqlStr.Append("    ) AS s CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
+            SqlStr.Append(") ");
+
+            SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, wp.work_plan_type_code, h.staff_name, a.upd_user ");
+            SqlStr.Append("FROM daily_form a ");
+            SqlStr.Append("JOIN kerja b ON a.daily_worktype = b.id ");
+            SqlStr.Append("JOIN kmuj c ON a.daily_kmuj = c.kmuj_value ");
+            SqlStr.Append("JOIN section d ON a.daily_sec = d.section_val ");
+            SqlStr.Append("JOIN ParsedAttendance p ON a.rpt_code = p.rpt_code ");
+            SqlStr.Append("LEFT JOIN [HR_MAIN].[dbo].[HR_MAIN] ls ON p.staff_id = LTRIM(RTRIM(ls.Emplid)) ");
+            SqlStr.Append("LEFT JOIN gang_desc gd ON p.staff_id = LTRIM(RTRIM(gd.staff_no)) ");
+            SqlStr.Append("LEFT JOIN staff_leave_plan sl ON p.staff_id = LTRIM(RTRIM(sl.staff_no)) AND a.daily_date = sl.leave_date ");
+            SqlStr.Append("LEFT JOIN staff_login h ON h.staff_id = LTRIM(RTRIM(a.upd_user)) ");
+
+            SqlStr.Append("LEFT JOIN work_plan_plan wp ON p.staff_id = wp.staff_no AND a.daily_date = wp.work_date ");
+
+            SqlStr.Append("WHERE a.daily_date >= @MulaTarikh AND a.daily_date <= @AkhirTarikh ");
+            SqlStr.Append("AND c.kmuj_name = @Kmuj AND d.section_name = @Section ");
+            SqlStr.Append("ORDER BY p.staff_id, a.daily_date, b.work_name; ");
+
+            ParamTmp.Add("@Kmuj", Kmuj);
+            ParamTmp.Add("@Section", Section);
+            ParamTmp.Add("@MulaTarikh", SDate);
+            ParamTmp.Add("@AkhirTarikh", EDate);
+
+            Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
+            return JsonConvert.SerializeObject(Recc, Formatting.Indented);
+        }
+
+
 
         public string GetTotalKM(string Kmuj, string Section, string SDate, string EDate)
         {
