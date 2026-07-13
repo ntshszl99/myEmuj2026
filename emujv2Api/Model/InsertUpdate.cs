@@ -19,7 +19,7 @@ namespace emujv2Api.Model
 
         //DELETE
 
-        public string DeleteGangDetails(string StaffId)
+        public string DeleteGangDetails(string StaffId, string Section, string Kmuj, string Gang)
         {
             StringBuilder SqlStr = new StringBuilder();
             DataTable Recc = new DataTable();
@@ -28,10 +28,13 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append(" DELETE FROM gang_desc WHERE staff_no = @StaffId ");
+            SqlStr.Append(" DELETE FROM gang_desc WHERE staff_no = @StaffId AND gang_id = @Gang ");
+            SqlStr.Append(" DELETE FROM staff_section WHERE no_perkh = @StaffId AND no_muj = @Kmuj AND no_section = @Section");
 
             ParamTmp.Add("@StaffId", StaffId);
-
+            ParamTmp.Add("@Section", Section);
+            ParamTmp.Add("@Kmuj", Kmuj);
+            ParamTmp.Add("@Gang", Gang);
 
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             if (Salah != "") { return Salah; }
@@ -550,61 +553,30 @@ namespace emujv2Api.Model
         public string NewGang(List<UserCons> userConsList)
         {
             MsSql DbCon = new MsSql();
-            string Salah = "";
             CommonFunc Conn = new CommonFunc();
+            List<string> duplicateStaffNames = new List<string>();
 
-            // Log the size and content of the input list before removing duplicates
-            Console.WriteLine($"Number of users before removing duplicates: {userConsList.Count}");
-            foreach (var user in userConsList)
+            foreach (var userCons in userConsList)
             {
-                Console.WriteLine($"User: {user.StaffId}, {user.Nama}");
-            }
+                string Salah = "";
 
-            // Remove duplicates based on StaffId
-            var distinctUserConsList = userConsList
-                .GroupBy(u => u.StaffId)
-                .Select(g => g.First())
-                .ToList();
+                StringBuilder CheckGangSql = new StringBuilder();
+                CheckGangSql.Append(" SELECT COUNT(1) FROM gang_desc WHERE [staff_no] = @StaffId ");
 
-            // Log the size and content of the distinct list
-            Console.WriteLine($"Number of distinct users to process: {distinctUserConsList.Count}");
-            foreach (var user in distinctUserConsList)
-            {
-                Console.WriteLine($"Distinct User: {user.StaffId}, {user.Nama}");
-            }
+                Dictionary<string, Object> ParamGangCheck = new Dictionary<string, Object>();
+                ParamGangCheck.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
 
-            foreach (var userCons in distinctUserConsList)
-            {
-                // Logging to verify each user is being processed
-                Console.WriteLine($"Processing User: {userCons.StaffId}, {userCons.Nama}");
+                object gangResult = DbCon.ExecuteScalar(CheckGangSql.ToString(), ParamGangCheck, Conn.emujConn, ref Salah);
+                if (!string.IsNullOrEmpty(Salah)) return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
 
-                var (staffSecCount, staffCount) = CheckCounts(userCons.StaffId);
-
-                if (staffSecCount == 0 && staffCount == 0)
+                if (Convert.ToInt32(gangResult) == 0)
                 {
                     StringBuilder SqlStr = new StringBuilder();
                     Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-                    SqlStr.Append(" INSERT INTO gang_desc ");
-                    SqlStr.Append(" ([gang_id] ");
-                    SqlStr.Append(", [staff_no] ");
-                    SqlStr.Append(", [staff_name] ");
-                    SqlStr.Append(", [section_id] ");
-                    SqlStr.Append(", [upd_by] ");
-                    SqlStr.Append(", [upd_date] ");
-                    SqlStr.Append(", [position] ");
-                    SqlStr.Append(", [staff_status]) ");
-                    SqlStr.Append(" VALUES ");
-                    SqlStr.Append(" ( @GangId ");
-                    SqlStr.Append(" , @StaffId ");
-                    SqlStr.Append(" , @Nama ");
-                    SqlStr.Append(" , @Grade ");
-                    SqlStr.Append(" , @UpdBy ");
-                    SqlStr.Append(" , GETDATE() ");
-                    SqlStr.Append(" , @Designation ");
-                    SqlStr.Append(" , 'VALID' )");
+                    SqlStr.Append(" INSERT INTO gang_desc ([staff_no], [staff_name], [section_id], [upd_by], [upd_date], [position], [staff_status]) ");
+                    SqlStr.Append(" VALUES (@GangId, @StaffId, @Nama, @Grade, @UpdBy, GETDATE(), @Designation, 'VALID') ");
 
-                    ParamTmp.Add("@GangId", userCons.GangId ?? (object)DBNull.Value);
                     ParamTmp.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
                     ParamTmp.Add("@Nama", userCons.Nama ?? (object)DBNull.Value);
                     ParamTmp.Add("@Grade", userCons.Grade ?? (object)DBNull.Value);
@@ -612,72 +584,58 @@ namespace emujv2Api.Model
                     ParamTmp.Add("@Designation", userCons.Designation ?? (object)DBNull.Value);
 
                     bool isSuccess = DbCon.ExecuteNonQuery(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
-                    if (!isSuccess)
-                    {
-                        return Salah;
-                    }
-
-                    StringBuilder SqlStrNew = new StringBuilder();
-                    Dictionary<string, Object> ParamTmpNew = new Dictionary<string, Object>();
-
-                    SqlStrNew.Append(" INSERT INTO staff_section ");
-                    SqlStrNew.Append(" ([no_perkh] ");
-                    SqlStrNew.Append(", [no_muj] ");
-                    SqlStrNew.Append(", [no_section]) ");
-                    SqlStrNew.Append(" VALUES ");
-                    SqlStrNew.Append(" ( @StaffId ");
-                    SqlStrNew.Append(" , @Kmuj ");
-                    SqlStrNew.Append(" , @Section )");
-
-                    ParamTmpNew.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
-                    ParamTmpNew.Add("@Kmuj", userCons.KMUJ);
-                    ParamTmpNew.Add("@Section", userCons.Section);
-
-                    isSuccess = DbCon.ExecuteNonQuery(SqlStrNew.ToString(), ParamTmpNew, Conn.emujConn, ref Salah);
-                    if (!isSuccess)
-                    {
-                        return Salah;
-                    }
+                    if (!isSuccess) return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
                 }
-                else if (staffSecCount == 0 && staffCount == 1)
+
+                StringBuilder CheckSectionSql = new StringBuilder();
+                CheckSectionSql.Append(" SELECT COUNT(1) FROM staff_section WHERE [no_perkh] = @StaffId AND [no_muj] = @Kmuj AND [no_section] = @Section AND [gang_id] = @GangId ");
+
+                Dictionary<string, Object> ParamSectionCheck = new Dictionary<string, Object>();
+                ParamSectionCheck.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
+                ParamSectionCheck.Add("@Kmuj", userCons.KMUJ ?? (object)DBNull.Value);
+                ParamSectionCheck.Add("@Section", userCons.Section ?? (object)DBNull.Value);
+                ParamSectionCheck.Add("@GangId", userCons.GangId ?? (object)DBNull.Value);
+
+                object sectionResult = DbCon.ExecuteScalar(CheckSectionSql.ToString(), ParamSectionCheck, Conn.emujConn, ref Salah);
+                if (!string.IsNullOrEmpty(Salah)) return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
+
+                if (Convert.ToInt32(sectionResult) > 0)
                 {
-                    StringBuilder SqlStrNewer = new StringBuilder();
-                    Dictionary<string, Object> ParamTmpNewer = new Dictionary<string, Object>();
-
-                    SqlStrNewer.Append(" INSERT INTO gang_desc ");
-                    SqlStrNewer.Append(" ([gang_id] ");
-                    SqlStrNewer.Append(", [staff_no] ");
-                    SqlStrNewer.Append(", [staff_name] ");
-                    SqlStrNewer.Append(", [section_id] ");
-                    SqlStrNewer.Append(", [upd_by] ");
-                    SqlStrNewer.Append(", [upd_date] ");
-                    SqlStrNewer.Append(", [position] ");
-                    SqlStrNewer.Append(", [staff_status]) ");
-                    SqlStrNewer.Append(" VALUES ");
-                    SqlStrNewer.Append(" ( @GangId ");
-                    SqlStrNewer.Append(" , @StaffId ");
-                    SqlStrNewer.Append(" , @Nama ");
-                    SqlStrNewer.Append(" , @Grade ");
-                    SqlStrNewer.Append(" , @UpdBy ");
-                    SqlStrNewer.Append(" , GETDATE() ");
-                    SqlStrNewer.Append(" , @Designation ");
-                    SqlStrNewer.Append(" , 'VALID' )");
-
-                    ParamTmpNewer.Add("@GangId", userCons.GangId ?? (object)DBNull.Value);
-                    ParamTmpNewer.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
-                    ParamTmpNewer.Add("@Nama", userCons.Nama ?? (object)DBNull.Value);
-                    ParamTmpNewer.Add("@Grade", userCons.Grade ?? (object)DBNull.Value);
-                    ParamTmpNewer.Add("@UpdBy", userCons.UpdBy);
-                    ParamTmpNewer.Add("@Designation", userCons.Designation ?? (object)DBNull.Value);
-
-                    bool isSuccess = DbCon.ExecuteNonQuery(SqlStrNewer.ToString(), ParamTmpNewer, Conn.emujConn, ref Salah);
-                    if (!isSuccess)
+                    string ident = $"{userCons.Nama}";
+                    if (!duplicateStaffNames.Contains(ident))
                     {
-                        return Salah;
+                        duplicateStaffNames.Add(ident);
                     }
+                    continue;
+                }
+
+                StringBuilder SqlStrNew = new StringBuilder();
+                Dictionary<string, Object> ParamTmpNew = new Dictionary<string, Object>();
+
+                SqlStrNew.Append(" INSERT INTO staff_section ([no_perkh], [no_muj], [no_section], [gang_id]) ");
+                SqlStrNew.Append(" VALUES (@StaffId, @Kmuj, @Section, @GangId) ");
+
+                ParamTmpNew.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
+                ParamTmpNew.Add("@Kmuj", userCons.KMUJ);
+                ParamTmpNew.Add("@Section", userCons.Section);
+                ParamTmpNew.Add("@GangId", userCons.GangId);
+
+                Salah = "";
+                DbCon.ExecuteNonQuery(SqlStrNew.ToString(), ParamTmpNew, Conn.emujConn, ref Salah);
+
+                if (!string.IsNullOrEmpty(Salah))
+                {
+                    return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
                 }
             }
-            return "0";
+
+            if (duplicateStaffNames.Count > 0)
+            {
+                string names = string.Join("<br> ", duplicateStaffNames);
+                return "{\"status\":\"01\", \"message\":\"The following section assignments already exist:<br>" + names + "\"}";
+            }
+
+            return "{\"status\":\"00\", \"message\":\"Success\"}";
         }
 
 

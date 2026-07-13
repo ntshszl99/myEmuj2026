@@ -89,6 +89,21 @@
         "Name": "StaffId",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "Section",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Kmuj",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Gang",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": [

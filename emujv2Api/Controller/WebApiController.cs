@@ -34,7 +34,7 @@ namespace emujv2Api.Controller
         //----------------------------DELETE------------------------------------//
 
         [HttpDelete]
-        public string DeleteGangDetails(string StaffId)
+        public string DeleteGangDetails(string StaffId, string Section, string Kmuj, string Gang)
         {
             TokenFunc Token = new TokenFunc();
             PublicCons RetDat = new PublicCons();
@@ -51,7 +51,7 @@ namespace emujv2Api.Controller
 
             if (!string.IsNullOrEmpty(User.Userid))
             {
-                Salah = ret.DeleteGangDetails(StaffId);
+                Salah = ret.DeleteGangDetails(StaffId, Section, Kmuj, Gang);
                 if (Salah == "0")
                 {
                     RetDat.status = "00";

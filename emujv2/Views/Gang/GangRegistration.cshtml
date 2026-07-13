@@ -213,28 +213,43 @@
                 success: function (response) {
                     var responseData;
                     try {
-                        responseData = JSON.parse(response);
+                        var jsonString = response.hasOwnProperty('d') ? response.d : response;
+                        responseData = typeof jsonString === "string" ? JSON.parse(jsonString) : jsonString;
+
+                        if (responseData && responseData.status === "99" && responseData.StatusDetail) {
+                            var nestedData = typeof responseData.StatusDetail === "string"
+                                ? JSON.parse(responseData.StatusDetail)
+                                : responseData.StatusDetail;
+
+                            if (nestedData && (nestedData.status === "01" || nestedData.status === "00")) {
+                                responseData = nestedData;
+                            }
+                        }
                     } catch (error) {
                         console.error("Error parsing JSON:", error);
                         swarning();
                         return;
                     }
+
                     if (responseData && responseData.status === "00") {
                         $('#modalTambah').modal('hide');
                         swal.fire('Success!', 'New users successfully added.', 'success');
 
                         $('#gang').val('-0').trigger('change');
                         var $tableBody = $('#tableWork tbody');
-                        $tableBody.find('tr:gt(0)').remove(); 
+                        $tableBody.find('tr:gt(0)').remove();
                         var $firstRow = $tableBody.find('tr:first');
-                        $firstRow.find('input').val(''); 
+                        $firstRow.find('input').val('');
                         $firstRow.find('select').val('').trigger('change');
-                    } 
+                    }
+                    else if (responseData && responseData.status === "01") {
+                        $('#modalTambah').modal('hide');
+                        swal.fire('Record Already Exists', responseData.message, 'warning');
+                    }
                     else if (responseData && responseData.status === "99") {
                         $('#modalTambah').modal('hide');
-                        swarning(); ('Error!', 'User already registered', 'error');
-
-                    } 
+                        swal.fire('Error!', responseData.message, 'error');
+                    }
                 },
                 error: function (xhr) {
                     console.error("AJAX error:", xhr);
@@ -242,7 +257,6 @@
                 }
             });
         }
-
 
 
 

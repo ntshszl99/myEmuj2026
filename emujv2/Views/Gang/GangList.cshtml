@@ -289,11 +289,23 @@
             updateUser(ids);
         });
 
-        //modal delete user
-        $('#submitDelete').click(function () {
-            var ids = $('#modalDelete').data('id');
-            console.log('read ' + ids);
-            stfDelete(ids);
+        // delete user
+        $(document).on('click', '.btn-delete-trigger', function () {
+            // 1. Grab all parameters directly from the clicked row's button
+            var ids = $(this).data('id');
+            var section = $(this).data('section');
+            var kmuj = $(this).data('kmuj');
+            var gang = $(this).data('gang');
+
+            console.log('Preparing delete for: ID=' + ids + ', Section=' + section + ', Kmuj=' + kmuj + ', Gang=' + gang);
+
+            // 2. Clear any old click events on the submit button, then bind a new one
+            $('#submitDelete').off('click').on('click', function () {
+                console.log('Confirmed deletion for ID: ' + ids);
+
+                // Call your AJAX function with all three variables
+                stfDelete(ids, section, kmuj, gang);
+            });
         });
 
         function stfDetails(ids) {
@@ -382,12 +394,15 @@
             });
         }
 
-        function stfDelete(ids) {
+        function stfDelete(ids, section, kmuj, gang) {
             var data = {
                 Userid: ids,
+                Section: section,
+                Kmuj: kmuj,
+                Gang: gang
             };
             $.ajax({
-                url: linkDepan + "DeleteGangDetails?StaffId=" + ids,
+                url: linkDepan + "DeleteGangDetails?StaffId=" + ids + "&Section=" + section + "&Kmuj=" + kmuj + "&Gang=" + gang,
                 type: 'DELETE',
                 contentType: 'application/json',
                 data: JSON.stringify(data),
@@ -606,7 +621,6 @@
                             { data: "Nama" },
                             { data: "JobGrade" },
                             { data: "JobDesc" },
-                            { data: "cuti_name" },
                             { data: "Emplid" },
                         ],
                         columnDefs: [{
@@ -614,67 +628,67 @@
                             title: "Actions",
                             render: function (data, type, full, meta) {
                                 countStf++;
-                                /*return '<a href="..' + data + '" id="BviewRes" class="btn btn-primary"><i class="fe fe-edit font-16"></i>';*/
-                                return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>' + "   " + '<a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-trash font-10"></i></a>'
+                                // Get section and kmuj from the 'full' row object. 
+                                // (Ensure 'section_id' and 'kmuj_id' match the exact property names in your API response)
+                                var sectionId = full.no_section || '';
+                                var kmujId = full.no_muj || '';
+                                var gangId = full.gang_id || '';
 
+                                return '<a class="btn btn-danger btn-delete-trigger" ' +
+                                    'data-id="' + data + '" ' +
+                                    'data-section="' + sectionId + '" ' +
+                                    'data-kmuj="' + kmujId + '" ' +
+                                    'data-gang="' + gangId + '" ' +
+                                    'data-bs-target="#modalDelete" ' +
+                                    'data-bs-effect="effect-sign" ' +
+                                    'data-bs-toggle="modal">' +
+                                    '<i class="fe fe-trash font-10"></i></a>';
                             },
                         },
                         {
                             targets: -2,
-                            title: "Status",
-                            render: function (data, type, full, meta) {
-                                var status = '';
-                                if (data == 'VALID') { status = '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a></p >'; }
-                                else {
-                                    status = '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a></p >';
-                                }
-                                return status;
-                            },
-                        },
-                        {
-                            targets: -3,
                             title: "Position",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -4,
+                            targets: -3,
                             title: "Grade",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -5,
+                            targets: -4,
                             title: "Name",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -6,
+                            targets: -5,
                             title: "Staff ID",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -7,
+                            targets: -6,
                             title: "Section",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -8,
+                            targets: -7,
                             title: "KMUJ",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -9,
+                            targets: -8,
                             title: "No",
                             render: function (data, type, full, meta) {
                                 return counter++;
@@ -719,7 +733,6 @@
                             { data: "Nama" },
                             { data: "JobGrade" },
                             { data: "JobDesc" },
-                            { data: "cuti_name" },
                             { data: "Emplid" },
                         ],
                         columnDefs: [{
@@ -727,52 +740,53 @@
                             title: "Actions",
                             render: function (data, type, full, meta) {
                                 countStf++;
-                                /*return '<a href="..' + data + '" id="BviewRes" class="btn btn-primary"><i class="fe fe-edit font-16"></i>';*/
-                                return '<a class="modal-effect btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-edit font-10"></i></a>' + "   " + '<a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal" ><i class="fe fe-trash font-10"></i></a>'
+                                // Get section and kmuj from the 'full' row object. 
+                                // (Ensure 'section_id' and 'kmuj_id' match the exact property names in your API response)
+                                var sectionId = full.no_section || '';
+                                var kmujId = full.no_muj || '';
+                                var gangId = full.gang_id || '';
+
+                                return '<a class="btn btn-danger btn-delete-trigger" ' +
+                                    'data-id="' + data + '" ' +
+                                    'data-section="' + sectionId + '" ' +
+                                    'data-kmuj="' + kmujId + '" ' +
+                                    'data-gang="' + gangId + '" ' +
+                                    'data-bs-target="#modalDelete" ' +
+                                    'data-bs-effect="effect-sign" ' +
+                                    'data-bs-toggle="modal">' +
+                                    '<i class="fe fe-trash font-10"></i></a>';
                             },
                         },
                         {
                             targets: -2,
-                            title: "Status",
-                            render: function (data, type, full, meta) {
-                                var status = '';
-                                if (data == 'VALID') { status = '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a></p >'; }
-                                else {
-                                    status = '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a></p >';
-                                }
-                                return status;
-                            },
-                        },
-                        {
-                            targets: -3,
                             title: "Position",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -4,
+                            targets: -3,
                             title: "Grade",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -5,
+                            targets: -4,
                             title: "Name",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -6,
+                            targets: -5,
                             title: "Staff ID",
                             render: function (data, type, full, meta) {
                                 return data;
                             },
                         },
                         {
-                            targets: -7,
+                            targets: -6,
                             title: "No",
                             render: function (data, type, full, meta) {
                                 return counter++;

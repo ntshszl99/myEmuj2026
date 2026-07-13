@@ -648,7 +648,7 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
 
 
-            SqlStr.Append(" select b.Emplid, e.kmuj_name, d.section_name, b.Nama, b.JobGrade, UPPER(b.JobDesc) as JobDesc, UPPER(f.cuti_name) as cuti_name ");
+            SqlStr.Append(" select b.Emplid, e.kmuj_name, d.section_name, b.Nama, a.gang_id, b.JobGrade, c.no_muj, c.no_section, UPPER(b.JobDesc) as JobDesc, UPPER(f.cuti_name) as cuti_name ");
             SqlStr.Append(" from gang_desc as a, [HR_MAIN].[dbo].[HR_MAIN] as b, staff_section as c, section as d, kmuj as e, Ref_Cuti as f, Gang as g ");
             SqlStr.Append(" where b.Emplid = ");
             SqlStr.Append(" (select distinct(c.no_perkh) ");
@@ -657,7 +657,7 @@ namespace emujv2Api.Model
             SqlStr.Append(" and c.no_muj = e.kmuj_value ");
             SqlStr.Append(" and c.no_section = d.section_val ");
             SqlStr.Append(" and d.section_kmuj = e.kmuj_value ");
-            SqlStr.Append(" and g.gang = @Gang ");
+            SqlStr.Append(" and g.gang = @Gangetgg ");
             SqlStr.Append(" and a.gang_id = g.id ");
             SqlStr.Append(" and a.staff_no = b.Emplid ");
             SqlStr.Append(" and b.Status = 'A' ");
@@ -690,20 +690,20 @@ namespace emujv2Api.Model
                 SqlStr.Append("     b.Emplid, ");
                 SqlStr.Append("     e.kmuj_name, ");
                 SqlStr.Append("     d.section_name, ");
+                SqlStr.Append("     c.no_muj, ");
+                SqlStr.Append("     c.no_section, ");
+                SqlStr.Append("     c.gang_id, ");
                 SqlStr.Append("     b.Nama, ");
                 SqlStr.Append("     b.JobGrade, ");
                 SqlStr.Append("     UPPER(b.JobDesc) AS JobDesc, ");
-                SqlStr.Append("     CONCAT('Gang ', a.gang_id) AS Gang, ");
-                SqlStr.Append("     a.staff_status, ");
-                SqlStr.Append("     UPPER(fc.cuti_name) AS cuti_name ");
+                SqlStr.Append("     CONCAT('Gang ', c.gang_id) AS Gang ");
 
                 SqlStr.Append(" FROM [HR_MAIN].[dbo].[HR_MAIN] AS b ");
                 SqlStr.Append(" INNER JOIN staff_section AS c ON b.Emplid = c.no_perkh ");
                 SqlStr.Append(" INNER JOIN section AS d ON c.no_section = d.section_val ");
                 SqlStr.Append(" INNER JOIN kmuj AS e ON c.no_muj = e.kmuj_value AND d.section_kmuj = e.kmuj_value ");
                 SqlStr.Append(" INNER JOIN gang_desc AS a ON a.staff_no = b.Emplid ");
-                SqlStr.Append(" INNER JOIN Gang AS g ON a.gang_id = g.id ");
-                SqlStr.Append(" INNER JOIN Ref_Cuti AS fc ON a.staff_status = fc.cuti_code ");
+                SqlStr.Append(" INNER JOIN Gang AS g ON c.gang_id = g.id ");
 
                 SqlStr.Append(" WHERE d.section_name = @Section ");
                 SqlStr.Append(" AND b.Status = 'A' ");
