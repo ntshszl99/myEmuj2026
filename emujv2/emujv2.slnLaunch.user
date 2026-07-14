@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "emujv2.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\emujv2Api\\emujv2Api.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

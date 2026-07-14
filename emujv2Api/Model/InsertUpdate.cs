@@ -370,6 +370,52 @@ namespace emujv2Api.Model
             }
         }
 
+
+        public string UpdateValidator(string validatedBy, string rptCodes)
+        {
+            StringBuilder sqlStr = new StringBuilder();
+            DataTable recc = new DataTable();
+            MsSql dbCon = new MsSql();
+            string salah = "";
+            CommonFunc conn = new CommonFunc();
+            Dictionary<string, object> paramTmp = new Dictionary<string, object>(); 
+
+            if (string.IsNullOrEmpty(rptCodes))
+            {
+                return "No report codes provided for validation.";
+            }
+
+            string[] codesArray = rptCodes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            List<string> parameterNames = new List<string>();
+
+            // Bind the validator user ID parameter
+            paramTmp.Add("@ValidatedBy", !string.IsNullOrEmpty(validatedBy) ? validatedBy.Trim() : (object)DBNull.Value);
+
+            // Dynamically build parameters for the secure parameterized IN clause
+            for (int i = 0; i < codesArray.Length; i++)
+            {
+                string paramName = "@RptCode" + i;
+                parameterNames.Add(paramName);
+                paramTmp.Add(paramName, codesArray[i].Trim());
+            }
+
+            sqlStr.Append(" UPDATE daily_form ");
+            sqlStr.Append(" SET validated_by = @ValidatedBy, ");
+            sqlStr.Append("     validated_at = GETDATE() ");
+            sqlStr.Append($" WHERE rpt_code IN ({string.Join(", ", parameterNames)}) ");
+
+            recc = dbCon.ExecuteReader(sqlStr.ToString(), paramTmp, conn.emujConn, ref salah);
+
+            if (!string.IsNullOrEmpty(salah))
+            {
+                return salah;
+            }
+            else
+            {
+                return "0"; // Success return flag matched with your frontend JavaScript
+            }
+        }
+
         public string UpdateWorkPlan(string UpdBy, string StaffNo, string WorkDate, string PlanCode)
         {
             StringBuilder SqlStr = new StringBuilder();

@@ -951,7 +951,7 @@ namespace emujv2Api.Model
 
 
             SqlStr.Append("SELECT ");
-            SqlStr.Append("    a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, v.staff_name AS verifier_name, c.verified_at, ");
+            SqlStr.Append("    a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, m.staff_name AS validated_name, c.validated_at, v.staff_name AS verifier_name, c.verified_at, ");
             SqlStr.Append(string.Join(", ", caseStatements));
             SqlStr.Append(", ");
             SqlStr.Append(sumColumn);
@@ -964,8 +964,9 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN kmuj AS e ON e.kmuj_value = c.daily_kmuj ");
             SqlStr.Append("LEFT JOIN staff_login AS f ON f.staff_id = c.upd_user ");
             SqlStr.Append("LEFT JOIN staff_login AS v ON v.staff_id = c.verified_by ");
+            SqlStr.Append("LEFT JOIN staff_login AS m ON m.staff_id = c.validated_by ");
 
-            SqlStr.Append("GROUP BY a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, v.staff_name, c.verified_at ");
+            SqlStr.Append("GROUP BY a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, m.staff_name, v.staff_name, c.validated_at, c.verified_at ");
             SqlStr.Append("ORDER BY CAST(a.work_cat_id AS INT) ASC;");
 
             ParamTmp.Add("@Kmuj", Kmuj);

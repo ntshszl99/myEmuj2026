@@ -272,7 +272,6 @@ D:\e-MUJ\emujv2Api\obj\Debug\net8.0\staticwebassets.build.json
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\staticwebassets.development.json
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\e-MUJ\emujv2Api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\emujv2Api.csproj.Up2Date
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\emujv2Api.dll
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\refint\emujv2Api.dll
@@ -280,3 +279,4 @@ D:\e-MUJ\emujv2Api\obj\Debug\net8.0\emujv2Api.pdb
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\emujv2Api.genruntimeconfig.cache
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\ref\emujv2Api.dll
 D:\e-MUJ\emujv2Api\obj\Debug\net8.0\emujv2Api.sourcelink.json
+D:\e-MUJ\emujv2Api\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
