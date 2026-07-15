@@ -745,11 +745,11 @@ namespace emujv2Api.Model
             SqlStr.Append("([daily_id], [daily_section], [daily_kmuj], [daily_sec], [daily_gang], [daily_date], [daily_worktype], [daily_total], [daily_unit], ");
             SqlStr.Append("[daily_timestart], [daily_timelast], [daily_category], [daily_condition], [daily_additional], [daily_timetaken], ");
             SqlStr.Append("[effect_kmfrom], [effect_kmto], [effect_kmtotal], [station], [station_point], [category_details], [temperature], ");
-            SqlStr.Append("[rpt_code], [daily_workers], [upd_user], [upd_date]) ");
+            SqlStr.Append("[rpt_code], [daily_workers], [upd_user], [upd_date], [branch_details] ) ");
             SqlStr.Append("VALUES ");
             SqlStr.Append("(@DailyId, @Region, @Kmuj, @Section, @Gang, @Date, @WorkType, @Total, @TotalUnit, ");
             SqlStr.Append("@TimeStart, @TimeLast, @Category, @Condition, @Adds, @TimeTaken, @KMFrom, @KMTo, @KMTotal, @Station, @SPoint, ");
-            SqlStr.Append("@CatDetails, @Temp, @RptCode, ISNULL(@Workers, '0') + ' pax', @UpdBy, GETDATE()); ");
+            SqlStr.Append("@CatDetails, @Temp, @RptCode, ISNULL(@Workers, '0') + ' pax', @UpdBy, GETDATE(), @BranchDetails); ");
             SqlStr.Append("SELECT SCOPE_IDENTITY();");
 
             // Parameter mapping
@@ -778,6 +778,7 @@ namespace emujv2Api.Model
             ParamTmp.Add("@RptCode", formattedRptCode ?? (object)DBNull.Value);
             ParamTmp.Add("@Workers", formCons.Workers ?? (object)DBNull.Value);
             ParamTmp.Add("@UpdBy", formCons.UpdBy);
+            ParamTmp.Add("@BranchDetails", formCons.BranchDetails ?? (object)DBNull.Value);
 
             // Execute the query
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);

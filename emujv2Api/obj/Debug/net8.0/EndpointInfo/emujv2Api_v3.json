@@ -2065,6 +2065,35 @@
         }
       }
     },
+    "/api/WebApi/GetBranchList": {
+      "get": {
+        "tags": [
+          "WebApi"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/WebApi/GetCategory": {
       "get": {
         "tags": [
@@ -2871,6 +2900,10 @@
             "nullable": true
           },
           "catDetails": {
+            "type": "string",
+            "nullable": true
+          },
+          "branchDetails": {
             "type": "string",
             "nullable": true
           },

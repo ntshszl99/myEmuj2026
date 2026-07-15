@@ -999,6 +999,20 @@ namespace emujv2Api.Model
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);
         }
 
+        public string GetBranchList()
+        {
+            StringBuilder SqlStr = new StringBuilder();
+            DataTable Recc = new DataTable();
+            MsSql DbCon = new MsSql();
+            string Salah = "";
+            CommonFunc Conn = new CommonFunc();
+
+            SqlStr.Append("select branch_id, branch_name from branch_line");
+
+            Recc = DbCon.ExecuteReader(SqlStr.ToString(), Conn.emujConn, ref Salah);
+            return JsonConvert.SerializeObject(Recc, Formatting.Indented);
+        }
+
         public string GetCategory()
         {
             StringBuilder SqlStr = new StringBuilder();

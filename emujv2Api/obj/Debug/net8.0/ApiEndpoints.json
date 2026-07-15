@@ -218,6 +218,26 @@
   },
   {
     "ContainingType": "emujv2Api.Controller.WebApiController",
+    "Method": "GetBranchList",
+    "RelativePath": "api/WebApi/GetBranchList",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.String",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "GetCategory",
     "RelativePath": "api/WebApi/GetCategory",
     "HttpMethod": "GET",

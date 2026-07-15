@@ -48,6 +48,7 @@ namespace emujv2Api.Constructor
         public string Station { get; set; }
         public string SPoint { get; set; }
         public string CatDetails { get; set; }
+        public string BranchDetails { get; set; }
 
 
         public string Temp { get; set; }
