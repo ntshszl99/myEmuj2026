@@ -916,7 +916,7 @@
                         $('#btnVerifyCI').prop('disabled', false).show();
                         $('#htmlVerifiedAtCI_Display').hide();
                     } else {
-                        // If NOT validated yet, disable the verify button (or hide it depending on UX preference)
+                        // If NOT validated yet, disable the verify button
                         $('#btnVerifyCI').prop('disabled', true).show();
                         $('#htmlVerifiedAtCI_Display').hide();
                     }
@@ -987,7 +987,6 @@
                     // ==========================================
                     // 5. THE "NO DATA" CHECK
                     // ==========================================
-                    // If absolutely NO hours are logged across all work categories for the 7 days:
                     if (overallTimeSum === 0) {
                         initializeEmptyTables(sortedDates);
                         resetSummaryLabels(updatedByPerson);
@@ -1021,6 +1020,9 @@
 
                     // Dynamic calculation of the combined percentages total
                     let dynamicTotalPercentage = (parseFloat(perOnTrack) + parseFloat(perOffTrack) + parseFloat(perOthers)).toFixed(2);
+                    if (isNaN(dynamicTotalPercentage)) {
+                        dynamicTotalPercentage = "0.00";
+                    }
 
                     // Update Admin Summary
                     updateText("totalHours", totalManHoursForGangs.toFixed(2));
@@ -1065,15 +1067,112 @@
                     updateText("htmlPreparedByPWINormal", updatedByPerson);
 
                     // ==========================================
-                    // 8. DATATABLE INITIALIZATION
+                    // 8. DATATABLE INITIALIZATION WITH EXPORT HOOKS
                     // ==========================================
-                    let columns = [{ data: "work_cat_id", title: "NO", className: "text-center" }, { data: "work_cat_name", title: "CATEGORY" }, { data: "work_name", title: "WORK DESCRIPTION" }];
+                    let columns = [
+                        { data: "work_cat_id", title: "NO", className: "text-center" },
+                        { data: "work_cat_name", title: "CATEGORY" },
+                        { data: "work_name", title: "WORK DESCRIPTION" }
+                    ];
                     sortedDates.forEach(date => columns.push({ data: date, title: date, className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d }));
                     columns.push({ data: "TotalTime", title: "GRAND TOTAL", className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d });
 
+                    // Shared utility to append calculation metrics matrix at the bottom
+                    function appendBottomSummaryRows(customData) {
+                        // 1. Insert a blank row spacing separator after data grid row lists
+                        customData.body.push(new Array(customData.header.length).fill(""));
+
+                        // 2. Insert Table Section Header Title
+                        let summaryHeader = new Array(customData.header.length).fill("");
+                        summaryHeader[0] = "SUMMARY CALCULATIONS";
+                        customData.body.push(summaryHeader);
+
+                        // 3. Insert Data Column Labels structure
+                        let labelRow = new Array(customData.header.length).fill("");
+                        labelRow[0] = "Description";
+                        labelRow[1] = "Value";
+                        labelRow[2] = "Percentage";
+                        customData.body.push(labelRow);
+
+                        var makeSummaryRow = function (desc, val, per) {
+                            let r = new Array(customData.header.length).fill("");
+                            r[0] = desc;
+                            r[1] = val;
+                            r[2] = per;
+                            return r;
+                        };
+
+                        // 4. Inject runtime variables collected from scope calculations context
+                        customData.body.push(makeSummaryRow("Total Man-Hours for the Gangs", totalManHoursForGangs.toFixed(2) + " Mhrs", "-"));
+                        customData.body.push(makeSummaryRow("On Track Works", totalOnTrackWorks.toFixed(2) + " Mhrs", perOnTrack + " % Mhrs"));
+                        customData.body.push(makeSummaryRow("Off Track Works", offTrackWorksTotal.toFixed(2) + " Mhrs", perOffTrack + " % Mhrs"));
+                        customData.body.push(makeSummaryRow("Others", totalOthers.toFixed(2) + " Mhrs", perOthers + " % Mhrs"));
+                        customData.body.push(makeSummaryRow("Total", "-", dynamicTotalPercentage + " %"));
+                        customData.body.push(makeSummaryRow("Validated By PWI On", validatorName, validatedAtDate || "-"));
+                        customData.body.push(makeSummaryRow("Verified By JW/KMUJ On", verifierName, verifiedAtDate || "-"));
+                    }
+
                     $('#tableRep, #tableRepNormal, #tableRepEng, #tableRepCI').DataTable({
-                        ordering: false, paging: false, dom: 'Bfrtip', responsive: true, data: finalData, columns: columns,
-                        buttons: ['csv', 'excel'],
+                        ordering: false,
+                        paging: false,
+                        dom: 'Bfrtip',
+                        responsive: true,
+                        data: finalData,
+                        columns: columns,
+                        buttons: [
+                            {
+                                extend: 'csv',
+                                customizeData: function (customData) {
+                                    appendBottomSummaryRows(customData);
+                                },
+                                customize: function (csvText) {
+                                    // Prepend metadata completely ahead of DataTables internal output
+                                    let topMeta = `KTM BERHAD - WEEKLY PROGRESS (R2) - ${sdate} TO ${edate}\n`;
+                                    topMeta += `KMUJ:,${kmuj}\n`;
+                                    topMeta += `Section:,${section}\n\n`;
+                                    return topMeta + csvText;
+                                }
+                            },
+                            {
+                                extend: 'excel',
+                                title: '', // Clear native automatic titles to prevent duplicates
+                                messageTop: null,
+                                customizeData: function (customData) {
+                                    appendBottomSummaryRows(customData);
+                                },
+                                customize: function (xlsx) {
+                                    let sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+                                    // Define metadata row entries explicitly to inject into Excel XML stream structure
+                                    let row1 = `<row r="1"><c t="inline"><is><t>KTM BERHAD - WEEKLY PROGRESS - ${sdate} - ${edate}</t></is></c></row>`;
+                                    let row2 = `<row r="2"><c t="inline"><is><t>KMUJ:</t></is></c><c t="inline"><is><t>${kmuj}</t></is></c></row>`;
+                                    let row3 = `<row r="3"><c t="inline"><is><t>Section:</t></is></c><c t="inline"><is><t>${section}</t></is></c></row>`;
+                                    let row4 = `<row r="4"></row>`; // Blank row separator spacer
+
+                                    // Find the <sheetData> tag node where Excel keeps standard grid cells
+                                    let sheetData = sheet.getElementsByTagName('sheetData')[0];
+
+                                    // Re-index every existing row down by 4 to accommodate the headers
+                                    let rows = sheetData.getElementsByTagName('row');
+                                    for (let i = 0; i < rows.length; i++) {
+                                        let oldRowIndex = parseInt(rows[i].getAttribute('r'));
+                                        let newRowIndex = oldRowIndex + 4;
+                                        rows[i].setAttribute('r', newRowIndex);
+
+                                        // Also fix nested individual cell references inside each adjusted row (e.g., A1 -> A5)
+                                        let cells = rows[i].getElementsByTagName('c');
+                                        for (let j = 0; j < cells.length; j++) {
+                                            let cellRef = cells[j].getAttribute('r');
+                                            let nextCellRef = cellRef.replace(/[0-9]+$/, newRowIndex);
+                                            cells[j].setAttribute('r', nextCellRef);
+                                        }
+                                    }
+
+                                    // Prepend rows 1, 2, 3, and 4 to sheetData
+                                    sheetData.innerHTML = row1 + row2 + row3 + row4 + sheetData.innerHTML;
+                                }
+                            }
+                        ],
                         rowCallback: function (row, data, index) {
                             const catCell = $('td', row).eq(1);
                             const noCell = $('td', row).eq(0);
@@ -1115,13 +1214,12 @@
 
                 $('#tableRep, #tableRepNormal, #tableRepEng, #tableRepCI').DataTable({
                     ordering: false, paging: false, dom: 'Bfrtip', responsive: true,
-                    data: [], // Passing empty array forces DataTables "No data" behavior
+                    data: [],
                     columns: columns,
                     buttons: ['csv', 'excel']
                 });
             }
         }
-
 
 
 
