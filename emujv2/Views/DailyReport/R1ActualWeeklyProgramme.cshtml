@@ -431,21 +431,17 @@
 
         let isFormSubmitted = false;
 
-        window.addEventListener('beforeunload', function (e) {
-            if (isFormSubmitted) {
-                return; 
-            }
-            e.preventDefault();
-            e.returnValue = ''; 
-        });
-
         $(document).ready(function () {
+
+            let hasSearched = false;
+
+
             $(document).on('click', 'a', function (e) {
                 const $anchor = $(this).closest('a');
                 const href = $anchor.attr('href');
         
-                if (!isFormSubmitted && href && href !== '#' && !href.startsWith('javascript:') && !$anchor.attr('data-toggle')) { 
-            
+                if (hasSearched && !isFormSubmitted && href && href !== '#' && !href.startsWith('javascript:') && !$anchor.attr('data-toggle')) {
+                    
                     e.preventDefault(); 
                     e.stopImmediatePropagation(); 
 
@@ -545,7 +541,8 @@
                     if (oldType === 'valid')       { newType = 'al'; newDisplay = 'CT'; }
                     else if (oldType === 'al')   { newType = 'mc'; newDisplay = 'S'; }
                     else if (oldType === 'mc')   { newType = 'ab'; newDisplay = 'TH'; }
-                    else if (oldType === 'ab')   { newType = 'cs'; newDisplay = 'CE'; } 
+                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; } 
+                    else if (oldType === 'cs') { newType = 'ph'; newDisplay = 'PH'; } 
                     else                         { newType = 'valid'; newDisplay = ''; }
 
                     if (attStats[oldType]) attStats[oldType][dayIndex]--;
@@ -567,6 +564,7 @@
                     else if (newType === 'mc') dbCutiCode = "S";
                     else if (newType === 'ab') dbCutiCode = "TH";
                     else if (newType === 'cs') dbCutiCode = "CE";
+                    else if (newType === 'ph') dbCutiCode = "PH";
                     else if (newType === 'valid') dbCutiCode = "valid";
 
                     autoSaveStaffAttendance(empId, date, dbCutiCode);
@@ -711,15 +709,93 @@
             // ROLE: NORMAL USER (LEVEL 4)
             // ==========================================
             else if (lvl === "4") {
+                const footerMapping = [
+                    { label: 'TOTAL ATTENDANCE', attKey: 'valid' },
+                    { label: 'TOTAL YEARLY LEAVE', attKey: 'al' },
+                    { label: 'TOTAL SICK LEAVE', attKey: 'mc' },
+                    { label: 'TOTAL ABSENT', attKey: 'ab' },
+                    { label: 'TOTAL COMPASSIONATE LEAVE', attKey: 'cs' },
+                    { label: 'TOTAL PUBLIC HOLIDAY', attKey: 'ph' }
+                ];
+
+                if (typeof attStats === 'undefined') {
+                    var attStats = { valid: [], al: [], mc: [], ab: [], cs: [], ph: [] };
+                }
+                if (typeof workStats === 'undefined') {
+                    var workStats = {};
+                }
+
                 $("#contentNormal").show();
 
-                $('#btnSearchNormal').on('click', function () {
+                // ==========================================
+                // FIXED CORE HELPER: CONTEXT-AWARE RECALCULATOR
+                // ==========================================
+                function updateColumnTotals($table, colIndex, dayIndex, workName = null) {
+                    // --- CASE 1: WORKPLAN TOGGLE WAS CLICKED ---
+                    if (workName) {
+                        let wpTotal = 0;
+
+                        // Scan rows specifically for the workplan items in this column
+                        $table.find('tbody tr').not('.summary-row').each(function () {
+                            const wpBtn = $(this).find('td').eq(colIndex).find('.workplan-toggle');
+                            if (wpBtn.length > 0) {
+                                const wpCode = wpBtn.data('code');
+                                // Both '+' (dp) and '-' (up) count as 1 toward the workplan total attendance
+                                if (wpCode === 'dp' || wpCode === 'up') {
+                                    wpTotal++;
+                                }
+                            }
+                        });
+
+                        // Only target the specific total cell belonging to this workplan type
+                        const $wpFooterCell = $table.find(`.total-cell[data-workname="${workName}"][data-day="${dayIndex}"][data-rowtype="attendance"]`);
+                        $wpFooterCell.text(wpTotal > 0 ? wpTotal : "");
+                        return;
+                    }
+
+                    // --- CASE 2: CORE ATTENDANCE TOGGLE WAS CLICKED ---
+                    let counts = { valid: 0, al: 0, mc: 0, ab: 0, cs: 0, ph: 0 };
+
+                    $table.find('tbody tr').not('.summary-row').each(function () {
+                        const attBtn = $(this).find('td').eq(colIndex).find('.attendance-toggle');
+                        if (attBtn.length > 0) {
+                            const type = attBtn.data('leavetype') || 'valid';
+                            if (counts.hasOwnProperty(type)) {
+                                counts[type]++;
+                            }
+                        }
+                    });
+
+                    // Sync structural state arrays
+                    footerMapping.forEach(f => {
+                        if (attStats[f.attKey]) {
+                            attStats[f.attKey][dayIndex] = counts[f.attKey];
+                        }
+                    });
+
+                    // Render numbers safely ONLY to the standard attendance row cells
+                    footerMapping.forEach(f => {
+                        let liveVal = counts[f.attKey];
+                        let displayVal = "";
+
+                        if (f.label === 'TOTAL ATTENDANCE') {
+                            displayVal = liveVal > 0 ? liveVal : "";
+                        } else {
+                            displayVal = liveVal === 0 ? '' : liveVal;
+                        }
+
+                        $table.find(`tr.summary-row .summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`)
+                            .text(displayVal);
+                    });
+                }
+
+                // --- SEARCH BUTTON CLICK EVENT ---
+                $('#btnSearchNormal').off('click').on('click', function () {
+                    hasSearched = true;
                     var scn = localStorage.getItem("scn");
                     localStorage.setItem("selScn", scn);
-
                     var kmj = localStorage.getItem("kmuj");
-                    var SysKmj = localStorage.setItem("selKmj", kmj);
-
+                    localStorage.setItem("selKmj", kmj);
                     var sdate = localStorage.getItem("selHar") || "";
                     var edate = localStorage.getItem("selHarE") || "";
 
@@ -732,74 +808,86 @@
                     }
                 });
 
+                // --- ATTENDANCE TOGGLE EVENT ---
                 $("#contentNormal").off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
                     e.preventDefault();
                     const $btn = $(this);
                     if ($btn.attr('disabled')) return false;
 
+                    const currentStartDate = localStorage.getItem("selHar") || "";
+                    if (!currentStartDate) return false;
+
                     const $span = $btn.find('.attendance-text');
                     const date = $btn.data('date');
                     const empId = $btn.data('emplid');
-                    const dayIndex = moment(date).diff(startDate, 'days');
+                    const dayIndex = moment(date).diff(currentStartDate, 'days');
 
-                    let oldType = $btn.data('leavetype') || 'valid'; 
-                    if (oldType === '' || oldType === 'NULL' || oldType === 'null') {
-                        oldType = 'valid';
-                    }
+                    let oldType = $btn.data('leavetype') || 'valid';
+                    if (oldType === '' || oldType === 'NULL' || oldType === 'null') oldType = 'valid';
 
                     let newType, newDisplay;
-                    if (oldType === 'valid')       { newType = 'al'; newDisplay = 'CT'; }
-                    else if (oldType === 'al')   { newType = 'mc'; newDisplay = 'S'; }
-                    else if (oldType === 'mc')   { newType = 'ab'; newDisplay = 'TH'; }
-                    else if (oldType === 'ab')   { newType = 'cs'; newDisplay = 'CE'; }
-                    else                         { newType = 'valid'; newDisplay = ''; } 
-
-                    if (attStats[oldType]) attStats[oldType][dayIndex]--;
-                    if (attStats[newType]) attStats[newType][dayIndex]++;
+                    if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
+                    else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
+                    else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
+                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
+                    else if (oldType === 'cs') { newType = 'ph'; newDisplay = 'PH'; }
+                    else { newType = 'valid'; newDisplay = ''; }
 
                     $btn.data('leavetype', newType);
                     $span.text(newDisplay);
 
-                    footerMapping.forEach(f => {
-                        if (attStats[f.attKey]) {
-                            let val = attStats[f.attKey][dayIndex];
-                            $(`.summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(val === 0 ? '' : val);
-                        }
-                    });
+                    const $table = $btn.closest('table');
+                    const colIndex = $btn.closest('td').index();
 
-                    let dbCutiCode = "valid"; 
-                    if (newType === 'al')        dbCutiCode = "CT";
-                    else if (newType === 'mc')   dbCutiCode = "S";
-                    else if (newType === 'ab')   dbCutiCode = "TH";
-                    else if (newType === 'cs')   dbCutiCode = "CE";
-                    else if (newType === 'valid') dbCutiCode = "valid"; 
+                    // Call update without passing a workName (targets baseline attendance)
+                    updateColumnTotals($table, colIndex, dayIndex);
 
-                    autoSaveStaffAttendance(empId, date, dbCutiCode);
+                    let payloadCode = (newType === 'valid') ? 'VALID' : newType;
+                    autoSaveStaffAttendance(empId, date, payloadCode);
                 });
 
+                // --- WORKPLAN TOGGLE EVENT ---
                 $("#contentNormal").off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
                     e.preventDefault();
-                    const $btn = $(this); const $icon = $btn.find('i');
-                    const empId = $btn.data('emplid'); const date = $btn.data('date'); const workName = $btn.data('workname');
-                    let oldCode = $btn.data('code'); const dayIndex = moment(date).diff(startDate, 'days');
-                    let newCode, newIcon;
+                    const $btn = $(this);
+                    const $icon = $btn.find('i');
+                    const empId = $btn.data('emplid');
+                    const date = $btn.data('date');
+                    const workName = $btn.data('workname');
+                    let oldCode = $btn.data('code');
 
+                    const currentStartDate = localStorage.getItem("selHar") || "";
+                    if (!currentStartDate) return false;
+                    const dayIndex = moment(date).diff(currentStartDate, 'days');
+
+                    let newCode, newIcon;
                     if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
                     else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
                     else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
 
+                    if (!workStats[workName]) {
+                        workStats[workName] = { dp: [], up: [] };
+                    }
+                    if (workStats[workName].dp[dayIndex] === undefined) workStats[workName].dp[dayIndex] = 0;
+                    if (workStats[workName].up[dayIndex] === undefined) workStats[workName].up[dayIndex] = 0;
+
                     if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
                     if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
 
-                    $btn.data('code', newCode); $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
-                    const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
+                    $btn.data('code', newCode);
+                    $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
 
-                    const $attendanceFooterCells = $(`.total-cell[data-rowtype="attendance"][data-workname="${workName}"][data-day="${dayIndex}"]`);
-                    $attendanceFooterCells.text(newTotal > 0 ? newTotal : "");
+                    const $table = $btn.closest('table');
+                    const colIndex = $btn.closest('td').index();
+
+                    // Call update passing workName (targets specific workplan rows)
+                    updateColumnTotals($table, colIndex, dayIndex, workName);
 
                     autoSaveWorkPlan(empId, date, workName, $icon);
                 });
             }
+
+
 
             // ==========================================
             // OTHER ROLES
@@ -854,7 +942,7 @@
                 var span = btn.find('.attendance-text');
                 var currentText = span.text().trim();
 
-                const cycle = ['', 'CT', 'S', 'TH', 'CE'];
+                const cycle = ['', 'CT', 'S', 'TH', 'CE', 'PH'];
                 var currentIndex = cycle.indexOf(currentText);
                 var nextDisplay = cycle[(currentIndex + 1) % cycle.length];
 
@@ -864,7 +952,8 @@
                 if (nextDisplay === 'CT')       dbCutiCode = "CT";
                 else if (nextDisplay === 'S')   dbCutiCode = "S";
                 else if (nextDisplay === 'TH')  dbCutiCode = "TH";
-                else if (nextDisplay === 'CE')  dbCutiCode = "CE";
+                else if (nextDisplay === 'CE') dbCutiCode = "CE";
+                else if (nextDisplay === 'PH') dbCutiCode = "PH";
                 else if (nextDisplay === '')    dbCutiCode = "valid"; 
 
                 autoSaveStaffAttendance(
@@ -1047,45 +1136,14 @@
             });
         }
 
-        function autoSaveWorkPlan(emplid, workDate, workName, icon) {
-            // 1. Determine the plan code for the individual row
-            let planCode = "pl";
-            if (icon.hasClass('fa-plus')) planCode = "dp";
-            else if (icon.hasClass('fa-minus')) planCode = "up";
-            else if (icon.hasClass('fa-rotate-90')) planCode = "pl";
-
-            let payload = {
-                StaffNo: emplid,
-                Date: workDate,
-                WorkName: workName,
-                PlanCode: planCode,
-                UpdBy: localStorage.getItem('usrI')
-            };
-            console.log(payload);
-
-            // AJAX 1: Update ONLY the individual staff record
-            $.ajax({
-                url: linkDepan + "UpdateWorkPlan",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(payload),
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (response) {
-                    console.log(`Individual Saved: ${emplid} -> ${planCode}`);
-                }
-            });
-        }
-
         function autoSaveStaffAttendance(emplid, workDate, cutiCode) {
-            // FIX: Convert 'valid' to null so the backend's ?? operator falls back to DBNull.Value
-            let finalCode = (cutiCode === 'valid') ? null : cutiCode;
+            // FIX: Keep 'valid' as a string instead of turning it into null
+            let finalCode = (!cutiCode || cutiCode.toLowerCase() === 'valid') ? 'VALID' : cutiCode;
 
             let payload = {
                 StaffNo: emplid,
                 Date: workDate,
-                CutiCode: finalCode, // Sends null to the server instead of the string "valid"
+                CutiCode: finalCode, // Sends the string "valid" straight to the API
                 UpdBy: localStorage.getItem('usrI')
             };
 
@@ -1098,7 +1156,7 @@
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (response) {
-                    console.log(`Attendance Saved: ${emplid} on ${workDate} as empty/null`);
+                    console.log(`Attendance Saved: ${emplid} on ${workDate} as ${finalCode}`);
                 },
                 error: function () {
                     swarning("Failed to save attendance.");
@@ -1214,7 +1272,7 @@
                     theadHtml += '</tr>';
 
                     // Statistics initializers
-                    let attStats = { valid: Array(7).fill(0), al: Array(7).fill(0), mc: Array(7).fill(0), ab: Array(7).fill(0), cs: Array(7).fill(0) };
+                    let attStats = { valid: Array(7).fill(0), al: Array(7).fill(0), mc: Array(7).fill(0), ab: Array(7).fill(0), cs: Array(7).fill(0), ph: Array(7).fill(0) };
                     let workStats = {};
                     uniquework_name.forEach(name => { workStats[name] = { dp: Array(7).fill(0), up: Array(7).fill(0) }; });
                     let dailyAdditionalMap = {};
@@ -1247,21 +1305,22 @@
                             if (rawCode === "dp" || rawCode === "up") {
                                 if (workStats[item.work_name]) workStats[item.work_name][rawCode][dayIndex]++;
                             }
+
                             if (!trackedDailyAttendance[trackingKey]) {
                                 const l = item.leaveType_id ? String(item.leaveType_id).toLowerCase().trim() : "valid";
 
-                                if (l === "al" || l === "ct") {
-                                    attStats.al[dayIndex]++;
-                                } else if (l === "mc" || l === "s") {
-                                    attStats.mc[dayIndex]++;
-                                } else if (l === "ab" || l === "th") {
-                                    attStats.ab[dayIndex]++;
-                                } else if (l === "cs" || l === "ce") {
-                                    attStats.cs[dayIndex]++;
-                                } else {
-                                    attStats.valid[dayIndex]++;
+                                let category = "valid";
+                                if (l === "al" || l === "ct" || l === "1") category = "al";
+                                else if (l === "mc" || l === "s" || l === "2") category = "mc";
+                                else if (l === "ab" || l === "th" || l === "3") category = "ab";
+                                else if (l === "cs" || l === "ce" || l === "4") category = "cs";
+                                else if (l === "ph" || l === "5") category = "ph";
+
+                                if (!attStats[category]) {
+                                    attStats[category] = Array(7).fill(0);
                                 }
 
+                                attStats[category][dayIndex] = (attStats[category][dayIndex] || 0) + 1;
                                 trackedDailyAttendance[trackingKey] = true;
                             }
                         }
@@ -1277,46 +1336,43 @@
                             let dayInfo = groupedData[staffNo].attendance_data[d];
                             let displayValue = "";
                             let leaveTypeTracking = "valid";
-                            let isClickable = false;
 
                             if (dayInfo && dayInfo.leave !== undefined && dayInfo.leave !== null && String(dayInfo.leave).trim() !== "") {
-                                isClickable = true;
                                 const leave = String(dayInfo.leave).toLowerCase().trim();
 
-                                if (leave === "al" || leave === "ct") {
-                                    displayValue = "CT";
-                                    leaveTypeTracking = "al";
-                                } else if (leave === "mc" || leave === "s") {
-                                    displayValue = "S";
-                                    leaveTypeTracking = "mc";
-                                } else if (leave === "ab" || leave === "th") {
-                                    displayValue = "TH";
-                                    leaveTypeTracking = "ab";
-                                } else if (leave === "cs" || leave === "ce") {
-                                    displayValue = "CE";
-                                    leaveTypeTracking = "cs";
-                                } else if (leave === "ca") {
-                                    displayValue = "CA";
-                                    leaveTypeTracking = "valid";
-                                } else if (leave !== "" && leave !== "valid") {
-                                    displayValue = dayInfo.leave.toUpperCase();
-                                    leaveTypeTracking = "valid";
-                                }
+                                if (leave === "al" || leave === "ct") { displayValue = "CT"; leaveTypeTracking = "al"; }
+                                else if (leave === "mc" || leave === "s") { displayValue = "S"; leaveTypeTracking = "mc"; }
+                                else if (leave === "ab" || leave === "th") { displayValue = "TH"; leaveTypeTracking = "ab"; }
+                                else if (leave === "cs" || leave === "ce") { displayValue = "CE"; leaveTypeTracking = "cs"; }
+                                else if (leave === "ph") { displayValue = "PH"; leaveTypeTracking = "ph"; }
+                                else if (leave !== "" && leave !== "valid") { displayValue = dayInfo.leave.toUpperCase(); leaveTypeTracking = "valid"; }
                             }
 
-                            let disabledAttr = isClickable ? "" : 'disabled="disabled"';
-                            let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65; pointer-events: none;";
+                            let disabledAttr = "";
+                            let cursorStyle = "cursor:pointer;";
+                            let hasWorkPlanOnDate = false;
+
+                            uniquework_name.forEach(wn => {
+                                if (groupedData[staffNo].work_data[wn] && groupedData[staffNo].work_data[wn].hasOwnProperty(d)) {
+                                    hasWorkPlanOnDate = true;
+                                }
+                            });
+
+                            if (!hasWorkPlanOnDate) {
+                                disabledAttr = "disabled='disabled'";
+                                cursorStyle = "cursor:not-allowed; opacity: 0.5;";
+                            }
 
                             tbodyHtml += `<td>
-                        <a class="btn attendance-toggle" 
-                           data-emplid="${staffNo}" 
-                           data-date="${d}" 
-                           data-leavetype="${leaveTypeTracking}"
-                           ${disabledAttr}
-                           style="display:block; ${cursorStyle}">
-                           <span class="attendance-text">${displayValue}</span>
-                        </a>
-                    </td>`;
+                           <a class="btn attendance-toggle" 
+                              data-emplid="${staffNo}" 
+                              data-date="${d}" 
+                              data-leavetype="${leaveTypeTracking}"
+                              ${disabledAttr}
+                              style="display:block; ${cursorStyle}">
+                              <span class="attendance-text">${displayValue}</span>
+                           </a>
+                       </td>`;
                         }
 
                         uniquework_name.forEach(wn => {
@@ -1341,27 +1397,32 @@
                         { label: 'TOTAL YEARLY LEAVE', attKey: 'al', type: 'leave' },
                         { label: 'TOTAL SICK LEAVE', attKey: 'mc', type: 'leave' },
                         { label: 'TOTAL ABSENT', attKey: 'ab', type: 'leave' },
-                        { label: 'TOTAL CUTI EHSAN', attKey: 'cs', type: 'leave' }
+                        { label: 'TOTAL COMPASSIONATE LEAVE', attKey: 'cs', type: 'leave' },
+                        { label: 'TOTAL PUBLIC HOLIDAY', attKey: 'ph', type: 'leave' }
                     ];
 
-                  footerMapping.forEach(rowConfig => {
+                    footerMapping.forEach(rowConfig => {
                         tbodyHtml += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
                             `<td class="merged-style-left">${rowConfig.label}</td>` +
                             `<td class="merged-style-middle"></td>` +
                             `<td class="merged-style-right"></td>`;
 
-                        // 1. Render the Attendance section cells (Columns 3 to 9)
+                        // 1. Render Core Attendance Section (Columns 3 to 9)
                         attStats[rowConfig.attKey].forEach((val, i) => {
-                            // --- CHANGED: Leave 'TOTAL ATTENDANCE' empty for the attendance columns ---
-                            let attDisplayVal = (rowConfig.label === 'TOTAL ATTENDANCE') ? '' : (val === 0 ? '' : val);
+                            // CRITICAL FIX: Render total attendance count here for the main columns!
+                            let attDisplayVal = "";
+                            if (rowConfig.label === 'TOTAL ATTENDANCE') {
+                                attDisplayVal = val > 0 ? val : "";
+                            } else {
+                                attDisplayVal = val === 0 ? '' : val;
+                            }
                             tbodyHtml += `<td class="summary-att-cell" data-day="${i}" data-key="${rowConfig.attKey}">${attDisplayVal}</td>`;
                         });
 
-                        // 2. Render the Work Plan section cells (Columns 10+)
+                        // 2. Render Work Plan Section (Columns 10+)
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
                                 let displayVal = "";
-                                // --- REMAINING UNCHANGED: Keep calculation active for work plan blocks ---
                                 if (rowConfig.label === 'TOTAL ATTENDANCE') {
                                     let total = (workStats[wn].dp[i] || 0) + (workStats[wn].up[i] || 0);
                                     displayVal = total > 0 ? total : "";
@@ -1387,48 +1448,49 @@
                     });
                     tbodyHtml += '</tr>';
 
-                    // 2. Safely apply headers and content to BOTH separate tables explicitly
                     targetTableIds.forEach(id => {
                         $(id).find('thead').html(theadHtml);
                         $(id).find('tbody').html(tbodyHtml);
                     });
 
-                    // Injection of CSS Rules
                     const whiteRowStylePatch = `
-                    <style id="forceWhiteTableLayout">
-                        #tableRep, #tableRepNormal, #tableRepEng, #tableRepCI,
-                        #tableRep tbody tr, #tableRepNormal tbody tr, #tableRepEng tbody tr, #tableRepCI tbody tr,
-                        #tableRep tbody td, #tableRepNormal tbody td, #tableRepEng tbody td, #tableRepCI tbody td {
-                            background-color: #ffffff !important;
-                        }
-                        .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
-                            background-color: #ffffff !important;
-                        }
-                        #tableRep thead th, #tableRepNormal thead th, #tableRepEng thead th, #tableRepCI thead th,
-                        .dataTables_scrollHead table thead th,
-                        .DTFC_LeftHeadWrapper table thead th {
-                            text-align: center !important;
-                            vertical-align: middle !important;
-                        }
-                        .merged-style-left { border-right: none !important; text-align: left !important; }
-                        .merged-style-middle { border-left: none !important; border-right: none !important; }
-                        .merged-style-right { border-left: none !important; }
-                    </style>`;
+               <style id="forceWhiteTableLayout">
+                   #tableRep, #tableRepNormal, #tableRepEng, #tableRepCI,
+                   #tableRep tbody tr, #tableRepNormal tbody tr, #tableRepEng tbody tr, #tableRepCI tbody tr,
+                   #tableRep tbody td, #tableRepNormal tbody td, #tableRepEng tbody td, #tableRepCI tbody td {
+                       background-color: #ffffff !important;
+                   }
+                   .DTFC_LeftBodyWrapper, .DTFC_LeftBodyWrapper table, .DTFC_LeftBodyWrapper tbody tr td {
+                       background-color: #ffffff !important;
+                   }
+                   #tableRep thead th, #tableRepNormal thead th, #tableRepEng thead th, #tableRepCI thead th,
+                   .dataTables_scrollHead table thead th,
+                   .DTFC_LeftHeadWrapper table thead th {
+                       text-align: center !important;
+                       vertical-align: middle !important;
+                   }
+                   .merged-style-left { border-right: none !important; text-align: left !important; }
+                   .merged-style-middle { border-left: none !important; border-right: none !important; }
+                   .merged-style-right { border-left: none !important; }
+               </style>`;
                     $('#forceWhiteTableLayout').remove();
                     $('head').append(whiteRowStylePatch);
 
-                   function getFooterDataArray() {
+                    function getFooterDataArray() {
                         let rows = [];
                         footerMapping.forEach(rowConfig => {
                             let fullRow = [rowConfig.label, '', ''];
-        
-                            // Update CSV/Excel generation for attendance columns
-                            attStats[rowConfig.attKey].forEach(val => { 
-                                // --- CHANGED: Keep it empty on export for TOTAL ATTENDANCE ---
-                                let exportAttVal = (rowConfig.label === 'TOTAL ATTENDANCE') ? '' : (val === 0 ? '' : String(val));
-                                fullRow.push(exportAttVal); 
+
+                            attStats[rowConfig.attKey].forEach(val => {
+                                let exportAttVal = "";
+                                if (rowConfig.label === 'TOTAL ATTENDANCE') {
+                                    exportAttVal = val > 0 ? String(val) : "";
+                                } else {
+                                    exportAttVal = val === 0 ? '' : String(val);
+                                }
+                                fullRow.push(exportAttVal);
                             });
-        
+
                             uniquework_name.forEach(wn => {
                                 for (let i = 0; i < 7; i++) {
                                     let displayVal = "";

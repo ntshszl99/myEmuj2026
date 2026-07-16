@@ -458,7 +458,7 @@ namespace emujv2Api.Model
             SqlStr.Append(" WHERE staff_no = @StaffNo ");
             SqlStr.Append(" AND leave_date = @WorkDate ");
 
-            ParamTmp.Add("@CutiCode", CutiCode ?? (object)DBNull.Value);
+            ParamTmp.Add("@CutiCode", CutiCode);
             ParamTmp.Add("@StaffNo", StaffNo);
             ParamTmp.Add("@UpdBy", UpdBy);
             ParamTmp.Add("@WorkDate", WorkDate);
@@ -487,24 +487,26 @@ namespace emujv2Api.Model
                 dateParamNames.Add(pName);
                 ParamTmp.Add(pName, workPlanList[i].Date);
             }
+
             SqlStr.Append(@"
-                            UPDATE wpt
-                            SET 
-                                wpt.work_dp = counts.dp,
-                                wpt.work_up = counts.up,
-                                wpt.work_pl = counts.pl,
-                                wpt.updated_at = GETDATE()
-                            FROM work_plan_total_pax wpt
-                            INNER JOIN (
-                                SELECT work_date, rpt_code,
-                                    SUM(CASE WHEN work_plan_type_code = 'dp' THEN 1 ELSE 0 END) as dp,
-                                    SUM(CASE WHEN work_plan_type_code = 'up' THEN 1 ELSE 0 END) as up,
-                                    SUM(CASE WHEN work_plan_type_code = 'pl' THEN 1 ELSE 0 END) as pl
-                                FROM work_plan
-                                WHERE work_date IN (" + string.Join(",", dateParamNames) + @")
-                                GROUP BY work_date, rpt_code
-                            ) AS counts ON wpt.work_date = counts.work_date AND wpt.rpt_code = counts.rpt_code;
-                        ");
+                    UPDATE wpt
+                    SET 
+                        wpt.work_dp = ISNULL(counts.dp, 0),
+                        wpt.work_up = ISNULL(counts.up, 0),
+                        wpt.work_pl = ISNULL(counts.pl, 0),
+                        wpt.updated_at = GETDATE()
+                    FROM work_plan_total_pax wpt
+                    LEFT JOIN (
+                        SELECT work_date, rpt_code,
+                            SUM(CASE WHEN work_plan_type_code = 'dp' THEN 1 ELSE 0 END) as dp,
+                            SUM(CASE WHEN work_plan_type_code = 'up' THEN 1 ELSE 0 END) as up,
+                            SUM(CASE WHEN work_plan_type_code = 'pl' THEN 1 ELSE 0 END) as pl
+                        FROM work_plan
+                        WHERE work_date IN (" + string.Join(",", dateParamNames) + @")
+                        GROUP BY work_date, rpt_code
+                    ) AS counts ON wpt.work_date = counts.work_date AND wpt.rpt_code = counts.rpt_code
+                    WHERE wpt.work_date IN (" + string.Join(",", dateParamNames) + @");
+                ");
 
             DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
 

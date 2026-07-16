@@ -311,7 +311,18 @@
 
                                 for (var d = 1; d <= totalDays; d++) {
                                     var dateObj = new Date(year, parseInt(month) - 1, d);
-                                    var isWeekend = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+                                    var dayOfWeek = dateObj.getDay();
+
+                                    // --- CRITICAL FIX: Custom Weekend Logic based on KMUJ ---
+                                    var isWeekend = false;
+                                    if (kmuj === "KUALA KRAI") {
+                                        // Friday (5) and Saturday (6) for Kuala Krai (Kelantan)
+                                        isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
+                                    } else {
+                                        // Standard: Sunday (0) and Saturday (6)
+                                        isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                                    }
+
                                     var currentCellTimestamp = dateObj.setHours(0, 0, 0, 0);
 
                                     var matchedRecord = records.find(function (r) {
@@ -397,10 +408,9 @@
                                     startWilayahCell = currentCell;
                                     wilayahSpan = 1;
                                     startWilayahCell.attr('rowspan', wilayahSpan);
-                                    wilayahColorFlag = !wilayahColorFlag; // Toggle color flag for the next Wilayah group
+                                    wilayahColorFlag = !wilayahColorFlag;
                                 }
 
-                                // Apply a subtle clean alternating shade to the entire group block
                                 var bgColor = wilayahColorFlag ? '#f8fafc' : '#ffffff';
                                 if (startWilayahCell) startWilayahCell.css('background-color', bgColor);
                             });
@@ -425,10 +435,9 @@
                                     startKmujCell = currentCell;
                                     kmujSpan = 1;
                                     startKmujCell.attr('rowspan', kmujSpan);
-                                    kmujColorFlag = !kmujColorFlag; // Toggle color flag for the next KMUJ group
+                                    kmujColorFlag = !kmujColorFlag;
                                 }
 
-                                // Apply alternating backgrounds to KMUJ blocks
                                 var bgColor = kmujColorFlag ? '#f1f5f9' : '#ffffff';
                                 if (startKmujCell) startKmujCell.css('background-color', bgColor);
                             });
@@ -441,7 +450,6 @@
                 }
             });
         }
-
 
 
     </script>
