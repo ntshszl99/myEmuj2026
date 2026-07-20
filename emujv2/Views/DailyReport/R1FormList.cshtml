@@ -247,6 +247,10 @@
                                     <label class="form-label text-muted small mb-1"><strong>No. of Staff (Valid)</strong></label>
                                     <input readonly id="pax" type="text" class="form-control-plaintext">
                                 </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small mb-1"><strong>Work Date (yyyy-mm-dd)</strong></label>
+                                    <input readonly type="text" id="workdate" class="form-control-plaintext">
+                                </div>
 
                                 <div class="col-12 my-4 mt-3">
                                     <div class="table-responsive">
@@ -258,14 +262,13 @@
                                         </table>
                                     </div>
                                 </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label text-muted small mb-1"><strong>Work Date</strong></label>
-                                    <input readonly type="text" id="workdate" class="form-control-plaintext">
-                                </div>
                                 <div class="col-md-3">
                                     <label class="form-label text-muted small mb-1"><strong>Line</strong></label>
                                     <input readonly type="text" id="linecond" class="form-control-plaintext">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small mb-1"><strong>Branch Line Details</strong></label>
+                                    <input readonly type="text" id="branchdets" class="form-control-plaintext">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label text-muted small mb-1"><strong>Category</strong></label>
@@ -790,10 +793,11 @@
                     $('#section, #section2').val(data[0].section_name);
                     $('#gang').val(data[0].Gang);
                     $('#pax').val(data[0].daily_workers);
-                    $('#workdate, #datepicker').val(data[0].daily_date);
+                    $('#workdate').val(data[0].daily_date);
                     $('#linecond').val(data[0].cond_name);
+                    $('#branchdets').val(data[0].branch_name);
                     $('#category').val(data[0].category_name);
-                    $('#categorydets').val(data[0].category_details);
+                    $('#categorydets').val(data[0].details);
                     $('#worktype').val(data[0].work_name);
                     $('#totalWork').val(data[0].daily_total);
                     $('#unit').val(data[0].daily_unit);
@@ -1302,24 +1306,14 @@
                                     { data: "JobGrade" },
                                     { data: "JobDesc" },
                                     { data: "Gang" },
-                                    { data: "cuti_name" },
                                 ],
                                 columnDefs: [
-                                    {
-                                        targets: -1,
-                                        title: "Status",
-                                        render: function (data) {
-                                            return data == 'VALID'
-                                                ? '<a class="text-success">' + data + ' <i class="ion-checkmark-circled"></i></a>'
-                                                : '<a class="text-danger">' + data + ' <i class="ion-close-circled"></i></a>';
-                                        }
-                                    },
-                                    { targets: -2, title: "Gang", render: function (data) { return data; } },
-                                    { targets: -3, title: "Position", render: function (data) { return data; } },
-                                    { targets: -4, title: "Grade", render: function (data) { return data; } },
-                                    { targets: -5, title: "Name", render: function (data) { return data; } },
-                                    { targets: -6, title: "Staff ID", render: function (data) { return data; } },
-                                    { targets: -7, title: "No", render: function () { return counter++; } }
+                                    { targets: -1, title: "Gang", render: function (data) { return data; } },
+                                    { targets: -2, title: "Position", render: function (data) { return data; } },
+                                    { targets: -3, title: "Grade", render: function (data) { return data; } },
+                                    { targets: -4, title: "Name", render: function (data) { return data; } },
+                                    { targets: -5, title: "Staff ID", render: function (data) { return data; } },
+                                    { targets: -6, title: "No", render: function () { return counter++; } }
                                 ],
                                 createdRow: function (row, data, dataIndex) {
                                     $('td', row).addClass('text-nowrap align-middle');
