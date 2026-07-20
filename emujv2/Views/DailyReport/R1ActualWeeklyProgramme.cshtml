@@ -771,26 +771,47 @@
 
                 });
 
-                // --- WORKPLAN TOGGLE EVENT (LOCAL UI CHANGES ONLY) ---
+                // --- WORKPLAN TOGGLE EVENT (4-STATE CYCLE: DP -> UP -> PL -> EMPTY) ---
                 $("#contentNormal").off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
                     e.preventDefault();
                     const $btn = $(this);
                     const $icon = $btn.find('i');
                     const date = $btn.data('date');
                     const workName = $btn.data('workname');
-                    let oldCode = $btn.data('code');
+
+                    let rawCode = $btn.data('code');
+                    let oldCode = (!rawCode || rawCode === "null") ? "pl" : String(rawCode).toLowerCase().trim();
 
                     const currentStartDate = localStorage.getItem("selHar") || "";
                     if (!currentStartDate) return false;
                     const dayIndex = moment(date).diff(currentStartDate, 'days');
 
                     let newCode, newIcon;
-                    if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
-                    else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
-                    else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
+
+                    // 4-State Cycle: PL (|) -> DP (+) -> UP (-) -> NONE (Blank) -> PL (|)
+                    if (oldCode === "pl") {
+                        newCode = "dp";
+                        newIcon = "fa-plus";
+                    } else if (oldCode === "dp") {
+                        newCode = "up";
+                        newIcon = "fa-minus";
+                    } else if (oldCode === "up") {
+                        newCode = "none"; // Explicit blank state saved to DB
+                        newIcon = "";
+                    } else {
+                        // From "none" back to default "pl"
+                        newCode = "pl";
+                        newIcon = "fa-minus fa-rotate-90";
+                    }
 
                     $btn.data('code', newCode);
-                    $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
+                    $btn.attr('data-code', newCode);
+
+                    // Update icon classes
+                    $icon.removeClass('fa-plus fa-minus fa-rotate-90');
+                    if (newIcon !== "") {
+                        $icon.addClass(newIcon);
+                    }
 
                     const $table = $btn.closest('table');
                     const colIndex = $btn.closest('td').index();
@@ -849,12 +870,16 @@
             let individualAttendance = [];
             let summaryDatesMap = {};
 
-            // 1. Gather all individual Work Plan row updates & Summary Total dates
             $('#contentNormal .workplan-toggle').each(function () {
                 const $btn = $(this);
                 let date = $btn.data('date');
                 let staffNo = $btn.data('emplid');
-                let code = $btn.data('code') || 'pl';
+
+                let code = $btn.data('code');
+                if (code === undefined || code === null || code === "null") {
+                    code = "";
+                }
+
                 let rptCode = $btn.data('workname');
 
                 if (!date) return;
@@ -875,7 +900,7 @@
                     individualWorkPlans.push({
                         StaffNo: String(staffNo),
                         Date: String(date),
-                        PlanCode: String(code),
+                        PlanCode: String(code), 
                         UpdBy: String(userId)
                     });
                 }
@@ -1248,26 +1273,39 @@
                             }
 
                             tbodyHtml += `<td>
-                                           <a class="btn attendance-toggle" 
-                                              data-emplid="${staffNo}" 
-                                              data-date="${d}" 
-                                              data-leavetype="${leaveTypeTracking}"
-                                              ${disabledAttr}
-                                              style="display:block; ${cursorStyle}">
-                                              <span class="attendance-text">${displayValue}</span>
-                                           </a>
-                                       </td>`;
+                       <a class="btn attendance-toggle" 
+                          data-emplid="${staffNo}" 
+                          data-date="${d}" 
+                          data-leavetype="${leaveTypeTracking}"
+                          ${disabledAttr}
+                          style="display:block; ${cursorStyle}">
+                          <span class="attendance-text">${displayValue}</span>
+                       </a>
+                   </td>`;
                         }
 
+                        // --- WORKPLAN ICON RENDERING (SUPPORTS 4-STATE CYCLE INCL. BLANK) ---
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
                                 let d = moment(startDate).add(i, 'days').format('YYYY-MM-DD');
                                 if (groupedData[staffNo].work_data[wn] && groupedData[staffNo].work_data[wn].hasOwnProperty(d)) {
                                     let currentCodeVal = groupedData[staffNo].work_data[wn][d];
-                                    let iconClass = "fa-minus fa-rotate-90";
-                                    if (currentCodeVal === "dp") iconClass = "fa-plus";
-                                    else if (currentCodeVal === "up") iconClass = "fa-minus";
-                                    tbodyHtml += `<td><a class="btn workplan-toggle" data-emplid="${staffNo}" data-date="${d}" data-workname="${wn}" data-code="${currentCodeVal}"><i class="fa ${iconClass}"></i></a></td>`;
+
+                                    let iconClass = "";
+                                    if (currentCodeVal === "dp") {
+                                        iconClass = "fa-plus";
+                                    } else if (currentCodeVal === "up") {
+                                        iconClass = "fa-minus";
+                                    } else if (currentCodeVal === "pl") {
+                                        iconClass = "fa-minus fa-rotate-90"; // Vertical line |
+                                    }
+                                    // If currentCodeVal === "none", iconClass stays "", so NO icon renders!
+
+                                    tbodyHtml += `<td>
+                                                    <a class="btn workplan-toggle" data-emplid="${staffNo}" data-date="${d}" data-workname="${wn}" data-code="${currentCodeVal}">
+                                                        <i class="fa ${iconClass}"></i>
+                                                    </a>
+                                                </td>`;
                                 } else {
                                     tbodyHtml += `<td></td>`;
                                 }
@@ -1403,12 +1441,15 @@
                     function getCleanCellData(node) {
                         let $node = $(node);
                         let $toggleBtn = $node.find('.workplan-toggle');
+
                         if ($toggleBtn.length > 0) {
                             let code = $toggleBtn.data('code');
                             if (code === 'dp') return '+';
                             if (code === 'up') return '-';
-                            return '';
+                            if (code === 'pl') return '|'; 
+                            return ''; 
                         }
+
                         let $span = $node.find('span');
                         if ($span.length > 0) return $span.text().trim();
                         return $node.text().trim();
