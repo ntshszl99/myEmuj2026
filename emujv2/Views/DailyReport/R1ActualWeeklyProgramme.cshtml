@@ -521,83 +521,6 @@
                     }
                 });
 
-                $("#contentAdmin").off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
-                    e.preventDefault();
-                    const $btn = $(this);
-                    if ($btn.attr('disabled')) return false;
-
-                    const $span = $btn.find('.attendance-text');
-                    const date = $btn.data('date');
-                    const empId = $btn.data('emplid');
-                    const dayIndex = moment(date).diff(startDate, 'days');
-
-                    let oldType = $btn.data('leavetype') || 'valid';
-                    if (oldType === '' || oldType === 'NULL' || oldType === 'null') {
-                        oldType = 'valid';
-                    }
-
-                    // Unify Admin codes with Normal block (using CE)
-                    let newType, newDisplay;
-                    if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
-                    else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
-                    else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
-                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
-                    else if (oldType === 'cs') { newType = 'ph'; newDisplay = 'PH'; }
-                    else { newType = 'valid'; newDisplay = ''; }
-
-                    if (attStats[oldType]) attStats[oldType][dayIndex]--;
-                    if (attStats[newType]) attStats[newType][dayIndex]++;
-
-                    $btn.data('leavetype', newType);
-                    $span.text(newDisplay);
-
-                    footerMapping.forEach(f => {
-                        if (attStats[f.attKey]) {
-                            let val = attStats[f.attKey][dayIndex];
-                            $(`.summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(val === 0 ? '' : val);
-                        }
-                    });
-
-                    // Force explicit 'valid' string map
-                    let dbCutiCode = "valid";
-                    if (newType === 'al') dbCutiCode = "CT";
-                    else if (newType === 'mc') dbCutiCode = "S";
-                    else if (newType === 'ab') dbCutiCode = "TH";
-                    else if (newType === 'cs') dbCutiCode = "CE";
-                    else if (newType === 'ph') dbCutiCode = "PH";
-                    else if (newType === 'valid') dbCutiCode = "valid";
-
-                    autoSaveStaffAttendance(empId, date, dbCutiCode);
-                });
-
-                $("#contentAdmin").off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
-                    e.preventDefault();
-                    const $btn = $(this);
-                    const $icon = $btn.find('i');
-                    const empId = $btn.data('emplid');
-                    const date = $btn.data('date');
-                    const workName = $btn.data('workname');
-                    const dayIndex = moment(date).diff(startDate, 'days');
-
-                    let oldCode = $btn.data('code');
-                    let newCode, newIcon;
-
-                    if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
-                    else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
-                    else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
-
-                    if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
-                    if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
-
-                    $btn.data('code', newCode);
-                    $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
-
-                    const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
-                    const $attendanceFooterCells = $(`.total-cell[data-rowtype="attendance"][data-workname="${workName}"][data-day="${dayIndex}"]`);
-                    $attendanceFooterCells.text(newTotal > 0 ? newTotal : "");
-
-                    autoSaveWorkPlan(empId, date, workName, $icon);
-                });
             }
 
             // ==========================================
@@ -851,13 +774,19 @@
                     const colIndex = $btn.closest('td').index();
                     updateColumnTotals($table, colIndex, dayIndex, workName);
                 });
+
+                $('#btnBulkSaveNormal').off('click').on('click', function () {
+                    // Set flag to true so browser allows navigation away safely now
+                    isFormSubmitted = true;
+                    bulkSaveTotals();
+                });
             }
 
             // ==========================================
             // OTHER ROLES
             // ==========================================
             else {
-                    $("#contentOthers").show();
+                $("#contentOthers").show();
             }
 
             // ==========================================
@@ -885,15 +814,7 @@
                 localStorage.setItem("selHar", sdate);
                 localStorage.setItem("selHarE", edate);
             });
-
-            // ==========================================
-            // BULK SAVE CLICKS (MODIFIED TO UNBLOCK WARN)
-            // ==========================================
-            $('#btnBulkSave, #btnBulkSaveNormal').off('click').on('click', function () {
-                // Set flag to true so browser allows navigation away safely now
-                isFormSubmitted = true;
-                bulkSaveTotals();
-            });
+           
         });
 
 
@@ -971,7 +892,7 @@
                 didOpen: () => { swal.showLoading(); }
             });
 
-            // STEP A: Save individual Work Plans
+            //Save individual Work Plans
             $.ajax({
                 url: linkDepan + "UpdateWorkPlan",
                 type: 'POST',
@@ -983,9 +904,9 @@
 
                     if (resWp.status === "00" || resWp.Status === "00") {
 
-                        // STEP B: Save individual Attendance List
+                        //Attendance List
                         $.ajax({
-                            url: linkDepan + "UpdateStaffLeave", // Or bulk endpoint if your backend accepts List<StaffInfo>
+                            url: linkDepan + "UpdateStaffLeave", 
                             type: 'POST',
                             contentType: 'application/json',
                             data: JSON.stringify(individualAttendance),
@@ -995,7 +916,7 @@
 
                                 if (resAtt.status === "00" || resAtt.Status === "00") {
 
-                                    // STEP C: Recalculate and update Work Plan Totals
+                                    //Recalculate and update Work Plan Totals
                                     $.ajax({
                                         url: linkDepan + "UpdateWorkPlanTotal",
                                         type: 'POST',
@@ -1165,12 +1086,10 @@
                 success: function (data) {
                     const targetTableIds = ['#tableRep', '#tableRepNormal', '#tableRepEng', '#tableRepCI'];
 
-                    // 1. Destroy existing DataTables instances cleanly safely
                     targetTableIds.forEach(id => {
                         if ($.fn.dataTable.isDataTable(id)) {
                             $(id).DataTable().clear().destroy();
                         }
-                        // Wipe structural contents individually
                         $(id).find('thead').empty();
                         $(id).find('tbody').empty();
                         $(id).find('tfoot').remove();
@@ -1183,7 +1102,6 @@
                     const weekNumber = startDate.isValid() ? startDate.week() : "undefined";
                     const weekEndingStr = endDate.isValid() ? endDate.format('DD/MM/YYYY') : edate;
 
-                    // Format dynamic date display for the top title banner
                     const reportDateRange = startDate.isValid() && endDate.isValid()
                         ? `${startDate.format('DD/MM/YYYY')} TO ${endDate.format('DD/MM/YYYY')}`
                         : `${sdate} TO ${edate}`;
@@ -1205,7 +1123,6 @@
                         }
                     }
 
-                    // Generate structural components
                     let theadHtml = '<tr><th rowspan="2">Staff No</th><th rowspan="2">Name</th><th rowspan="2">Designation</th>';
                     theadHtml += `<th colspan="7">ATTENDANCE</th>`;
                     uniquework_name.forEach(desc => { theadHtml += `<th colspan="7">${desc}</th>`; });
@@ -1305,20 +1222,19 @@
                             });
 
                             if (!hasWorkPlanOnDate) {
-                                disabledAttr = "disabled='disabled'";
-                                cursorStyle = "cursor:not-allowed; opacity: 0.5;";
+                                disabledAttr = "disabled='disabled' style='cursor: default;'";
                             }
 
                             tbodyHtml += `<td>
-                           <a class="btn attendance-toggle" 
-                              data-emplid="${staffNo}" 
-                              data-date="${d}" 
-                              data-leavetype="${leaveTypeTracking}"
-                              ${disabledAttr}
-                              style="display:block; ${cursorStyle}">
-                              <span class="attendance-text">${displayValue}</span>
-                           </a>
-                       </td>`;
+                                           <a class="btn attendance-toggle" 
+                                              data-emplid="${staffNo}" 
+                                              data-date="${d}" 
+                                              data-leavetype="${leaveTypeTracking}"
+                                              ${disabledAttr}
+                                              style="display:block; ${cursorStyle}">
+                                              <span class="attendance-text">${displayValue}</span>
+                                           </a>
+                                       </td>`;
                         }
 
                         uniquework_name.forEach(wn => {
