@@ -439,11 +439,11 @@
             $(document).on('click', 'a', function (e) {
                 const $anchor = $(this).closest('a');
                 const href = $anchor.attr('href');
-        
+
                 if (hasSearched && !isFormSubmitted && href && href !== '#' && !href.startsWith('javascript:') && !$anchor.attr('data-toggle')) {
-                    
-                    e.preventDefault(); 
-                    e.stopImmediatePropagation(); 
+
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
 
                     Swal.fire({
                         title: 'Warning!',
@@ -452,7 +452,7 @@
                         confirmButtonColor: '#3085d6',
                         confirmButtonText: 'OK'
                     });
-            
+
                 }
             });
 
@@ -538,12 +538,12 @@
 
                     // Unify Admin codes with Normal block (using CE)
                     let newType, newDisplay;
-                    if (oldType === 'valid')       { newType = 'al'; newDisplay = 'CT'; }
-                    else if (oldType === 'al')   { newType = 'mc'; newDisplay = 'S'; }
-                    else if (oldType === 'mc')   { newType = 'ab'; newDisplay = 'TH'; }
-                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; } 
-                    else if (oldType === 'cs') { newType = 'ph'; newDisplay = 'PH'; } 
-                    else                         { newType = 'valid'; newDisplay = ''; }
+                    if (oldType === 'valid') { newType = 'al'; newDisplay = 'CT'; }
+                    else if (oldType === 'al') { newType = 'mc'; newDisplay = 'S'; }
+                    else if (oldType === 'mc') { newType = 'ab'; newDisplay = 'TH'; }
+                    else if (oldType === 'ab') { newType = 'cs'; newDisplay = 'CE'; }
+                    else if (oldType === 'cs') { newType = 'ph'; newDisplay = 'PH'; }
+                    else { newType = 'valid'; newDisplay = ''; }
 
                     if (attStats[oldType]) attStats[oldType][dayIndex]--;
                     if (attStats[newType]) attStats[newType][dayIndex]++;
@@ -560,7 +560,7 @@
 
                     // Force explicit 'valid' string map
                     let dbCutiCode = "valid";
-                    if (newType === 'al')      dbCutiCode = "CT";
+                    if (newType === 'al') dbCutiCode = "CT";
                     else if (newType === 'mc') dbCutiCode = "S";
                     else if (newType === 'ab') dbCutiCode = "TH";
                     else if (newType === 'cs') dbCutiCode = "CE";
@@ -572,14 +572,14 @@
 
                 $("#contentAdmin").off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
                     e.preventDefault();
-                    const $btn = $(this); 
+                    const $btn = $(this);
                     const $icon = $btn.find('i');
-                    const empId = $btn.data('emplid'); 
-                    const date = $btn.data('date'); 
+                    const empId = $btn.data('emplid');
+                    const date = $btn.data('date');
                     const workName = $btn.data('workname');
                     const dayIndex = moment(date).diff(startDate, 'days');
 
-                    let oldCode = $btn.data('code'); 
+                    let oldCode = $btn.data('code');
                     let newCode, newIcon;
 
                     if (oldCode === "pl" || !oldCode || oldCode === "null") { newCode = "dp"; newIcon = "fa-plus"; }
@@ -589,7 +589,7 @@
                     if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
                     if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
 
-                    $btn.data('code', newCode); 
+                    $btn.data('code', newCode);
                     $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
 
                     const newTotal = (workStats[workName].dp[dayIndex] || 0) + (workStats[workName].up[dayIndex] || 0);
@@ -706,7 +706,7 @@
             }
 
             // ==========================================
-            // ROLE: NORMAL USER (LEVEL 4)
+            // LEVEL 4 ROLE ARCHITECTURE
             // ==========================================
             else if (lvl === "4") {
                 const footerMapping = [
@@ -719,77 +719,62 @@
                 ];
 
                 if (typeof attStats === 'undefined') {
-                    var attStats = { valid: [], al: [], mc: [], ab: [], cs: [], ph: [] };
+                    window.attStats = { valid: [], al: [], mc: [], ab: [], cs: [], ph: [] };
                 }
                 if (typeof workStats === 'undefined') {
-                    var workStats = {};
+                    window.workStats = {};
                 }
 
                 $("#contentNormal").show();
 
                 // ==========================================
-                // FIXED CORE HELPER: CONTEXT-AWARE RECALCULATOR
+                // CORE HELPER: RECALCULATOR
                 // ==========================================
                 function updateColumnTotals($table, colIndex, dayIndex, workName = null) {
-                    // --- CASE 1: WORKPLAN TOGGLE WAS CLICKED ---
                     if (workName) {
                         let wpTotal = 0;
-
-                        // Scan rows specifically for the workplan items in this column
                         $table.find('tbody tr').not('.summary-row').each(function () {
                             const wpBtn = $(this).find('td').eq(colIndex).find('.workplan-toggle');
                             if (wpBtn.length > 0) {
                                 const wpCode = wpBtn.data('code');
-                                // Both '+' (dp) and '-' (up) count as 1 toward the workplan total attendance
                                 if (wpCode === 'dp' || wpCode === 'up') {
                                     wpTotal++;
                                 }
                             }
                         });
 
-                        // Only target the specific total cell belonging to this workplan type
                         const $wpFooterCell = $table.find(`.total-cell[data-workname="${workName}"][data-day="${dayIndex}"][data-rowtype="attendance"]`);
                         $wpFooterCell.text(wpTotal > 0 ? wpTotal : "");
                         return;
                     }
 
-                    // --- CASE 2: CORE ATTENDANCE TOGGLE WAS CLICKED ---
                     let counts = { valid: 0, al: 0, mc: 0, ab: 0, cs: 0, ph: 0 };
-
                     $table.find('tbody tr').not('.summary-row').each(function () {
                         const attBtn = $(this).find('td').eq(colIndex).find('.attendance-toggle');
                         if (attBtn.length > 0) {
-                            const type = attBtn.data('leavetype') || 'valid';
+                            let type = attBtn.data('leavetype') || 'valid';
+                            if (type === '' || type === 'NULL' || type === 'null') type = 'valid';
+
                             if (counts.hasOwnProperty(type)) {
                                 counts[type]++;
                             }
                         }
                     });
 
-                    // Sync structural state arrays
                     footerMapping.forEach(f => {
-                        if (attStats[f.attKey]) {
-                            attStats[f.attKey][dayIndex] = counts[f.attKey];
+                        if (window.attStats[f.attKey]) {
+                            window.attStats[f.attKey][dayIndex] = counts[f.attKey];
                         }
                     });
 
-                    // Render numbers safely ONLY to the standard attendance row cells
                     footerMapping.forEach(f => {
                         let liveVal = counts[f.attKey];
-                        let displayVal = "";
-
-                        if (f.label === 'TOTAL ATTENDANCE') {
-                            displayVal = liveVal > 0 ? liveVal : "";
-                        } else {
-                            displayVal = liveVal === 0 ? '' : liveVal;
-                        }
-
-                        $table.find(`tr.summary-row .summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`)
-                            .text(displayVal);
+                        let displayVal = (f.label === 'TOTAL ATTENDANCE') ? (liveVal > 0 ? liveVal : "") : (liveVal === 0 ? '' : liveVal);
+                        $table.find(`tr.summary-row .summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(displayVal);
                     });
                 }
 
-                // --- SEARCH BUTTON CLICK EVENT ---
+                // --- SEARCH BUTTON EVENT ---
                 $('#btnSearchNormal').off('click').on('click', function () {
                     hasSearched = true;
                     var scn = localStorage.getItem("scn");
@@ -800,7 +785,6 @@
                     var edate = localStorage.getItem("selHarE") || "";
 
                     listReports(kmj, scn, sdate, edate);
-
                     if (sdate !== "") {
                         salertSave('Searching for: ' + sdate + ' to ' + edate);
                     } else {
@@ -838,20 +822,15 @@
 
                     const $table = $btn.closest('table');
                     const colIndex = $btn.closest('td').index();
-
-                    // Call update without passing a workName (targets baseline attendance)
                     updateColumnTotals($table, colIndex, dayIndex);
 
-                    let payloadCode = (newType === 'valid') ? 'VALID' : newType;
-                    autoSaveStaffAttendance(empId, date, payloadCode);
                 });
 
-                // --- WORKPLAN TOGGLE EVENT ---
+                // --- WORKPLAN TOGGLE EVENT (LOCAL UI CHANGES ONLY) ---
                 $("#contentNormal").off('click', '.workplan-toggle').on('click', '.workplan-toggle', function (e) {
                     e.preventDefault();
                     const $btn = $(this);
                     const $icon = $btn.find('i');
-                    const empId = $btn.data('emplid');
                     const date = $btn.data('date');
                     const workName = $btn.data('workname');
                     let oldCode = $btn.data('code');
@@ -865,35 +844,20 @@
                     else if (oldCode === "dp") { newCode = "up"; newIcon = "fa-minus"; }
                     else { newCode = "pl"; newIcon = "fa-minus fa-rotate-90"; }
 
-                    if (!workStats[workName]) {
-                        workStats[workName] = { dp: [], up: [] };
-                    }
-                    if (workStats[workName].dp[dayIndex] === undefined) workStats[workName].dp[dayIndex] = 0;
-                    if (workStats[workName].up[dayIndex] === undefined) workStats[workName].up[dayIndex] = 0;
-
-                    if (oldCode === "dp" || oldCode === "up") workStats[workName][oldCode][dayIndex]--;
-                    if (newCode === "dp" || newCode === "up") workStats[workName][newCode][dayIndex]++;
-
                     $btn.data('code', newCode);
                     $icon.removeClass('fa-plus fa-minus fa-rotate-90').addClass(newIcon);
 
                     const $table = $btn.closest('table');
                     const colIndex = $btn.closest('td').index();
-
-                    // Call update passing workName (targets specific workplan rows)
                     updateColumnTotals($table, colIndex, dayIndex, workName);
-
-                    autoSaveWorkPlan(empId, date, workName, $icon);
                 });
             }
-
-
 
             // ==========================================
             // OTHER ROLES
             // ==========================================
             else {
-                $("#contentOthers").show();
+                    $("#contentOthers").show();
             }
 
             // ==========================================
@@ -904,7 +868,7 @@
                 singleDatePicker: true,
                 minYear: 2026,
                 locale: { format: 'DD/MM/YYYY' },
-                opens: 'right', 
+                opens: 'right',
                 drops: 'auto',
                 parentEl: '.datepicker-container',
             });
@@ -925,97 +889,151 @@
             // ==========================================
             // BULK SAVE CLICKS (MODIFIED TO UNBLOCK WARN)
             // ==========================================
-            $('#btnBulkSave, #btnBulkSaveNormal').on('click', function () {
+            $('#btnBulkSave, #btnBulkSaveNormal').off('click').on('click', function () {
                 // Set flag to true so browser allows navigation away safely now
                 isFormSubmitted = true;
                 bulkSaveTotals();
             });
-
-            // ==========================================
-            // GLOBAL FALLBACK TABLES LISTENER
-            // ==========================================
-            $('#tableRep, #tableRepNormal').off('click', '.attendance-toggle').on('click', '.attendance-toggle', function (e) {
-                e.preventDefault();
-                var btn = $(this);
-                if (btn.attr('disabled')) return false;
-
-                var span = btn.find('.attendance-text');
-                var currentText = span.text().trim();
-
-                const cycle = ['', 'CT', 'S', 'TH', 'CE', 'PH'];
-                var currentIndex = cycle.indexOf(currentText);
-                var nextDisplay = cycle[(currentIndex + 1) % cycle.length];
-
-                span.text(nextDisplay);
-
-                let dbCutiCode = "valid"; 
-                if (nextDisplay === 'CT')       dbCutiCode = "CT";
-                else if (nextDisplay === 'S')   dbCutiCode = "S";
-                else if (nextDisplay === 'TH')  dbCutiCode = "TH";
-                else if (nextDisplay === 'CE') dbCutiCode = "CE";
-                else if (nextDisplay === 'PH') dbCutiCode = "PH";
-                else if (nextDisplay === '')    dbCutiCode = "valid"; 
-
-                autoSaveStaffAttendance(
-                    btn.data('emplid'),
-                    btn.data('date'),
-                    dbCutiCode
-                );
-            });
-
-            $('#tableRepNormal').on('click', '.workplan-toggle', function () {
-                var btn = $(this);
-                var icon = btn.find('i');
-                var nextCode = "pl"; 
-
-                if (icon.hasClass('fa-blank')) {
-                    icon.removeClass('fa-blank').addClass('fa-minus fa-rotate-90');
-                    nextCode = "pl";
-                } else if (icon.hasClass('fa-rotate-90')) {
-                    icon.removeClass('fa-minus fa-rotate-90').addClass('fa-plus');
-                    nextCode = "dp";
-                } else if (icon.hasClass('fa-plus')) {
-                    icon.removeClass('fa-plus').addClass('fa-minus');
-                    nextCode = "up";
-                } else {
-                    icon.removeClass('fa-minus').addClass('fa-blank');
-                    nextCode = "pl"; 
-                }
-
-                btn.data('code', nextCode);
-                btn.attr('data-code', nextCode);
-
-                var td = btn.closest('td');
-                var colIndex = td.index(); 
-                var table = btn.closest('table');
-                var columnTotal = 0;
-
-                table.find('tbody tr').not('.summary-row').each(function () {
-                    var cellBtn = $(this).find('td').eq(colIndex).find('.workplan-toggle');
-                    if (cellBtn.length > 0) {
-                        var code = cellBtn.data('code');
-                        if (code === 'dp' || code === 'up') {
-                            columnTotal++;
-                        }
-                    }
-                });
-
-                var attendanceRow = table.find('tbody tr.summary-row').filter(function () {
-                    return $(this).find('td').first().text().trim() === 'TOTAL ATTENDANCE';
-                });
-
-                var targetTotalCell = attendanceRow.find('td').eq(colIndex);
-                targetTotalCell.text(columnTotal > 0 ? columnTotal : "");
-
-                autoSaveWorkPlan(
-                    btn.data('emplid'),
-                    btn.data('date'),
-                    btn.data('workname'),
-                    icon
-                );
-            });
         });
 
+
+        // ==========================================
+        // RICH BULK DATA EXTRACTION & POSTING
+        // ==========================================
+        function bulkSaveTotals() {
+            let userId = localStorage.getItem("usrI") || localStorage.getItem("kmuj") || "";
+            let individualWorkPlans = [];
+            let individualAttendance = [];
+            let summaryDatesMap = {};
+
+            // 1. Gather all individual Work Plan row updates & Summary Total dates
+            $('#contentNormal .workplan-toggle').each(function () {
+                const $btn = $(this);
+                let date = $btn.data('date');
+                let staffNo = $btn.data('emplid');
+                let code = $btn.data('code') || 'pl';
+                let rptCode = $btn.data('workname');
+
+                if (!date) return;
+
+                if (!summaryDatesMap[date]) {
+                    summaryDatesMap[date] = {
+                        Date: String(date),
+                        CreatedBy: String(userId),
+                        WorkDp: "0",
+                        WorkUp: "0",
+                        WorkPl: "0",
+                        RptCode: String(rptCode || ""),
+                        UpdBy: String(userId)
+                    };
+                }
+
+                if (staffNo) {
+                    individualWorkPlans.push({
+                        StaffNo: String(staffNo),
+                        Date: String(date),
+                        PlanCode: String(code),
+                        UpdBy: String(userId)
+                    });
+                }
+            });
+
+            // 2. Gather all individual Attendance updates
+            $('#contentNormal .attendance-toggle').each(function () {
+                const $btn = $(this);
+                let date = $btn.data('date');
+                let empId = $btn.data('emplid');
+                let leaveType = $btn.data('leavetype') || 'valid';
+
+                if (!date || !empId) return;
+
+                let finalCode = (!leaveType || leaveType.toLowerCase() === 'valid') ? 'VALID' : leaveType;
+
+                individualAttendance.push({
+                    StaffNo: String(empId),
+                    Date: String(date),
+                    CutiCode: finalCode,
+                    UpdBy: String(userId)
+                });
+            });
+
+            let totalPayloads = Object.values(summaryDatesMap);
+
+            if (individualWorkPlans.length === 0 && individualAttendance.length === 0) {
+                swal.fire({ title: 'Warning!', text: 'No rows found to save.', icon: 'warning' });
+                return;
+            }
+
+            swal.fire({
+                title: 'Saving...',
+                text: 'Updating work plans, attendance, and recalculating totals.',
+                allowOutsideClick: false,
+                didOpen: () => { swal.showLoading(); }
+            });
+
+            // STEP A: Save individual Work Plans
+            $.ajax({
+                url: linkDepan + "UpdateWorkPlan",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(individualWorkPlans),
+                headers: { "Token": localStorage.getItem('main') },
+                success: function (wpRes) {
+                    let resWp = typeof wpRes === 'string' ? JSON.parse(wpRes) : wpRes;
+
+                    if (resWp.status === "00" || resWp.Status === "00") {
+
+                        // STEP B: Save individual Attendance List
+                        $.ajax({
+                            url: linkDepan + "UpdateStaffLeave", // Or bulk endpoint if your backend accepts List<StaffInfo>
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(individualAttendance),
+                            headers: { "Token": localStorage.getItem('main') },
+                            success: function (attRes) {
+                                let resAtt = typeof attRes === 'string' ? JSON.parse(attRes) : attRes;
+
+                                if (resAtt.status === "00" || resAtt.Status === "00") {
+
+                                    // STEP C: Recalculate and update Work Plan Totals
+                                    $.ajax({
+                                        url: linkDepan + "UpdateWorkPlanTotal",
+                                        type: 'POST',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify(totalPayloads),
+                                        headers: { "Token": localStorage.getItem('main') },
+                                        success: function (totalResponse) {
+                                            let totalRes = typeof totalResponse === 'string' ? JSON.parse(totalResponse) : totalResponse;
+
+                                            if (totalRes.status === "00" || totalRes.Status === "00") {
+                                                swal.fire({ title: 'Success!', text: 'All plans, attendance, and totals saved successfully.', icon: 'success' });
+                                            } else {
+                                                swal.fire({ title: 'Error!', text: 'Plans & Attendance saved, but total processing failed: ' + (totalRes.StatusDetail || totalRes), icon: 'error' });
+                                            }
+                                        },
+                                        error: function () {
+                                            swal.fire({ title: 'Network Error!', text: 'Failed updating totals summary.', icon: 'error' });
+                                        }
+                                    });
+
+                                } else {
+                                    swal.fire({ title: 'Error!', text: 'Failed saving attendance: ' + (resAtt.StatusDetail || resAtt), icon: 'error' });
+                                }
+                            },
+                            error: function () {
+                                swal.fire({ title: 'Network Error!', text: 'Failed sending bulk attendance updates.', icon: 'error' });
+                            }
+                        });
+
+                    } else {
+                        swal.fire({ title: 'Error!', text: 'Failed updating work plans: ' + (resWp.StatusDetail || resWp), icon: 'error' });
+                    }
+                },
+                error: function () {
+                    swal.fire({ title: 'Network Error!', text: 'Failed communicating work plan updates to the server.', icon: 'error' });
+                }
+            });
+        }
 
         function listSection(kmuj, selectedSectionValue) {
             $.ajax({
@@ -1135,78 +1153,6 @@
                 }
             });
         }
-
-        function autoSaveStaffAttendance(emplid, workDate, cutiCode) {
-            // FIX: Keep 'valid' as a string instead of turning it into null
-            let finalCode = (!cutiCode || cutiCode.toLowerCase() === 'valid') ? 'VALID' : cutiCode;
-
-            let payload = {
-                StaffNo: emplid,
-                Date: workDate,
-                CutiCode: finalCode, // Sends the string "valid" straight to the API
-                UpdBy: localStorage.getItem('usrI')
-            };
-
-            $.ajax({
-                url: linkDepan + "UpdateStaffLeave",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(payload),
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (response) {
-                    console.log(`Attendance Saved: ${emplid} on ${workDate} as ${finalCode}`);
-                },
-                error: function () {
-                    swarning("Failed to save attendance.");
-                }
-            });
-        }
-
-        function bulkSaveTotals() {
-            let allPayloads = [];
-            let uniqueDates = [];
-
-            $('[data-date]').each(function () {
-                let date = $(this).attr('data-date');
-                if (date && date.trim() !== "") {
-                    date = date.trim();
-                    if (uniqueDates.indexOf(date) === -1) {
-                        uniqueDates.push(date);
-                    }
-                }
-            });
-
-            if (uniqueDates.length === 0) {
-                console.error("No dates identified in the UI.");
-                swal.fire({ title: 'Warning!', text: 'Please select or view the dates you wish to update.', icon: 'warning' });
-                return;
-            }
-
-            uniqueDates.forEach(function (d) {
-                allPayloads.push({ Date: d });
-            });
-
-            $.ajax({
-                url: linkDepan + "UpdateWorkPlanTotal",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(allPayloads),
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (response) {
-                    let res = JSON.parse(response);
-                    if (res.status === "00") {
-                        swal.fire({ title: 'Success!', text: 'Updated ' + uniqueDates.length + ' dates successfully.', icon: 'success' });
-                    } else {
-                        swal.fire({ title: 'Error!', text: 'Update failed ' + res.StatusDetail, icon: 'error' });
-                    }
-                }
-            });
-        }
-
 
         function listReports(kmuj, section, sdate, edate) {
             $.ajax({

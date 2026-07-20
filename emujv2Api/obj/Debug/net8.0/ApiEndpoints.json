@@ -1516,8 +1516,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "staffCons",
-        "Type": "emujv2Api.Constructor.StaffInfo",
+        "Name": "staffLeaveList",
+        "Type": "System.Collections.Generic.List\u00601[[emujv2Api.Constructor.StaffInfo, emujv2Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "IsRequired": true
       }
     ],
@@ -1620,8 +1620,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "staffCons",
-        "Type": "emujv2Api.Constructor.StaffInfo",
+        "Name": "staffConsList",
+        "Type": "System.Collections.Generic.List\u00601[[emujv2Api.Constructor.StaffInfo, emujv2Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "IsRequired": true
       }
     ],

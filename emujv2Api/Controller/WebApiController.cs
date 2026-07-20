@@ -325,50 +325,8 @@ namespace emujv2Api.Controller
 
 
         [HttpPost]
-        public string UpdateWorkPlan([FromBody] StaffInfo staffCons)
-        {
-            TokenFunc Token = new TokenFunc();
-            PublicCons RetDat = new PublicCons();
-            string Salah = "";
-            string Data = Token.ValidateToken(httpContextAccessor.HttpContext.Request.Headers["Token"], ref Salah);
-            if (string.IsNullOrEmpty(Data))
-
-            {
-                HttpContext.Response.StatusCode = 401;
-                return null;
-            }
-
-            UserCons User = JsonConvert.DeserializeObject<UserCons>(Data);
-
-
-            if (staffCons != null && !string.IsNullOrEmpty(staffCons.StaffNo))
-            {
-                InsertUpdate ret = new InsertUpdate();
-
-                Salah = ret.UpdateWorkPlan(staffCons.UpdBy, staffCons.StaffNo, staffCons.Date, staffCons.PlanCode);
-
-                if (Salah != "0")
-                {
-                    RetDat.status = "99";
-                    RetDat.StatusDetail = Salah;
-                    return JsonConvert.SerializeObject(RetDat);
-                }
-
-                RetDat.status = "00";
-                RetDat.StatusDetail = "Update Save.";
-                return JsonConvert.SerializeObject(RetDat);
-            }
-            else
-            {
-                RetDat.status = "99";
-                RetDat.StatusDetail = "Error: Staff data missing in request.";
-                return JsonConvert.SerializeObject(RetDat);
-            }
-        }
-
-
         [HttpPost]
-        public string UpdateStaffLeave([FromBody] StaffInfo staffCons)
+        public string UpdateWorkPlan([FromBody] List<StaffInfo> staffConsList)
         {
             TokenFunc Token = new TokenFunc();
             PublicCons RetDat = new PublicCons();
@@ -383,31 +341,41 @@ namespace emujv2Api.Controller
 
             UserCons User = JsonConvert.DeserializeObject<UserCons>(Data);
 
-            if (staffCons != null && !string.IsNullOrEmpty(staffCons.StaffNo) )
+            if (staffConsList != null && staffConsList.Count > 0)
             {
                 InsertUpdate ret = new InsertUpdate();
 
-                Salah = ret.UpdateStaffLeave(staffCons.UpdBy, staffCons.StaffNo, staffCons.Date, staffCons.CutiCode);
+                List<WorkPlanDetailPayload> payloadList = new List<WorkPlanDetailPayload>();
+                foreach (var item in staffConsList)
+                {
+                    payloadList.Add(new WorkPlanDetailPayload
+                    {
+                        StaffNo = item.StaffNo,
+                        WorkDate = item.Date,      
+                        PlanCode = item.PlanCode
+                    });
+                }
+
+                Salah = ret.UpdateWorkPlan(User.Userid, payloadList);
 
                 if (Salah != "0")
                 {
                     RetDat.status = "99";
                     RetDat.StatusDetail = Salah;
-                    return JsonConvert.SerializeObject(RetDat);
+                    return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
                 }
 
                 RetDat.status = "00";
                 RetDat.StatusDetail = "Update Save.";
-                return JsonConvert.SerializeObject(RetDat);
+                return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
             }
             else
             {
                 RetDat.status = "99";
                 RetDat.StatusDetail = "Error: Staff data missing in request.";
-                return JsonConvert.SerializeObject(RetDat);
+                return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
             }
         }
-
 
         [HttpPost]
         public string UpdateWorkPlanTotal([FromBody] List<WorkPlanTotal> workPlanList)
@@ -448,6 +416,48 @@ namespace emujv2Api.Controller
             {
                 RetDat.status = "99";
                 RetDat.StatusDetail = "Error : Not Authorize User.";
+                return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
+            }
+        }
+
+        [HttpPost]
+        public string UpdateStaffLeave([FromBody] List<StaffInfo> staffLeaveList)
+        {
+            TokenFunc Token = new TokenFunc();
+            PublicCons RetDat = new PublicCons();
+            string Salah = "";
+            string Data = Token.ValidateToken(httpContextAccessor.HttpContext.Request.Headers["Token"], ref Salah);
+
+            if (string.IsNullOrEmpty(Data))
+            {
+                HttpContext.Response.StatusCode = 401;
+                return null;
+            }
+
+            UserCons User = JsonConvert.DeserializeObject<UserCons>(Data);
+
+            if (staffLeaveList != null && staffLeaveList.Count > 0)
+            {
+                InsertUpdate ret = new InsertUpdate();
+
+                // Pass the entire list directly to InsertUpdate
+                Salah = ret.UpdateStaffLeave(User.Userid, staffLeaveList);
+
+                if (Salah != "0")
+                {
+                    RetDat.status = "99";
+                    RetDat.StatusDetail = Salah;
+                    return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
+                }
+
+                RetDat.status = "00";
+                RetDat.StatusDetail = "Leave records updated successfully.";
+                return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
+            }
+            else
+            {
+                RetDat.status = "99";
+                RetDat.StatusDetail = "Error: Attendance/Leave data missing in request.";
                 return JsonConvert.SerializeObject(RetDat, Formatting.Indented);
             }
         }

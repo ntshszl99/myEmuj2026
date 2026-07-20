@@ -78,6 +78,13 @@ namespace emujv2Api.Constructor
         public string UpdBy { get; set; }
     }
 
+    public class WorkPlanDetailPayload
+    {
+        public string StaffNo { get; set; }
+        public string WorkDate { get; set; }
+        public string PlanCode { get; set; }
+    }
+
     public class WorkPlanTotal
     {
         public string Date { get; set; }
@@ -87,7 +94,6 @@ namespace emujv2Api.Constructor
         public string WorkPl { get; set; }
         public string RptCode { get; set; }
         public string UpdBy { get; set; }
-
     }
 
 

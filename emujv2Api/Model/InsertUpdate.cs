@@ -416,59 +416,77 @@ namespace emujv2Api.Model
             }
         }
 
-        public string UpdateWorkPlan(string UpdBy, string StaffNo, string WorkDate, string PlanCode)
+
+        public string UpdateStaffLeave(string UpdBy, List<StaffInfo> staffLeaveList)
         {
-            StringBuilder SqlStr = new StringBuilder();
-            DataTable Recc = new DataTable();
+            if (staffLeaveList == null || staffLeaveList.Count == 0) return "0";
+
             MsSql DbCon = new MsSql();
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
-            Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append(" UPDATE work_plan ");
-            SqlStr.Append(" SET work_plan_type_code = @PlanCode, ");
-            SqlStr.Append(" updated_at = GETDATE(), ");
-            SqlStr.Append(" updated_by = @UpdBy ");
-            SqlStr.Append(" WHERE staff_no = @StaffNo ");
-            SqlStr.Append(" AND work_date = @WorkDate ");
+            foreach (var item in staffLeaveList)
+            {
+                StringBuilder SqlStr = new StringBuilder();
+                Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            ParamTmp.Add("@PlanCode", PlanCode ?? (object)DBNull.Value);
-            ParamTmp.Add("@StaffNo", StaffNo);
-            ParamTmp.Add("@UpdBy", UpdBy);
-            ParamTmp.Add("@WorkDate", WorkDate);
+                SqlStr.Append(" UPDATE staff_leave ");
+                SqlStr.Append(" SET leaveType_id = @CutiCode, ");
+                SqlStr.Append(" updated_at = GETDATE(), ");
+                SqlStr.Append(" updated_by = @UpdBy ");
+                SqlStr.Append(" WHERE staff_no = @StaffNo ");
+                SqlStr.Append(" AND leave_date = @WorkDate ");
 
-            Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
-            if (Salah != "") { return Salah; }
-            else { return "0"; }
+                ParamTmp.Add("@CutiCode", item.CutiCode ?? (object)DBNull.Value);
+                ParamTmp.Add("@StaffNo", item.StaffNo);
+                ParamTmp.Add("@UpdBy", UpdBy);
+                ParamTmp.Add("@WorkDate", item.Date);
+
+                DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
+
+                if (Salah != "") { return Salah; }
+            }
+
+            return "0";
         }
 
-        public string UpdateStaffLeave(string UpdBy, string StaffNo, string WorkDate, string CutiCode)
+
+
+        public string UpdateWorkPlan(string UpdBy, List<WorkPlanDetailPayload> detailsList)
         {
-            StringBuilder SqlStr = new StringBuilder();
-            DataTable Recc = new DataTable();
+            if (detailsList == null || detailsList.Count == 0) return "0";
+
             MsSql DbCon = new MsSql();
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
-            Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append(" UPDATE staff_leave ");
-            SqlStr.Append(" SET leaveType_id = @CutiCode, ");
-            SqlStr.Append(" updated_at = GETDATE(), ");
-            SqlStr.Append(" updated_by = @UpdBy ");
-            SqlStr.Append(" WHERE staff_no = @StaffNo ");
-            SqlStr.Append(" AND leave_date = @WorkDate ");
+            foreach (var row in detailsList)
+            {
+                StringBuilder SqlStr = new StringBuilder();
+                Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            ParamTmp.Add("@CutiCode", CutiCode);
-            ParamTmp.Add("@StaffNo", StaffNo);
-            ParamTmp.Add("@UpdBy", UpdBy);
-            ParamTmp.Add("@WorkDate", WorkDate);
+                SqlStr.Append(" UPDATE work_plan ");
+                SqlStr.Append(" SET work_plan_type_code = @PlanCode, ");
+                SqlStr.Append(" updated_at = GETDATE(), ");
+                SqlStr.Append(" updated_by = @UpdBy ");
+                SqlStr.Append(" WHERE staff_no = @StaffNo ");
+                SqlStr.Append(" AND work_date = @WorkDate ");
 
-            Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
-            if (Salah != "") { return Salah; }
-            else { return "0"; }
+                ParamTmp.Add("@PlanCode", row.PlanCode ?? (object)DBNull.Value);
+                ParamTmp.Add("@StaffNo", row.StaffNo);
+                ParamTmp.Add("@UpdBy", UpdBy);
+                ParamTmp.Add("@WorkDate", row.WorkDate);
+
+                DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
+
+                if (!string.IsNullOrEmpty(Salah))
+                {
+                    return Salah;
+                }
+            }
+
+            return "0";
         }
-
-
 
         public string UpdateWorkPlanTotal(string Userid, List<WorkPlanTotal> workPlanList)
         {
@@ -480,6 +498,9 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
+            // 1. Add Userid to parameters
+            ParamTmp.Add("@Userid", Userid ?? (object)DBNull.Value);
+
             List<string> dateParamNames = new List<string>();
             for (int i = 0; i < workPlanList.Count; i++)
             {
@@ -489,29 +510,31 @@ namespace emujv2Api.Model
             }
 
             SqlStr.Append(@"
-                    UPDATE wpt
-                    SET 
-                        wpt.work_dp = ISNULL(counts.dp, 0),
-                        wpt.work_up = ISNULL(counts.up, 0),
-                        wpt.work_pl = ISNULL(counts.pl, 0),
-                        wpt.updated_at = GETDATE()
-                    FROM work_plan_total_pax wpt
-                    LEFT JOIN (
-                        SELECT work_date, rpt_code,
-                            SUM(CASE WHEN work_plan_type_code = 'dp' THEN 1 ELSE 0 END) as dp,
-                            SUM(CASE WHEN work_plan_type_code = 'up' THEN 1 ELSE 0 END) as up,
-                            SUM(CASE WHEN work_plan_type_code = 'pl' THEN 1 ELSE 0 END) as pl
-                        FROM work_plan
-                        WHERE work_date IN (" + string.Join(",", dateParamNames) + @")
-                        GROUP BY work_date, rpt_code
-                    ) AS counts ON wpt.work_date = counts.work_date AND wpt.rpt_code = counts.rpt_code
-                    WHERE wpt.work_date IN (" + string.Join(",", dateParamNames) + @");
-                ");
+                UPDATE wpt
+                SET 
+                    wpt.work_dp = ISNULL(counts.dp, 0),
+                    wpt.work_up = ISNULL(counts.up, 0),
+                    wpt.work_pl = ISNULL(counts.pl, 0),
+                    wpt.updated_at = GETDATE(),
+                    wpt.updated_by = @Userid
+                FROM work_plan_total_pax wpt
+                LEFT JOIN (
+                    SELECT work_date, rpt_code,
+                        SUM(CASE WHEN work_plan_type_code = 'dp' THEN 1 ELSE 0 END) as dp,
+                        SUM(CASE WHEN work_plan_type_code = 'up' THEN 1 ELSE 0 END) as up,
+                        SUM(CASE WHEN work_plan_type_code = 'pl' THEN 1 ELSE 0 END) as pl
+                    FROM work_plan
+                    WHERE work_date IN (" + string.Join(",", dateParamNames) + @")
+                    GROUP BY work_date, rpt_code
+                ) AS counts ON wpt.work_date = counts.work_date AND wpt.rpt_code = counts.rpt_code
+                WHERE wpt.work_date IN (" + string.Join(",", dateParamNames) + @");
+            ");
 
             DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
 
-            return (Salah != "") ? Salah : "0";
+            return (!string.IsNullOrEmpty(Salah)) ? Salah : "0";
         }
+
 
 
 
