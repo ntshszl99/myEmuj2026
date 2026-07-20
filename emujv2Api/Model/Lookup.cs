@@ -773,6 +773,13 @@ namespace emujv2Api.Model
 
         public string GetGangPax(string Kmuj, string Section, string Gang)
         {
+            // 1. Guard clause: If Gang is missing, return 0 pax immediately
+            if (string.IsNullOrWhiteSpace(Gang))
+            {
+                var emptyResult = new[] { new { count = "0 pax" } };
+                return JsonConvert.SerializeObject(emptyResult, Formatting.Indented);
+            }
+
             StringBuilder SqlStr = new StringBuilder();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
             DataTable Recc = new DataTable();
@@ -780,40 +787,36 @@ namespace emujv2Api.Model
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
 
-            // Ensure Gang is not null or empty before proceeding
-            var gangArray = (string.IsNullOrEmpty(Gang)) ? new string[] { } : Gang.Split(',');
+            var gangArray = Gang.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-            SqlStr.Append(" select concat(count(*), ' pax') as count ");
-            SqlStr.Append(" from (select b.Emplid, e.kmuj_name, d.section_name, b.Nama, b.JobGrade, UPPER(b.JobDesc) as JobDesc, UPPER(f.cuti_name) as cuti_name ");
-            SqlStr.Append(" from gang_desc as a, [HR_MAIN].[dbo].[HR_MAIN] as b, staff_section as c, section as d, kmuj as e, Ref_Cuti as f, Gang as g ");
-            SqlStr.Append(" where b.Emplid = ");
-            SqlStr.Append(" (select distinct(c.no_perkh) ");
-            SqlStr.Append(" where d.section_name = @Section ");
-            SqlStr.Append(" and cuti_name = 'VALID' ");
-            SqlStr.Append(" and c.no_muj = e.kmuj_value ");
-            SqlStr.Append(" and c.no_section = d.section_val ");
-            SqlStr.Append(" and d.section_kmuj = e.kmuj_value ) ");
-            SqlStr.Append(" and g.gang IN ("); // Use IN clause for multiple gangs
+            SqlStr.Append(" SELECT CONCAT(COUNT(*), ' pax') AS [count] ");
+            SqlStr.Append(" FROM ( ");
+            SqlStr.Append("     SELECT DISTINCT b.Emplid, e.kmuj_name, d.section_name, b.Nama, b.JobGrade, UPPER(b.JobDesc) AS JobDesc ");
+            SqlStr.Append("     FROM gang_desc AS a ");
+            SqlStr.Append("     INNER JOIN [HR_MAIN].[dbo].[HR_MAIN] AS b ON a.staff_no = b.Emplid ");
+            SqlStr.Append("     INNER JOIN staff_section AS c ON b.Emplid = c.no_perkh ");
+            SqlStr.Append("     INNER JOIN Gang AS g ON c.gang_id = g.id ");
+            SqlStr.Append("     INNER JOIN section AS d ON c.no_section = d.section_val ");
+            SqlStr.Append("     INNER JOIN kmuj AS e ON c.no_muj = e.kmuj_value AND d.section_kmuj = e.kmuj_value ");
+            SqlStr.Append("     WHERE d.section_name = @Section ");
+            SqlStr.Append("     AND b.Status = 'A' ");
+
+            // 2. Safely add the IN clause
+            SqlStr.Append("     AND g.gang IN (");
             for (int i = 0; i < gangArray.Length; i++)
             {
                 SqlStr.Append("@Gang" + i);
                 if (i < gangArray.Length - 1)
                 {
-                    SqlStr.Append(",");
+                    SqlStr.Append(", ");
                 }
+                ParamTmp.Add("@Gang" + i, gangArray[i].Trim());
             }
             SqlStr.Append(") ");
-            SqlStr.Append(" and a.gang_id = g.id ");
-            SqlStr.Append(" and a.staff_no = b.Emplid ");
-            SqlStr.Append(" and b.Status = 'A' ");
-            SqlStr.Append(" and a.staff_status = f.cuti_code ");
-            SqlStr.Append(" ) tbl ");
+
+            SqlStr.Append(" ) AS tbl ");
 
             ParamTmp.Add("@Section", Section);
-            for (int i = 0; i < gangArray.Length; i++)
-            {
-                ParamTmp.Add("@Gang" + i, gangArray[i]);
-            }
 
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);

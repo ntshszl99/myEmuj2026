@@ -261,6 +261,9 @@
     <script src="~/assets/plugins/daterangepicker/daterangepicker.js"></script>
     <script type="text/javascript">
 
+        // Flag to prevent AJAX re-fetch when updating Select2 programmatically
+        var isProgrammaticChange = false;
+
         $(document).ready(function () {
             initDatePicker();
             listGang();
@@ -296,14 +299,10 @@
             });
 
             $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
-                // Update input
                 $(this).val(picker.startDate.format('DD/MM/YYYY'));
-
-                // Log to console
                 console.log("Ready for SQL:", picker.startDate.format('YYYY-MM-DD'));
             });
 
-            // 3. Debugging: Check if the plugin is actually attached
             var picker = $("#txtDate").data('daterangepicker');
             if (picker) {
                 console.log("Current format in plugin:", picker.locale.format);
@@ -311,77 +310,66 @@
                 console.error("Plugin failed to initialize on #txtDate");
             }
 
-            //button submit form
+            // Button submit form
             $('#submitNew').click(function () {
                 if (validateForm()) {
                     submitForm();
                 }
             });
 
-            //disabled selection
+            // Disabled selection handlers
             $("#region").on('change', function () {
                 if ($("#region").val() == '-0') {
                     $('#kmuj').prop('disabled', true);
-                }
-                else {
+                } else {
                     $('#kmuj').prop('disabled', false);
                 }
             });
+
             $("#kmuj").on('change', function () {
                 if ($("#kmuj").val() == '-0') {
                     $('#section').prop('disabled', true);
-                }
-                else {
+                } else {
                     $('#section').prop('disabled', false);
                 }
             });
+
             $("#section").on('change', function () {
                 if ($("#section").val() == '-0') {
                     $('#gang').prop('disabled', true);
-                }
-                else {
+                } else {
                     $('#gang').prop('disabled', false);
                 }
             });
 
-            $('#tableRep').on('click', '.btn-danger', function (e) {
+            // Row deletion click handler
+            $('#tableRep').on('click', '.btn-remove-row, .btn-danger', function (e) {
                 e.preventDefault();
-
-                var table = $('#tableRep').DataTable();
-                var tr = $(this).closest('tr');
-
-                if (tr.hasClass('child')) {
-                    tr = tr.prev();
-                }
-
-                table.row(tr).remove().draw(false);
-
-                console.log("Row removed client-side.");
+                removeGangRow($(this));
             });
 
-                
-            //automatic show workunit when select worktype
+            // Automatic show workunit when select worktype
             $("#worktype").on('change', function () {
-                wrk = $("#worktype option:selected").text();
-                localStorage.setItem("selWrk", wrk, this.value);
-                listWorkUnit(localStorage.getItem("selWrk", this.value));
+                var wrk = $("#worktype option:selected").text();
+                localStorage.setItem("selWrk", wrk);
+                listWorkUnit(wrk);
             });
 
             // Enable/Disable Emergency Details based on Category
             $("#category").on('change', function () {
                 if ($(this).val() == '1') {
-                    $("#catdet").prop('disabled', false); // Enable
+                    $("#catdet").prop('disabled', false);
                 } else {
-                    $("#catdet").prop('disabled', true);  // Disable
+                    $("#catdet").prop('disabled', true);
                 }
             });
 
             // Enable/Disable Branch Line Details based on Line Condition
             $("#linecond").on('change', function () {
                 if ($(this).val() == '9') {
-                    $("#branchdet").prop('disabled', false); // Enable
+                    $("#branchdet").prop('disabled', false);
                 } else {
-                    $("#branchdet").prop('disabled', true);  // Disable
+                    $("#branchdet").prop('disabled', true);
                 }
             });
 
@@ -393,19 +381,33 @@
                 validateTime();
             });
 
+            // Multi-select dropdown change listener
             $("#kmuj, #section, #gang").on('change', function () {
-                kmj = $("#kmuj option:selected").text();
+                // Skip re-fetch if change was triggered programmatically by row deletion
+                if (isProgrammaticChange) return;
+
+                var kmjVal = $("#kmuj").val();
+                var scnVal = $("#section").val();
+                var gngVal = $("#gang").val();
+
+                var kmj = $("#kmuj option:selected").text();
+                var scn = $("#section option:selected").text();
+
+                // Get comma-separated text for all selected gang options
+                var gng = $("#gang option:selected").map(function () {
+                    return $(this).text();
+                }).get().join(',');
+
                 localStorage.setItem("selKmj", kmj);
-
-                scn = $("#section option:selected").text();
                 localStorage.setItem("selScn", scn);
-
-                var gng = $("#gang option:selected").text();
                 localStorage.setItem("selGng", gng);
 
-                listGangPax(kmj, scn, gng);
-                listReports(kmj, scn, gng);
-
+                if (kmjVal && scnVal && gngVal) {
+                    listGangPax(kmj, scn, gng);
+                    listReports(kmj, scn, gng);
+                } else {
+                    $("#gangno").empty();
+                }
             });
 
             $('#addnotes').on('input', function () {
@@ -415,22 +417,67 @@
                 }
             });
 
-            //modal user details & delete user
+            // Modal user details
             $('#modalDetails').on('show.bs.modal', function (e) {
                 var ids = $(e.relatedTarget).data('id');
                 $(this).data('id', ids);
                 console.log('read ' + ids);
                 stfDetails(ids);
             });
+        });
 
-            //button submit update user
-            $("#submitUpdate").click(function () {
-                var ids = $('#modalDetails').data('id');
-                console.log('read ' + ids);
-                updateUser(ids);
+        function removeGangRow($button) {
+            var table = $('#tableRep').DataTable();
+            var tr = $button.closest('tr');
+
+            if (tr.hasClass('child')) {
+                tr = tr.prev();
+            }
+
+            var dtRow = table.row(tr);
+            var rowData = dtRow.data();
+
+            if (!rowData || !rowData.Gang) return;
+
+            var removedGangText = $.trim(rowData.Gang);
+
+            // 1. Remove row from DataTables client-side
+            dtRow.remove().draw(false);
+
+            // 2. Count remaining staff for this gang
+            var remainingCount = 0;
+            table.rows().data().each(function (data) {
+                if (data.Gang && $.trim(data.Gang).toLowerCase() === removedGangText.toLowerCase()) {
+                    remainingCount++;
+                }
             });
 
-        });
+            // 3. If no staff left for this gang, update Select2
+            if (remainingCount === 0) {
+                var $select = $('#gang');
+                var currentValues = $select.val() || [];
+
+                // Filter out options matching the removed gang text or value
+                var updatedValues = currentValues.filter(function (val) {
+                    var optionText = $.trim($select.find('option[value="' + val + '"]').text());
+                    return val.toLowerCase() !== removedGangText.toLowerCase() &&
+                        optionText.toLowerCase() !== removedGangText.toLowerCase();
+                });
+
+                // Set flag to prevent triggering listReports() AJAX call
+                isProgrammaticChange = true;
+
+                // Update Select2 UI
+                $select.val(updatedValues).trigger('change');
+
+                // Reset flag
+                isProgrammaticChange = false;
+            }
+
+            // 4. Update pax count box
+            var totalRows = table.rows().count();
+            $('#gangno').val(totalRows + ' pax');
+        }
 
         function initDatePicker() {
             var today = new Date();
@@ -479,64 +526,6 @@
                 complete: function () {
                 }
             });
-        }
-
-        //update hal user
-        function updateUser(ids) {
-            var data = {
-                Userid: ids,
-                StatusCuti: $('#cuti').val(),
-            };
-
-            console.log("Updating user:", ids);
-            console.log("Status Cuti:", $("#cuti option:selected").val());
-
-            $.ajax({
-                url: linkDepan + "UpdateGangDetails",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                beforeSend: function (request) {
-                    request.setRequestHeader("Token", localStorage.getItem('main'));
-                },
-                success: function (response) {
-                    var data;
-                    try {
-                        data = JSON.parse(response);
-                    } catch (error) {
-                        console.error("Error parsing JSON:", error);
-                        swarning();
-                        return;
-                    }
-                    if (data && data.status === "00") {
-                        $('#modalDetails').modal('hide');
-                        swal.fire('Success!', 'User details have been updated.', 'success');
-                        $('#modalDetails').modal('hide');
-
-                    } else {
-                        $('#modalDetails').modal('hide');
-                        swarning();
-                    }
-                    if (localStorage.getItem("lvlI") === "1") {
-                        listReports(localStorage.getItem("selKmj"),
-                            localStorage.getItem("selScn"),
-                            localStorage.getItem("selGng"));
-                    } else if (["2", "3", "4", "5", "6"].includes(localStorage.getItem("lvlI"))) {
-                        kmj = $("#kmuj option:selected").text();
-                        localStorage.setItem("selKmj", kmj);
-
-                        scn = $("#section option:selected").text();
-                        localStorage.setItem("selScn", scn);
-
-                        var gng = $("#gang option:selected").text();
-                        localStorage.setItem("selGng", gng);
-
-                        listGangPax(kmj, scn, gng);
-                        listReports(kmj, scn, gng);
-                    }
-                }
-            },
-            );
         }
 
         function validateKM() {
@@ -695,10 +684,6 @@
             return formData;
         }
 
-
-
-
-
         async function submitForm() {
             var formData = gatherFormData();
             $.ajax({
@@ -844,10 +829,6 @@
         }
 
 
-
-
-
-
         // Cleaned up helper for your UI toggling
         function toggleContentVisibility() {
             var lvl = localStorage.getItem("lvlI");
@@ -949,8 +930,8 @@
                                 },
                                 drawCallback: function (settings) {
                                     var api = this.api();
-                                    var totalRows = api.rows({ page: 'current' }).count();
-                                    $('#gangno').val(totalRows);
+                                    var totalRows = api.rows().count();
+                                    $('#gangno').val(totalRows + ' pax');
                                 }
                             });
                         } catch (error) {
