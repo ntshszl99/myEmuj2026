@@ -850,10 +850,10 @@
                     $.fn.dataTable.ext.errMode = 'throw';
                     var counter = 1, countStf = 0, countID = 0;
                     $('#tableRep').DataTable({
-                        dom: 'Bfrtip',
-                        buttons: [
-                            'copy', 'csv', 'excel', 'pdf', 'print'
-                        ],
+                        //dom: 'Bfrtip',
+                        //buttons: [
+                        //    'copy', 'csv', 'excel', 'pdf', 'print'
+                        //],
                         responsive: true,
                         data: data,
                         columns: [
@@ -867,6 +867,10 @@
                             { data: "Emplid" },
                         ],
                         columnDefs: [
+                            {
+                                targets: "_all",
+                                className: "text-center align-middle" // Centers text horizontally & vertically
+                            },
                             {
                                 targets: -1,
                                 title: "Actions",
@@ -882,9 +886,13 @@
                                 title: "Status",
                                 render: function (data, type, full, meta) {
                                     var status = '';
-                                    if (data == 'active') { status = '<a class="text-success">' + 'Active' + ' <i class="ion-checkmark-circled"></i></a></p >'; }
+                                    if (data == 'active') {
+                                        status = '<span class="text-success fw-semibold me-1">' + 'Active ' + '</span> ' +
+                                            '<i class="fe fe-check-circle text-success font-16"></i>';
+                                    }
                                     else {
-                                        status = '<a class="text-danger">' + 'Inactive' + ' <i class="ion-close-circled"></i></a></p >';
+                                        status = '<span class="text-danger">' + 'Inactive ' + '<i class="fe fe-x-circle font-16"></i></span>';
+
                                     }
                                     return status;
                                 },
