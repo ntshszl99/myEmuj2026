@@ -18,7 +18,7 @@
 
             <!--End Page header-->
 
-            <div class="" id="content">
+            <div class="" id="contentMuj">
                 <div class="card">
                     <div class="card-body">
                         <div class="mb-3 m-0">
@@ -277,153 +277,161 @@
             listReports();
             listLocation();
 
-            console.log(localStorage.getItem("lvlI"));
-            if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "3" || localStorage.getItem("lvlI") === "6") {
-                $("#content").hide();
+
+            var lvl = localStorage.getItem("lvlI");
+
+            $("#contentMuj, #contentOthers").hide();
+
+            if (lvl === "4") {
+                $("#contentMuj").show();
+
+                // Handle click events on radio buttons
+                $('#id_radio1').click(function () {
+                    $('#station').show('fast');
+                    $('#point').show('fast');
+                });
+
+                $('#id_radio2').click(function () {
+                    $('#station').hide('fast');
+                    $('#point').hide('fast');
+                });
+
+                $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
+                    $(this).val(picker.startDate.format('DD/MM/YYYY'));
+                    console.log("Ready for SQL:", picker.startDate.format('YYYY-MM-DD'));
+                });
+
+                var picker = $("#txtDate").data('daterangepicker');
+                if (picker) {
+                    console.log("Current format in plugin:", picker.locale.format);
+                } else {
+                    console.error("Plugin failed to initialize on #txtDate");
+                }
+
+                // Button submit form
+                $('#submitNew').click(function () {
+                    if (validateForm()) {
+                        submitForm();
+                    }
+                });
+
+                // Disabled selection handlers
+                $("#region").on('change', function () {
+                    if ($("#region").val() == '-0') {
+                        $('#kmuj').prop('disabled', true);
+                    } else {
+                        $('#kmuj').prop('disabled', false);
+                    }
+                });
+
+                $("#kmuj").on('change', function () {
+                    if ($("#kmuj").val() == '-0') {
+                        $('#section').prop('disabled', true);
+                    } else {
+                        $('#section').prop('disabled', false);
+                    }
+                });
+
+                $("#section").on('change', function () {
+                    if ($("#section").val() == '-0') {
+                        $('#gang').prop('disabled', true);
+                    } else {
+                        $('#gang').prop('disabled', false);
+                    }
+                });
+
+                // Row deletion click handler
+                $('#tableRep').on('click', '.btn-remove-row, .btn-danger', function (e) {
+                    e.preventDefault();
+                    removeGangRow($(this));
+                });
+
+                // Automatic show workunit when select worktype
+                $("#worktype").on('change', function () {
+                    var wrk = $("#worktype option:selected").text();
+                    localStorage.setItem("selWrk", wrk);
+                    listWorkUnit(wrk);
+                });
+
+                // Enable/Disable Emergency Details based on Category
+                $("#category").on('change', function () {
+                    if ($(this).val() == '1') {
+                        $("#catdet").prop('disabled', false);
+                    } else {
+                        $("#catdet").prop('disabled', true);
+                    }
+                });
+
+                // Enable/Disable Branch Line Details based on Line Condition
+                $("#linecond").on('change', function () {
+                    if ($(this).val() == '9') {
+                        $("#branchdet").prop('disabled', false);
+                    } else {
+                        $("#branchdet").prop('disabled', true);
+                    }
+                });
+
+                $('#startKM, #endKM').on('change', function () {
+                    validateKM();
+                });
+
+                $('#startTime, #endTime').on('change', function () {
+                    validateTime();
+                });
+
+                // Multi-select dropdown change listener
+                $("#kmuj, #section, #gang").on('change', function () {
+                    // Skip re-fetch if change was triggered programmatically by row deletion
+                    if (isProgrammaticChange) return;
+
+                    var kmjVal = $("#kmuj").val();
+                    var scnVal = $("#section").val();
+                    var gngVal = $("#gang").val();
+
+                    var kmj = $("#kmuj option:selected").text();
+                    var scn = $("#section option:selected").text();
+
+                    // Get comma-separated text for all selected gang options
+                    var gng = $("#gang option:selected").map(function () {
+                        return $(this).text();
+                    }).get().join(',');
+
+                    localStorage.setItem("selKmj", kmj);
+                    localStorage.setItem("selScn", scn);
+                    localStorage.setItem("selGng", gng);
+
+                    if (kmjVal && scnVal && gngVal) {
+                        listGangPax(kmj, scn, gng);
+                        listReports(kmj, scn, gng);
+                    } else {
+                        $("#gangno").empty();
+                    }
+                });
+
+                $('#addnotes').on('input', function () {
+                    let value = this.value;
+                    if (value.length > 0) {
+                        this.value = value.charAt(0).toUpperCase() + value.slice(1);
+                    }
+                });
+
+                // Modal user details
+                $('#modalDetails').on('show.bs.modal', function (e) {
+                    var ids = $(e.relatedTarget).data('id');
+                    $(this).data('id', ids);
+                    console.log('read ' + ids);
+                    stfDetails(ids);
+                });
+            }
+
+            else {
                 $("#contentOthers").show();
             }
-            else {
-                $("#content").show();
-                $("#contentOthers").hide();
-            }
 
-            // Handle click events on radio buttons
-            $('#id_radio1').click(function () {
-                $('#station').show('fast');
-                $('#point').show('fast');
-            });
 
-            $('#id_radio2').click(function () {
-                $('#station').hide('fast');
-                $('#point').hide('fast');
-            });
 
-            $('#txtDate').on('apply.daterangepicker', function (ev, picker) {
-                $(this).val(picker.startDate.format('DD/MM/YYYY'));
-                console.log("Ready for SQL:", picker.startDate.format('YYYY-MM-DD'));
-            });
 
-            var picker = $("#txtDate").data('daterangepicker');
-            if (picker) {
-                console.log("Current format in plugin:", picker.locale.format);
-            } else {
-                console.error("Plugin failed to initialize on #txtDate");
-            }
-
-            // Button submit form
-            $('#submitNew').click(function () {
-                if (validateForm()) {
-                    submitForm();
-                }
-            });
-
-            // Disabled selection handlers
-            $("#region").on('change', function () {
-                if ($("#region").val() == '-0') {
-                    $('#kmuj').prop('disabled', true);
-                } else {
-                    $('#kmuj').prop('disabled', false);
-                }
-            });
-
-            $("#kmuj").on('change', function () {
-                if ($("#kmuj").val() == '-0') {
-                    $('#section').prop('disabled', true);
-                } else {
-                    $('#section').prop('disabled', false);
-                }
-            });
-
-            $("#section").on('change', function () {
-                if ($("#section").val() == '-0') {
-                    $('#gang').prop('disabled', true);
-                } else {
-                    $('#gang').prop('disabled', false);
-                }
-            });
-
-            // Row deletion click handler
-            $('#tableRep').on('click', '.btn-remove-row, .btn-danger', function (e) {
-                e.preventDefault();
-                removeGangRow($(this));
-            });
-
-            // Automatic show workunit when select worktype
-            $("#worktype").on('change', function () {
-                var wrk = $("#worktype option:selected").text();
-                localStorage.setItem("selWrk", wrk);
-                listWorkUnit(wrk);
-            });
-
-            // Enable/Disable Emergency Details based on Category
-            $("#category").on('change', function () {
-                if ($(this).val() == '1') {
-                    $("#catdet").prop('disabled', false);
-                } else {
-                    $("#catdet").prop('disabled', true);
-                }
-            });
-
-            // Enable/Disable Branch Line Details based on Line Condition
-            $("#linecond").on('change', function () {
-                if ($(this).val() == '9') {
-                    $("#branchdet").prop('disabled', false);
-                } else {
-                    $("#branchdet").prop('disabled', true);
-                }
-            });
-
-            $('#startKM, #endKM').on('change', function () {
-                validateKM();
-            });
-
-            $('#startTime, #endTime').on('change', function () {
-                validateTime();
-            });
-
-            // Multi-select dropdown change listener
-            $("#kmuj, #section, #gang").on('change', function () {
-                // Skip re-fetch if change was triggered programmatically by row deletion
-                if (isProgrammaticChange) return;
-
-                var kmjVal = $("#kmuj").val();
-                var scnVal = $("#section").val();
-                var gngVal = $("#gang").val();
-
-                var kmj = $("#kmuj option:selected").text();
-                var scn = $("#section option:selected").text();
-
-                // Get comma-separated text for all selected gang options
-                var gng = $("#gang option:selected").map(function () {
-                    return $(this).text();
-                }).get().join(',');
-
-                localStorage.setItem("selKmj", kmj);
-                localStorage.setItem("selScn", scn);
-                localStorage.setItem("selGng", gng);
-
-                if (kmjVal && scnVal && gngVal) {
-                    listGangPax(kmj, scn, gng);
-                    listReports(kmj, scn, gng);
-                } else {
-                    $("#gangno").empty();
-                }
-            });
-
-            $('#addnotes').on('input', function () {
-                let value = this.value;
-                if (value.length > 0) {
-                    this.value = value.charAt(0).toUpperCase() + value.slice(1);
-                }
-            });
-
-            // Modal user details
-            $('#modalDetails').on('show.bs.modal', function (e) {
-                var ids = $(e.relatedTarget).data('id');
-                $(this).data('id', ids);
-                console.log('read ' + ids);
-                stfDetails(ids);
-            });
+      
         });
 
         // Global array for manually removed staff ONLY

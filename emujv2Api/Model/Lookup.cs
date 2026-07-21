@@ -655,22 +655,26 @@ namespace emujv2Api.Model
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
 
-
-            SqlStr.Append(" select b.Emplid, e.kmuj_name, d.section_name, b.Nama, a.gang_id, b.JobGrade, c.no_muj, c.no_section, UPPER(b.JobDesc) as JobDesc, UPPER(f.cuti_name) as cuti_name ");
-            SqlStr.Append(" from gang_desc as a, [HR_MAIN].[dbo].[HR_MAIN] as b, staff_section as c, section as d, kmuj as e, Ref_Cuti as f, Gang as g ");
-            SqlStr.Append(" where b.Emplid = ");
-            SqlStr.Append(" (select distinct(c.no_perkh) ");
-            SqlStr.Append(" where e.kmuj_name = @Kmuj ");
-            SqlStr.Append(" or d.section_name = @Section) ");
-            SqlStr.Append(" and c.no_muj = e.kmuj_value ");
-            SqlStr.Append(" and c.no_section = d.section_val ");
-            SqlStr.Append(" and d.section_kmuj = e.kmuj_value ");
-            SqlStr.Append(" and g.gang = @Gangetgg ");
-            SqlStr.Append(" and a.gang_id = g.id ");
-            SqlStr.Append(" and a.staff_no = b.Emplid ");
-            SqlStr.Append(" and b.Status = 'A' ");
-            SqlStr.Append(" and a.staff_status = f.cuti_code ");
-            SqlStr.Append(" order by b.Nama asc ");
+            SqlStr.Append(" SELECT ");
+            SqlStr.Append("     b.Emplid, ");
+            SqlStr.Append("     e.kmuj_name, ");
+            SqlStr.Append("     d.section_name, ");
+            SqlStr.Append("     b.Nama, ");
+            SqlStr.Append("     c.gang_id, ");
+            SqlStr.Append("     b.JobGrade, ");
+            SqlStr.Append("     c.no_muj, ");
+            SqlStr.Append("     c.no_section, ");
+            SqlStr.Append("     UPPER(b.JobDesc) AS JobDesc ");
+            SqlStr.Append(" FROM gang_desc AS a ");
+            SqlStr.Append(" INNER JOIN [HR_MAIN].[dbo].[HR_MAIN] AS b ON a.staff_no = b.Emplid ");
+            SqlStr.Append(" INNER JOIN staff_section AS c ON b.Emplid = c.no_perkh ");
+            SqlStr.Append(" INNER JOIN kmuj AS e ON c.no_muj = e.kmuj_value ");
+            SqlStr.Append(" INNER JOIN section AS d ON c.no_section = d.section_val AND d.section_kmuj = e.kmuj_value ");
+            SqlStr.Append(" INNER JOIN Gang AS g ON c.gang_id = g.id ");
+            SqlStr.Append(" WHERE b.Status = 'A' ");
+            SqlStr.Append("   AND g.gang = @Gang ");
+            SqlStr.Append("   AND (e.kmuj_name = @Kmuj OR d.section_name = @Section) ");
+            SqlStr.Append(" ORDER BY b.Nama ASC; ");
 
             ParamTmp.Add("@Section", Section);
             ParamTmp.Add("@Kmuj", Kmuj);
