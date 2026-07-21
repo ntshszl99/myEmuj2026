@@ -82,7 +82,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
             $('#loginForm').submit(function (event) {
-                event.preventDefault(); // Prevent the default form submission
+                event.preventDefault(); // Prevent default form submission
 
                 var Toast = Swal.mixin({
                     toast: true,
@@ -95,66 +95,76 @@
                         toast.addEventListener('mouseleave', Swal.resumeTimer)
                     }
                 });
+
                 var usr = $("#usr").val();
                 var pwd = $("#pwd").val();
+
+                // 1. Check if either input is empty
                 if (usr == "" || pwd == "") {
                     Toast.fire({
                         icon: 'warning',
-                        title: 'Please Fill In Username/Password '
+                        title: 'Please Fill In Username/Password'
                     });
                 }
-                else if (usr !== pwd) {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Incorrect Username/Password '
-                    });
-                }
-                else if (usr != "" && pwd != "" && usr == pwd) {
-                    var dataForm = $("#logs").serialize();
+                else {
+                    // REMOVED: (usr !== pwd) check that was stopping normal logins
                     $.ajax({
-                        url: linkDepan + 'validateuser?userid=' + usr + '&password=' + pwd,
+                        url: linkDepan + 'validateuser?userid=' + encodeURIComponent(usr) + '&password=' + encodeURIComponent(pwd),
                         type: 'GET',
                         dataType: "json",
-                        //data: dataForm,
                         beforeSend: function () {
+                            $('#masukkk').hide(); // Hide submit button while processing
                         },
                         success: function (data) {
-                            Toast.fire({
-                                icon: 'success',
-                                title: 'Welcome ' + data.Nama
-                            });
+                            // 2. Validate that data exists before trying to read properties
+                            if (data && data.Nama) {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: 'Welcome ' + data.Nama
+                                });
 
-                            localStorage.setItem("usrN", data.Nama);
-                            localStorage.setItem("usrI", data.Userid);
-                            localStorage.setItem("usrR", data.Region);
-                            localStorage.setItem("usrD", data.Designation);
-                            localStorage.setItem("usrY", data.YrsService);
-                            localStorage.setItem("IC", data.IC);
-                            localStorage.setItem("age", data.Age);
-                            localStorage.setItem("phoneNum", data.PhoneNumber);
-                            localStorage.setItem("depL", data.Location);
-                            localStorage.setItem("depI", data.Deptid);
-                            localStorage.setItem("depN", data.DeptName);
-                            localStorage.setItem("lvlI", data.Levelid);
-                            localStorage.setItem("usrLvl", data.UserLevel);
-                            localStorage.setItem("usrS", data.Status);
-                            localStorage.setItem("scn", data.Section);
-                            localStorage.setItem("kmuj", data.KMUJ);
-                            localStorage.setItem("usrRE", data.RegionEng);
-                            localStorage.setItem("usrKmu", data.kmujEng);
-                            localStorage.setItem("regID", data.RegionID);
-                            localStorage.setItem("scnVal", data.SectionVal);
-                            localStorage.setItem("kmujVal", data.KMUJVal);
-                            localStorage.setItem("main", data.TokenAdmin);
+                                localStorage.setItem("usrN", data.Nama);
+                                localStorage.setItem("usrI", data.Userid);
+                                localStorage.setItem("usrR", data.Region);
+                                localStorage.setItem("usrD", data.Designation);
+                                localStorage.setItem("usrY", data.YrsService);
+                                localStorage.setItem("IC", data.IC);
+                                localStorage.setItem("age", data.Age);
+                                localStorage.setItem("phoneNum", data.PhoneNumber);
+                                localStorage.setItem("depL", data.Location);
+                                localStorage.setItem("depI", data.Deptid);
+                                localStorage.setItem("depN", data.DeptName);
+                                localStorage.setItem("lvlI", data.Levelid);
+                                localStorage.setItem("usrLvl", data.UserLevel);
+                                localStorage.setItem("usrS", data.Status);
+                                localStorage.setItem("scn", data.Section);
+                                localStorage.setItem("kmuj", data.KMUJ);
+                                localStorage.setItem("usrRE", data.RegionEng);
+                                localStorage.setItem("usrKmu", data.kmujEng);
+                                localStorage.setItem("regID", data.RegionID);
+                                localStorage.setItem("scnVal", data.SectionVal);
+                                localStorage.setItem("kmujVal", data.KMUJVal);
+                                localStorage.setItem("main", data.TokenAdmin);
 
-                            setWithExpiry('perang', data.Userid, 300);//5jam
-                            setTimeout(window.location.replace("../Home/Index"), 20000);
+                                setWithExpiry('perang', data.Userid, 300); // 5 hours
+
+                                // Redirect to home page after a brief delay
+                                setTimeout(function () {
+                                    window.location.replace("../Home/Index");
+                                }, 1500);
+                            }
+                            else {
+                                // Server returned null (Invalid credentials or missing from staff_login)
+                                Toast.fire({
+                                    icon: 'warning',
+                                    title: 'Invalid Username/Password or Account Inactive'
+                                });
+                            }
                         },
                         error: function (xhr) {
-                            $('#masukkk').show();
                             Toast.fire({
-                                icon: 'warning',
-                                title: 'Please Check Your Username/Password '
+                                icon: 'error',
+                                title: 'Please Check Your Username/Password'
                             });
                         },
                         complete: function () {

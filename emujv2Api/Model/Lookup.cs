@@ -25,6 +25,12 @@ namespace emujv2Api.Model
     {
         public UserCons ValidateUser(string Userid, string Password)
         {
+            // 1. Password must equal Userid (Emplid)
+            if (string.IsNullOrEmpty(Userid) || string.IsNullOrEmpty(Password) || Password != Userid)
+            {
+                return null; // Return null immediately if password does not match Emplid
+            }
+
             StringBuilder SqlStr = new StringBuilder();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
             DataTable Recc = new DataTable();
@@ -37,51 +43,43 @@ namespace emujv2Api.Model
 
             User.Userid = Userid;
 
-            // 1. Fixed the duplicate "= =" typo here
+            // 2. INNER JOIN checks that user exists in staff_login AND is active in HR_MAIN
             SqlStr.Append(" SELECT a.status ");
             SqlStr.Append(" FROM HR_MAIN AS a ");
-            SqlStr.Append(" INNER JOIN [muj].[dbo].[staff_login] AS b ");
+            SqlStr.Append(" INNER JOIN [mujDev].[dbo].[staff_login] AS b ");
             SqlStr.Append(" ON a.Emplid = b.staff_id ");
             SqlStr.Append(" WHERE b.staff_id = @Emplid ");
             SqlStr.Append(" AND a.status = @Status ");
 
             ParamTmp.Add("@Emplid", User.Userid);
-            ParamTmp.Add("@Status", "A"); // Changed 'A' (char) to "A" (string) for SQL parameter safety
+            ParamTmp.Add("@Status", "A");
 
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.HRCon, ref Salah);
 
-            // Check if the SQL query found a matching active staff record
+            // 3. Check if user was found in staff_login and active in HR_MAIN
             if (Recc != null && Recc.Rows.Count > 0)
             {
-                // 2. This calls your OTHER overloaded method. 
-                // Double-check what logic lives inside ValidateUser(ref User)!
                 if (ValidateUser(ref User))
                 {
                     CheckUserRoles(ref User);
                     Tempat(ref User);
                     TempatEng(ref User);
 
+                    // Generate authentication token
                     TokenMain.Add("exp", DateTimeOffset.UtcNow.AddHours(5).ToUnixTimeSeconds());
                     TokenMain.Add("Userid", Userid);
                     TokenMain.Add("Nama", User.Nama);
 
                     User.TokenAdmin = GenToken.CreateToken(TokenMain);
+
+                    return User; // Return populated user object
                 }
-                else
-                {
-                    User.ErrCode = "99";
-                    User.ErrDtl = "User not registered in system / password invalid";
-                }
-            }
-            else
-            {
-                // If the database query returns 0 rows, it will explicitly stop here.
-                User.ErrCode = "99";
-                User.ErrDtl = "User Not Found / Inactive";
             }
 
-            return User;
+            // 4. Return null if user isn't in staff_login or is inactive
+            return null;
         }
+
         private bool ValidateUser(ref UserCons User)
         {
             StringBuilder SqlStr = new StringBuilder();
@@ -91,33 +89,35 @@ namespace emujv2Api.Model
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
 
-                SqlStr.Append(" Select Nama, DeptDesc, YOS, IC_New, Age, PhoneNumber, LocDesc, RegDesc, JobDesc, Deptid, Status ");
-                SqlStr.Append(" From HR_Main ");
-                SqlStr.Append(" Where Emplid = @Emplid ");
-                SqlStr.Append(" And Status = 'A' ");
+            SqlStr.Append(" SELECT Nama, DeptDesc, YOS, IC_New, Age, PhoneNumber, LocDesc, RegDesc, JobDesc, Deptid, Status ");
+            SqlStr.Append(" FROM HR_Main ");
+            SqlStr.Append(" WHERE Emplid = @Emplid ");
+            SqlStr.Append(" AND Status = 'A' ");
 
             ParamTmp.Add("@Emplid", User.Userid);
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.HRCon, ref Salah);
 
-            if (Recc.Rows.Count > 0)
+            // Added null check here to prevent crashes if DB connection fails
+            if (Recc != null && Recc.Rows.Count > 0)
             {
-                foreach (DataRow row in Recc.Rows)
-                {
-                    User.Nama = row["Nama"].ToString();
-                    User.Designation = row["JobDesc"].ToString();
-                    User.YrsService = row["YOS"].ToString();
-                    User.IC = row["IC_New"].ToString();
-                    User.Age = row["Age"].ToString();
-                    User.PhoneNumber = row["PhoneNumber"].ToString();
-                    User.Location = row["LocDesc"].ToString();
-                    User.Deptid = row["Deptid"].ToString();
-                    User.DeptName = row["DeptDesc"].ToString();
-                    User.Status = row["Status"].ToString();
-                }
+                DataRow row = Recc.Rows[0]; // Access the first row directly instead of looping
+                User.Nama = row["Nama"].ToString();
+                User.Designation = row["JobDesc"].ToString();
+                User.YrsService = row["YOS"].ToString();
+                User.IC = row["IC_New"].ToString();
+                User.Age = row["Age"].ToString();
+                User.PhoneNumber = row["PhoneNumber"].ToString();
+                User.Location = row["LocDesc"].ToString();
+                User.Deptid = row["Deptid"].ToString();
+                User.DeptName = row["DeptDesc"].ToString();
+                User.Status = row["Status"].ToString();
+
                 return true;
             }
-            else { return false; }
+
+            return false;
         }
+
 
         private void CheckUserRoles(ref UserCons User)
         {
