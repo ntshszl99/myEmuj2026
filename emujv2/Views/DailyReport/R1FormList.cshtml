@@ -1460,7 +1460,7 @@
             }
 
             // Ensure 'region' is passed as a string, not an object
-            var url = linkDepan + "GetDailyReportEngineer?SDate=" + mdate + "&EDate=" + edate;
+            var url = linkDepan + "GetDailyReport?SDate=" + mdate + "&EDate=" + edate;
 
             if (region) url += "&Region=" + encodeURIComponent(region);
             if (kmuj) url += "&Kmuj=" + encodeURIComponent(kmuj);
@@ -1572,7 +1572,6 @@
             });
         }
 
-
         //report CI
         function listReportsCI(kmuj, section, mdate, edate) {
 
@@ -1581,7 +1580,7 @@
                 return;
             }
 
-            var url = linkDepan + " ?SDate=" + mdate + "&EDate=" + edate;
+            var url = linkDepan + "GetDailyReport?SDate=" + mdate + "&EDate=" + edate;
             if (section) url += "&Section=" + encodeURIComponent(section);
             if (kmuj) url += "&Kmuj=" + encodeURIComponent(kmuj);
 

@@ -426,6 +426,9 @@
             });
         });
 
+        // Global array for manually removed staff ONLY
+        var removedStaffIds = [];
+
         function removeGangRow($button) {
             var table = $('#tableRep').DataTable();
             var tr = $button.closest('tr');
@@ -439,12 +442,17 @@
 
             if (!rowData || !rowData.Gang) return;
 
+            // ✅ 1. Record ID ONLY when user clicks the "Remove" button
+            if (rowData.Emplid && !removedStaffIds.includes(rowData.Emplid)) {
+                removedStaffIds.push(rowData.Emplid);
+            }
+
             var removedGangText = $.trim(rowData.Gang);
 
-            // 1. Remove row from DataTables client-side
+            // 2. Client-side DataTable row removal
             dtRow.remove().draw(false);
 
-            // 2. Count remaining staff for this gang
+            // 3. Count remaining staff for this gang
             var remainingCount = 0;
             table.rows().data().each(function (data) {
                 if (data.Gang && $.trim(data.Gang).toLowerCase() === removedGangText.toLowerCase()) {
@@ -452,29 +460,24 @@
                 }
             });
 
-            // 3. If no staff left for this gang, update Select2
+            // 4. Update Select2 UI without triggering re-fetch loop
             if (remainingCount === 0) {
                 var $select = $('#gang');
                 var currentValues = $select.val() || [];
 
-                // Filter out options matching the removed gang text or value
                 var updatedValues = currentValues.filter(function (val) {
                     var optionText = $.trim($select.find('option[value="' + val + '"]').text());
                     return val.toLowerCase() !== removedGangText.toLowerCase() &&
                         optionText.toLowerCase() !== removedGangText.toLowerCase();
                 });
 
-                // Set flag to prevent triggering listReports() AJAX call
+                // Set flag to bypass the `#gang` change listener
                 isProgrammaticChange = true;
-
-                // Update Select2 UI
                 $select.val(updatedValues).trigger('change');
-
-                // Reset flag
                 isProgrammaticChange = false;
             }
 
-            // 4. Update pax count box
+            // 5. Update UI Pax count
             var totalRows = table.rows().count();
             $('#gangno').val(totalRows + ' pax');
         }
@@ -622,64 +625,33 @@
             var Region = localStorage.getItem('regID');
             var Kmuj = localStorage.getItem('kmujVal');
             var Section = localStorage.getItem('scnVal');
-            var gangValues = $("#gang").val();
-            var gangArray = gangValues;
+
+            // 1. Get ALL rows from DataTable across all pages
+            var table = $('#tableRep').DataTable();
+            var attValues = table.rows().data().toArray();
+
+            // 2. Extract Emplids and remove duplicates automatically
+            var rawAttId = attValues.map(function (item) {
+                return item.Emplid;
+            }).filter(Boolean); // removes null/undefined
+
+            var AttId = [...new Set(rawAttId)]; // Unique list of IDs
 
             var rawDateValue = $('#txtDate').val();
             var dateObj = moment(rawDateValue, 'DD/MM/YYYY', true);
-            if (!dateObj.isValid()) {
-                console.warn("Date parsing failed for:", rawDateValue);
-            }
-            var formattedDate = dateObj.format('YYYY-MM-DD');
-
-            console.log("Input value:", rawDateValue);
-            console.log("Value sent to SQL:", formattedDate);
-
-            var attValues = $("#tableRep").DataTable().rows().data().toArray();
-
-            //array attendancelist
-            var AttId = attValues.map(function (item) {
-                return item.Emplid;
-            });
-
-            //Array - leave staff
-            var LeaveId = attValues.map(function (item) {
-                return item.cuti_code;
-            });
-
-            var workers = $('#gangno').val().replace(/\D/g, '');
+            var formattedDate = dateObj.isValid() ? dateObj.format('YYYY-MM-DD') : '';
 
             var formData = {
                 UpdBy: UpdBy,
                 Region: Region,
                 Kmuj: Kmuj,
                 Section: Section,
-                Gang: gangArray,
+                Gang: $("#gang").val(),
                 Date: formattedDate,
-                AttId: AttId,
-                LeaveId: LeaveId,
-                WorkType: $('#worktype').val(),
-                Total: $('#total').val(),
-                TotalUnit: $('#unit').val(),
-                TimeStart: $('#startTime').val(),
-                TimeLast: $('#endTime').val(),
-                Category: $('#category').val(),
-                Condition: $('#linecond').val(),
-                Adds: $('#addnotes').val(),
-                TimeTaken: $('#totalTime').val(),
-                KMFrom: $('#startKM').val(),
-                KMTo: $('#endKM').val(),
-                KMTotal: $('#totalKM').val(),
-                Station: $('#stationn').val(),
-                SPoint: $('#stPoint').val(),
-                CatDetails: $('#catdet').val(),
-                BranchDetails: $('#branchdet').val(),
-                Temp: $('#temp').val(),
-                Workers: workers,
+                AttId: AttId,                   // Unique Array sent to C#
+                Workers: AttId.length,         // Exact unique count
+                WorkType: $('#worktype').val()
             };
-
-            console.log("FormData adalah:", formData);
-            console.log("Formatted Date for SQL:", formattedDate);
 
             return formData;
         }
@@ -816,7 +788,7 @@
             var payload = {
                 RptCode: rptCode,
                 Gang: formData.Gang,
-                AttId: formData.AttId,
+                AttId: removedStaffIds,
                 UpdBy: formData.UpdBy
             };
             return $.ajax({
@@ -843,6 +815,9 @@
 
 
         function listReports(kmuj, section, gang) {
+
+            removedStaffIds = [];
+
             if (typeof gang === "string") {
                 gang = gang.split(/(?<=\d)(?=Gang)/);
             }

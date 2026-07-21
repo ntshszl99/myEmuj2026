@@ -301,20 +301,33 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append("WITH CombinedAttendance AS ( ");
-            SqlStr.Append("    SELECT staff_attd_no AS staff_id, rpt_code FROM [daily_form_attendancelist] ");
-            SqlStr.Append("    UNION ALL ");
-            SqlStr.Append("    SELECT staff_attdno_no AS staff_id, rpt_code FROM [daily_form_attendancelistno] ");
-            SqlStr.Append("), ");
-            SqlStr.Append("ParsedAttendance AS ( ");
-            SqlStr.Append("    SELECT LTRIM(RTRIM(m.n.value('.[1]', 'varchar(8000)'))) AS staff_id, rpt_code ");
+            SqlStr.Append("WITH ParsedAttendance AS ( ");
+            SqlStr.Append("    SELECT ");
+            SqlStr.Append("        LTRIM(RTRIM(m.n.value('.[1]', 'varchar(8000)'))) AS staff_id, ");
+            SqlStr.Append("        rpt_code ");
             SqlStr.Append("    FROM ( ");
-            SqlStr.Append("        SELECT staff_id, rpt_code, CAST('<XMLRoot><RowData>' + REPLACE(staff_id, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
-            SqlStr.Append("        FROM CombinedAttendance WHERE staff_id IS NOT NULL ");
-            SqlStr.Append("    ) AS s CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
+            SqlStr.Append("        SELECT ");
+            SqlStr.Append("            staff_attd_no AS staff_id, ");
+            SqlStr.Append("            rpt_code, ");
+            SqlStr.Append("            CAST('<XMLRoot><RowData>' + REPLACE(staff_attd_no, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
+            SqlStr.Append("        FROM [daily_form_attendancelist] ");
+            SqlStr.Append("        WHERE staff_attd_no IS NOT NULL ");
+            SqlStr.Append("    ) AS s ");
+            SqlStr.Append("    CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
             SqlStr.Append(") ");
-
-            SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, wp.work_plan_type_code, h.staff_name, a.upd_user ");
+            SqlStr.Append("SELECT ");
+            SqlStr.Append("    p.rpt_code, ");
+            SqlStr.Append("    a.daily_date, ");
+            SqlStr.Append("    a.daily_additional, ");
+            SqlStr.Append("    ls.Nama, ");
+            SqlStr.Append("    p.staff_id AS Emplid, ");
+            SqlStr.Append("    ls.JobDesc, ");
+            SqlStr.Append("    b.work_name, ");
+            SqlStr.Append("    gd.staff_status, ");
+            SqlStr.Append("    sl.leaveType_id, ");
+            SqlStr.Append("    wp.work_plan_type_code, ");
+            SqlStr.Append("    h.staff_name, ");
+            SqlStr.Append("    a.upd_user ");
             SqlStr.Append("FROM daily_form a ");
             SqlStr.Append("JOIN kerja b ON a.daily_worktype = b.id ");
             SqlStr.Append("JOIN kmuj c ON a.daily_kmuj = c.kmuj_value ");
@@ -324,11 +337,9 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN gang_desc gd ON p.staff_id = LTRIM(RTRIM(gd.staff_no)) ");
             SqlStr.Append("LEFT JOIN staff_leave sl ON p.staff_id = LTRIM(RTRIM(sl.staff_no)) AND a.daily_date = sl.leave_date ");
             SqlStr.Append("LEFT JOIN staff_login h ON h.staff_id = LTRIM(RTRIM(a.upd_user)) ");
-
             SqlStr.Append("LEFT JOIN work_plan wp ON p.staff_id = wp.staff_no AND a.daily_date = wp.work_date ");
-
             SqlStr.Append("WHERE a.daily_date >= @MulaTarikh AND a.daily_date <= @AkhirTarikh ");
-            SqlStr.Append("AND c.kmuj_name = @Kmuj AND d.section_name = @Section ");
+            SqlStr.Append("  AND c.kmuj_name = @Kmuj AND d.section_name = @Section ");
             SqlStr.Append("ORDER BY p.staff_id, a.daily_date, b.work_name; ");
 
             ParamTmp.Add("@Kmuj", Kmuj);
@@ -349,19 +360,18 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append("WITH CombinedAttendance AS ( ");
-            SqlStr.Append("    SELECT staff_attd_no AS staff_id, rpt_code FROM [daily_form_attendancelist_plan] ");
-            SqlStr.Append("    UNION ALL ");
-            SqlStr.Append("    SELECT staff_attdno_no AS staff_id, rpt_code FROM [daily_form_attendancelistno_plan] ");
-            SqlStr.Append("), ");
-            SqlStr.Append("ParsedAttendance AS ( ");
+            // CTE: Parse comma-separated staff IDs directly from daily_form_attendancelist_plan
+            SqlStr.Append("WITH ParsedAttendance AS ( ");
             SqlStr.Append("    SELECT LTRIM(RTRIM(m.n.value('.[1]', 'varchar(8000)'))) AS staff_id, rpt_code ");
             SqlStr.Append("    FROM ( ");
-            SqlStr.Append("        SELECT staff_id, rpt_code, CAST('<XMLRoot><RowData>' + REPLACE(staff_id, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
-            SqlStr.Append("        FROM CombinedAttendance WHERE staff_id IS NOT NULL ");
+            SqlStr.Append("        SELECT staff_attd_no AS staff_id, rpt_code, ");
+            SqlStr.Append("               CAST('<XMLRoot><RowData>' + REPLACE(staff_attd_no, ',', '</RowData><RowData>') + '</RowData></XMLRoot>' AS XML) AS x ");
+            SqlStr.Append("        FROM [daily_form_attendancelist_plan] ");
+            SqlStr.Append("        WHERE staff_attd_no IS NOT NULL ");
             SqlStr.Append("    ) AS s CROSS APPLY s.x.nodes('/XMLRoot/RowData') AS m(n) ");
             SqlStr.Append(") ");
 
+            // Main Query
             SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, wp.work_plan_type_code, h.staff_name, a.upd_user ");
             SqlStr.Append("FROM daily_form a ");
             SqlStr.Append("JOIN kerja b ON a.daily_worktype = b.id ");
@@ -372,7 +382,6 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN gang_desc gd ON p.staff_id = LTRIM(RTRIM(gd.staff_no)) ");
             SqlStr.Append("LEFT JOIN staff_leave_plan sl ON p.staff_id = LTRIM(RTRIM(sl.staff_no)) AND a.daily_date = sl.leave_date ");
             SqlStr.Append("LEFT JOIN staff_login h ON h.staff_id = LTRIM(RTRIM(a.upd_user)) ");
-
             SqlStr.Append("LEFT JOIN work_plan_plan wp ON p.staff_id = wp.staff_no AND a.daily_date = wp.work_date ");
 
             SqlStr.Append("WHERE a.daily_date >= @MulaTarikh AND a.daily_date <= @AkhirTarikh ");
@@ -387,7 +396,6 @@ namespace emujv2Api.Model
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);
         }
-
 
 
         public string GetTotalKM(string Kmuj, string Section, string SDate, string EDate)
