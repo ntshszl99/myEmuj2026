@@ -1614,6 +1614,8 @@
                             { data: "section_name" },
                             { data: "upd_user" },
                             { data: "upd_date" },
+                            { data: "validated_by" },
+                            { data: "verified_by" },
                             { data: "rpt_code" },
                         ],
                         columnDefs: [
@@ -1627,48 +1629,70 @@
                             },
                             {
                                 targets: -2,
+                                title: "Verified (PW/KMUJ)",
+                                render: function (data, type, full, meta) {
+                                    if (data && data.trim() !== '') {
+                                        return '<span class="text-success fw-semibold me-1">' + data + '</span> ' +
+                                            '<i class="fe fe-check-circle text-success font-16"></i>';
+                                    }
+                                    return '<span class="text-danger"><i class="fe fe-x-circle font-16"></i></span>';
+                                }
+                            },
+                            {
+                                targets: -3,
+                                title: "Validated (PWI)",
+                                render: function (data, type, full, meta) {
+                                    if (data && data.trim() !== '') {
+                                        return '<span class="text-success fw-semibold me-1">' + data + '</span> ' +
+                                            '<i class="fe fe-check-circle text-success font-16"></i>';
+                                    }
+                                    return '<span class="text-danger"><i class="fe fe-x-circle font-16"></i></span>';
+                                }
+                            },
+                            {
+                                targets: -4,
                                 title: "Update Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY HH:mm:ss');
                                 },
                             },
                             {
-                                targets: -3,
+                                targets: -5,
                                 title: "Submitted By",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -4,
+                                targets: -6,
                                 title: "Section",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -5,
+                                targets: -7,
                                 title: "KMUJ",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -6,
+                                targets: -8,
                                 title: "Work Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY');
                                 },
                             },
                             {
-                                targets: -7,
+                                targets: -9,
                                 title: "Report ID",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -8,
+                                targets: -10,
                                 title: "No",
                                 render: function (data, type, full, meta) {
                                     return counter++;
@@ -1732,6 +1756,8 @@
                             { data: "section_name" },
                             { data: "upd_user" },
                             { data: "upd_date" },
+                            { data: "validated_by" },
+                            { data: "verified_by" },
                             { data: "rpt_code" },
                         ],
                         columnDefs: [
@@ -1746,48 +1772,70 @@
                             },
                             {
                                 targets: -2,
+                                title: "Verified (PW/KMUJ)",
+                                render: function (data, type, full, meta) {
+                                    if (data && data.trim() !== '') {
+                                        return '<span class="text-success fw-semibold me-1">' + data + '</span> ' +
+                                            '<i class="fe fe-check-circle text-success font-16"></i>';
+                                    }
+                                    return '<span class="text-danger"><i class="fe fe-x-circle font-16"></i></span>';
+                                }
+                            },
+                            {
+                                targets: -3,
+                                title: "Validated (PWI)",
+                                render: function (data, type, full, meta) {
+                                    if (data && data.trim() !== '') {
+                                        return '<span class="text-success fw-semibold me-1">' + data + '</span> ' +
+                                            '<i class="fe fe-check-circle text-success font-16"></i>';
+                                    }
+                                    return '<span class="text-danger"><i class="fe fe-x-circle font-16"></i></span>';
+                                }
+                            },
+                            {
+                                targets: -4,
                                 title: "Update Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY HH:mm:ss');
                                 },
                             },
                             {
-                                targets: -3,
+                                targets: -4,
                                 title: "Submitted By",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -4,
+                                targets: -5,
                                 title: "Section",
                                 render: function (data, type, full, meta) { 
                                     return data;
                                 },
                             },
                             {
-                                targets: -5,
+                                targets: -6,
                                 title: "KMUJ",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -6,
+                                targets: -7,
                                 title: "Work Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY');
                                 },
                             },
                             {
-                                targets: -7,
+                                targets: -8,
                                 title: "Report ID",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -8,
+                                targets: -9,
                                 title: "No",
                                 render: function (data, type, full, meta) {
                                     return counter++;

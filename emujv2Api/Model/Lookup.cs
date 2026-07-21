@@ -1114,7 +1114,7 @@ namespace emujv2Api.Model
             string AkhirTarikh = EDate;
 
             SqlStr.Append(" select b.region_name, c.kmuj_name, d.section_name, (select concat('Gang ', a.daily_gang)) as Gang, ");
-            SqlStr.Append(" a.daily_date, f.work_name, a.upd_user, a.upd_date, ");
+            SqlStr.Append(" a.daily_date, f.work_name, a.upd_user, a.upd_date, a.validated_at, a.validated_by, a.verified_at, a.verified_by, ");
             SqlStr.Append(" (select concat(a.daily_total, ' ', a.daily_unit)) as output, ");
             SqlStr.Append(" a.effect_kmfrom, a.effect_kmto, a.daily_condition, a.daily_workers, ");
             SqlStr.Append(" (select concat(e.category_name, ' ( ', a.category_details, ' )')) as daily_category, ");
