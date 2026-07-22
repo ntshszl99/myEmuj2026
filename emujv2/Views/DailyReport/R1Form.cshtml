@@ -656,9 +656,25 @@
                 Section: Section,
                 Gang: $("#gang").val(),
                 Date: formattedDate,
-                AttId: AttId,                   // Unique Array sent to C#
+                AttId: AttId,
+                WorkType: $('#worktype').val(),
+                Total: $('#total').val(),
+                TotalUnit: $('#unit').val(),
+                TimeStart: $('#startTime').val(),
+                TimeLast: $('#endTime').val(),
+                Category: $('#category').val(),
+                Condition: $('#linecond').val(),
+                Adds: $('#addnotes').val(),
+                TimeTaken: $('#totalTime').val(),
+                KMFrom: $('#startKM').val(),
+                KMTo: $('#endKM').val(),
+                KMTotal: $('#totalKM').val(),
+                Station: $('#stationn').val(),
+                SPoint: $('#stPoint').val(),
+                CatDetails: $('#catdet').val(),
+                BranchDetails: $('#branchdet').val(),
+                Temp: $('#temp').val(),
                 Workers: AttId.length,         // Exact unique count
-                WorkType: $('#worktype').val()
             };
 
             return formData;
