@@ -1549,11 +1549,11 @@
                                             let borderIdx = borders.childNodes.length - 1;
 
                                             // =========================================================================
-                                            // 2. CREATE CUSTOM CELL STYLES (BORDERED & ROTATED+BORDERED)
+                                            // 2. CREATE CUSTOM CELL STYLES (ALL CENTER ALIGNED)
                                             // =========================================================================
                                             let cellXfs = styleSheet.getElementsByTagName('cellXfs')[0];
 
-                                            // Style A: Thin Border Only (For Headers, Data Body, and standard Footers)
+                                            // Style A: Thin Border + Center Alignment (Data Body & General Cells)
                                             let borderXf = styleSheet.createElement('xf');
                                             borderXf.setAttribute('numFmtId', '0');
                                             borderXf.setAttribute('fontId', '0');
@@ -1561,10 +1561,20 @@
                                             borderXf.setAttribute('borderId', borderIdx);
                                             borderXf.setAttribute('xfId', '0');
                                             borderXf.setAttribute('applyBorder', '1');
+                                            borderXf.setAttribute('applyAlignment', '1');
+
+                                            let centerAlign = styleSheet.createElement('alignment');
+                                            centerAlign.setAttribute('horizontal', 'center');
+                                            centerAlign.setAttribute('vertical', 'center');
+                                            borderXf.appendChild(centerAlign);
+
                                             cellXfs.appendChild(borderXf);
                                             let borderedStyleIdx = cellXfs.childNodes.length - 1;
 
-                                            // Style B: Thin Border + 90° Text Rotation (For ADDITIONAL INFO Row)
+                                            // Style B: Thin Border + Center Alignment (Headers)
+                                            let centerHeaderStyleIdx = borderedStyleIdx;
+
+                                            // Style C: Thin Border + 90° Text Rotation + Middle & Center Alignment
                                             let rotBorderXf = styleSheet.createElement('xf');
                                             rotBorderXf.setAttribute('numFmtId', '0');
                                             rotBorderXf.setAttribute('fontId', '0');
@@ -1574,54 +1584,96 @@
                                             rotBorderXf.setAttribute('applyBorder', '1');
                                             rotBorderXf.setAttribute('applyAlignment', '1');
 
-                                            let align = styleSheet.createElement('alignment');
-                                            align.setAttribute('textRotation', '90');
-                                            align.setAttribute('vertical', 'bottom');
-                                            align.setAttribute('horizontal', 'left');
-                                            rotBorderXf.appendChild(align);
+                                            let rotAlign = styleSheet.createElement('alignment');
+                                            rotAlign.setAttribute('textRotation', '90');
+                                            rotAlign.setAttribute('vertical', 'center');
+                                            rotAlign.setAttribute('horizontal', 'center');
+                                            rotBorderXf.appendChild(rotAlign);
 
                                             cellXfs.appendChild(rotBorderXf);
                                             let rotBorderedStyleIdx = cellXfs.childNodes.length - 1;
 
-                                            // =========================================================================
-                                            // 3. BUILD TOP HEADER ROWS (WITH BORDERS)
-                                            // =========================================================================
-                                            let numCols = headerRow1.length;
+                                            // Style D: Thin Border + Middle & Center Alignment (For "ADDITIONAL INFO" Label)
+                                            let middleLabelXf = styleSheet.createElement('xf');
+                                            middleLabelXf.setAttribute('numFmtId', '0');
+                                            middleLabelXf.setAttribute('fontId', '0');
+                                            middleLabelXf.setAttribute('fillId', '0');
+                                            middleLabelXf.setAttribute('borderId', borderIdx);
+                                            middleLabelXf.setAttribute('xfId', '0');
+                                            middleLabelXf.setAttribute('applyBorder', '1');
+                                            middleLabelXf.setAttribute('applyAlignment', '1');
 
+                                            let midAlign = styleSheet.createElement('alignment');
+                                            midAlign.setAttribute('vertical', 'center');
+                                            midAlign.setAttribute('horizontal', 'center');
+                                            middleLabelXf.appendChild(midAlign);
+
+                                            cellXfs.appendChild(middleLabelXf);
+                                            let middleLabelStyleIdx = cellXfs.childNodes.length - 1;
+
+                                            // Determine total columns dynamically
+                                            let maxBodyCols = 0;
+                                            $('row', sheet).each(function () {
+                                                let count = $(this).find('c').length;
+                                                if (count > maxBodyCols) maxBodyCols = count;
+                                            });
+                                            let numCols = Math.max(headerRow1.length, maxBodyCols);
+
+                                            // =========================================================================
+                                            // 3. BUILD TOP HEADER ROWS (UPPERCASE HEADERS & CENTERED)
+                                            // =========================================================================
                                             let row1Xml = `<row r="1"><c t="inlineStr" r="A1"><is><t><![CDATA[KTM BERHAD - WEEKLY PROGRAMME (R1) - ${reportDateRange}]]></t></is></c></row>`;
                                             let row2Xml = `<row r="2"><c t="inlineStr" r="A2"><is><t><![CDATA[KMUJ: ${kmuj}]]></t></is></c></row>`;
                                             let row3Xml = `<row r="3"><c t="inlineStr" r="A3"><is><t><![CDATA[Section: ${section}]]></t></is></c></row>`;
                                             let row4Xml = '<row r="4"></row>';
 
-                                            let row5Xml = '<row r="5">';
-                                            let row6Xml = '<row r="6">';
+                                            let row5Xml = '<row r="5" ht="24" customHeight="1">';
+                                            let row6Xml = '<row r="6" ht="20" customHeight="1">';
                                             for (let c = 0; c < numCols; c++) {
                                                 let colRef = getExcelColumnName(c);
-                                                let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]) : '';
-                                                let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]) : '';
+                                                let val1 = headerRow1[c] !== undefined && headerRow1[c] !== null ? String(headerRow1[c]).toUpperCase() : '';
+                                                let val2 = headerRow2[c] !== undefined && headerRow2[c] !== null ? String(headerRow2[c]).toUpperCase() : '';
 
-                                                row5Xml += `<c t="inlineStr" r="${colRef}5" s="${borderedStyleIdx}"><is><t><![CDATA[${val1}]]></t></is></c>`;
-                                                row6Xml += `<c t="inlineStr" r="${colRef}6" s="${borderedStyleIdx}"><is><t><![CDATA[${val2}]]></t></is></c>`;
+                                                row5Xml += `<c t="inlineStr" r="${colRef}5" s="${centerHeaderStyleIdx}"><is><t><![CDATA[${val1}]]></t></is></c>`;
+                                                row6Xml += `<c t="inlineStr" r="${colRef}6" s="${centerHeaderStyleIdx}"><is><t><![CDATA[${val2}]]></t></is></c>`;
                                             }
                                             row5Xml += '</row>'; row6Xml += '</row>';
 
                                             // =========================================================================
-                                            // 4. SHIFT BODY ROWS DOWN & APPLY BORDERS
+                                            // 4. SHIFT BODY ROWS & REBUILD ALL CELLS WITH CENTERED ALIGNMENT
                                             // =========================================================================
                                             let finalBodyRowIdx = 6;
 
                                             $('row', sheet).each(function () {
-                                                let currentDocRow = parseInt($(this).attr('r'));
+                                                let $row = $(this);
+                                                let currentDocRow = parseInt($row.attr('r'));
                                                 let newDocRow = currentDocRow + 6;
-                                                $(this).attr('r', newDocRow);
+
+                                                $row.attr('r', newDocRow);
                                                 if (newDocRow > finalBodyRowIdx) { finalBodyRowIdx = newDocRow; }
 
-                                                $('c', this).each(function () {
+                                                let existingCells = {};
+                                                $('c', $row).each(function () {
                                                     let cellRef = $(this).attr('r');
                                                     let colPart = cellRef.match(/[A-Z]+/)[0];
-                                                    $(this).attr('r', colPart + newDocRow);
-                                                    $(this).attr('s', borderedStyleIdx); // Apply thin border to data body cells
+                                                    existingCells[colPart] = $(this);
                                                 });
+
+                                                $row.empty();
+
+                                                for (let c = 0; c < numCols; c++) {
+                                                    let colRef = getExcelColumnName(c);
+                                                    let cellRef = `${colRef}${newDocRow}`;
+
+                                                    if (existingCells[colRef]) {
+                                                        let $c = existingCells[colRef];
+                                                        $c.attr('r', cellRef);
+                                                        $c.attr('s', borderedStyleIdx);
+                                                        $row.append($c);
+                                                    } else {
+                                                        $row.append(`<c t="inlineStr" r="${cellRef}" s="${borderedStyleIdx}"><is><t></t></is></c>`);
+                                                    }
+                                                }
                                             });
 
                                             let sheetData = sheet.getElementsByTagName('sheetData')[0];
@@ -1631,7 +1683,7 @@
                                             });
 
                                             // =========================================================================
-                                            // 5. GENERATE SUMMARY FOOTERS (WITH ROTATION & BORDERS)
+                                            // 5. GENERATE SUMMARY FOOTERS (CENTERED ALIGNMENT)
                                             // =========================================================================
                                             let currentExcelRow = (finalBodyRowIdx - (footerMapping.length + 1)) + 1;
                                             let footerRowsData = getFooterDataArray();
@@ -1639,25 +1691,32 @@
                                             footerRowsData.forEach((rowArr) => {
                                                 let isAddInfoRow = (rowArr[0] === 'ADDITIONAL INFO');
 
-                                                // Set height to 140 for ADDITIONAL INFO row to fit vertical rotated text
                                                 let footerRowXml = isAddInfoRow
                                                     ? `<row r="${currentExcelRow}" ht="140" customHeight="1">`
                                                     : `<row r="${currentExcelRow}">`;
 
-                                                rowArr.forEach((cellVal, cIdx) => {
+                                                for (let cIdx = 0; cIdx < numCols; cIdx++) {
                                                     let colRef = getExcelColumnName(cIdx);
+                                                    let cellVal = rowArr[cIdx];
                                                     let cleanVal = (cellVal === null || cellVal === undefined) ? "" : String(cellVal).trim();
+
+                                                    if (isAddInfoRow) {
+                                                        cleanVal = cleanVal.toUpperCase();
+                                                    }
+
                                                     let isNumeric = cleanVal !== "" && /^\d+$/.test(cleanVal);
 
-                                                    // Rotated+Bordered for ADDITIONAL INFO, normal Bordered for all other footer rows
-                                                    let currentStyle = isAddInfoRow ? rotBorderedStyleIdx : borderedStyleIdx;
+                                                    let currentStyle = borderedStyleIdx;
+                                                    if (isAddInfoRow) {
+                                                        currentStyle = (cIdx === 0) ? middleLabelStyleIdx : rotBorderedStyleIdx;
+                                                    }
 
                                                     if (isNumeric && !isAddInfoRow) {
                                                         footerRowXml += `<c r="${colRef}${currentExcelRow}" s="${currentStyle}"><v>${cleanVal}</v></c>`;
                                                     } else {
                                                         footerRowXml += `<c t="inlineStr" r="${colRef}${currentExcelRow}" s="${currentStyle}"><is><t><![CDATA[${cleanVal}]]></t></is></c>`;
                                                     }
-                                                });
+                                                }
 
                                                 footerRowXml += `</row>`;
 
@@ -1667,7 +1726,7 @@
                                             });
 
                                             // =========================================================================
-                                            // 6. LEGEND & FOOTER SIGNATURES (UNBORDERED BELOW TABLE)
+                                            // 6. LEGEND & FOOTER SIGNATURES
                                             // =========================================================================
                                             let parser = new DOMParser();
 
@@ -1712,6 +1771,36 @@
                                             sheetData.insertBefore(sheet.importNode(parser.parseFromString(row3Xml, "text/xml").documentElement, true), sheetData.firstChild);
                                             sheetData.insertBefore(sheet.importNode(parser.parseFromString(row2Xml, "text/xml").documentElement, true), sheetData.firstChild);
                                             sheetData.insertBefore(sheet.importNode(parser.parseFromString(row1Xml, "text/xml").documentElement, true), sheetData.firstChild);
+
+                                            // =========================================================================
+                                            // 7. MERGE CELLS (HEADERS & TITLE BLOCK)
+                                            // =========================================================================
+                                            let mergeCells = sheet.getElementsByTagName('mergeCells')[0];
+                                            if (!mergeCells) {
+                                                mergeCells = sheet.createElement('mergeCells');
+                                                sheet.appendChild(mergeCells);
+                                            }
+
+                                            let mergeRanges = [
+                                                'A5:A6', // Staff No
+                                                'B5:B6', // Name
+                                                'C5:C6', // Designation
+                                                'D5:J5', // ATTENDANCE (7 days)
+                                                'K5:Q5'  // OUTSTATION (7 days)
+                                            ];
+
+                                            let lastColLetter = getExcelColumnName(numCols - 1);
+                                            mergeRanges.push(`A1:${lastColLetter}1`);
+                                            mergeRanges.push(`A2:${lastColLetter}2`);
+                                            mergeRanges.push(`A3:${lastColLetter}3`);
+
+                                            mergeRanges.forEach(range => {
+                                                let mergeCell = sheet.createElement('mergeCell');
+                                                mergeCell.setAttribute('ref', range);
+                                                mergeCells.appendChild(mergeCell);
+                                            });
+
+                                            mergeCells.setAttribute('count', mergeCells.childNodes.length);
                                         }
                                     }
                                 ],
