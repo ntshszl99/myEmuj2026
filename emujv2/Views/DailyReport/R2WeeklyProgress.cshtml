@@ -1304,27 +1304,64 @@
                                         return str;
                                     };
 
-                                    // --- 2. CREATE CUSTOM ALIGNMENT STYLES ---
+                                    // --- 2. CREATE CUSTOM STYLES ---
                                     let cellXfs = styles.getElementsByTagName('cellXfs')[0];
                                     let xfs = cellXfs.getElementsByTagName('xf');
 
-                                    // Style A: Center-Horizontal + Center-Vertical
-                                    let xfCenter = styles.createElement('xf');
-                                    xfCenter.setAttribute('numFmtId', '0');
-                                    xfCenter.setAttribute('fontId', '0');
-                                    xfCenter.setAttribute('fillId', '0');
-                                    xfCenter.setAttribute('borderId', '1');
-                                    xfCenter.setAttribute('xfId', '0');
-                                    xfCenter.setAttribute('applyAlignment', '1');
+                                    // Style 1: TABLE HEADER STYLE (Centered + Vertically Centered + Bordered)
+                                    let xfHeader = styles.createElement('xf');
+                                    xfHeader.setAttribute('numFmtId', '0');
+                                    xfHeader.setAttribute('fontId', '0');
+                                    xfHeader.setAttribute('fillId', '0');
+                                    xfHeader.setAttribute('borderId', '1');
+                                    xfHeader.setAttribute('xfId', '0');
+                                    xfHeader.setAttribute('applyAlignment', '1');
+                                    xfHeader.setAttribute('applyBorder', '1');
 
-                                    let alignCenter = styles.createElement('alignment');
-                                    alignCenter.setAttribute('horizontal', 'center');
-                                    alignCenter.setAttribute('vertical', 'center');
-                                    xfCenter.appendChild(alignCenter);
-                                    cellXfs.appendChild(xfCenter);
-                                    let centerMiddleStyleIndex = xfs.length - 1;
+                                    let alignHeader = styles.createElement('alignment');
+                                    alignHeader.setAttribute('horizontal', 'center');
+                                    alignHeader.setAttribute('vertical', 'center');
+                                    alignHeader.setAttribute('wrapText', '1');
+                                    xfHeader.appendChild(alignHeader);
+                                    cellXfs.appendChild(xfHeader);
+                                    let headerStyleIndex = xfs.length - 1;
 
-                                    // Style B: Left-Horizontal + Center-Vertical (No Wrap)
+                                    // Style 2: Center-Horizontal + Center-Vertical + NO DECIMAL PLACES (numFmtId="0") -> FOR 'NO' COLUMN
+                                    let xfCenterPlain = styles.createElement('xf');
+                                    xfCenterPlain.setAttribute('numFmtId', '0'); // Plain integer / text format
+                                    xfCenterPlain.setAttribute('fontId', '0');
+                                    xfCenterPlain.setAttribute('fillId', '0');
+                                    xfCenterPlain.setAttribute('borderId', '1');
+                                    xfCenterPlain.setAttribute('xfId', '0');
+                                    xfCenterPlain.setAttribute('applyAlignment', '1');
+                                    xfCenterPlain.setAttribute('applyBorder', '1');
+
+                                    let alignCenterPlain = styles.createElement('alignment');
+                                    alignCenterPlain.setAttribute('horizontal', 'center');
+                                    alignCenterPlain.setAttribute('vertical', 'center');
+                                    xfCenterPlain.appendChild(alignCenterPlain);
+                                    cellXfs.appendChild(xfCenterPlain);
+                                    let centerPlainStyleIndex = xfs.length - 1;
+
+                                    // Style 3: Center-Horizontal + Center-Vertical + 2 DECIMAL PLACES (numFmtId="2") -> FOR NUMERIC DATA
+                                    let xfCenter2DP = styles.createElement('xf');
+                                    xfCenter2DP.setAttribute('numFmtId', '2'); // 2 decimal places (0.00)
+                                    xfCenter2DP.setAttribute('fontId', '0');
+                                    xfCenter2DP.setAttribute('fillId', '0');
+                                    xfCenter2DP.setAttribute('borderId', '1');
+                                    xfCenter2DP.setAttribute('xfId', '0');
+                                    xfCenter2DP.setAttribute('applyAlignment', '1');
+                                    xfCenter2DP.setAttribute('applyNumberFormat', '1');
+                                    xfCenter2DP.setAttribute('applyBorder', '1');
+
+                                    let alignCenter2DP = styles.createElement('alignment');
+                                    alignCenter2DP.setAttribute('horizontal', 'center');
+                                    alignCenter2DP.setAttribute('vertical', 'center');
+                                    xfCenter2DP.appendChild(alignCenter2DP);
+                                    cellXfs.appendChild(xfCenter2DP);
+                                    let center2DPStyleIndex = xfs.length - 1;
+
+                                    // Style 4: Left-Horizontal + Center-Vertical (For Work Description - Col C, Category - Col B)
                                     let xfLeft = styles.createElement('xf');
                                     xfLeft.setAttribute('numFmtId', '0');
                                     xfLeft.setAttribute('fontId', '0');
@@ -1332,6 +1369,7 @@
                                     xfLeft.setAttribute('borderId', '1');
                                     xfLeft.setAttribute('xfId', '0');
                                     xfLeft.setAttribute('applyAlignment', '1');
+                                    xfLeft.setAttribute('applyBorder', '1');
 
                                     let alignLeft = styles.createElement('alignment');
                                     alignLeft.setAttribute('horizontal', 'left');
@@ -1340,7 +1378,7 @@
                                     cellXfs.appendChild(xfLeft);
                                     let leftMiddleStyleIndex = xfs.length - 1;
 
-                                    // Style C: Left-Horizontal + Center-Vertical + WRAP TEXT
+                                    // Style 5: Left-Horizontal + Center-Vertical + WRAP TEXT (For Remarks - Col L)
                                     let xfLeftWrap = styles.createElement('xf');
                                     xfLeftWrap.setAttribute('numFmtId', '0');
                                     xfLeftWrap.setAttribute('fontId', '0');
@@ -1348,6 +1386,7 @@
                                     xfLeftWrap.setAttribute('borderId', '1');
                                     xfLeftWrap.setAttribute('xfId', '0');
                                     xfLeftWrap.setAttribute('applyAlignment', '1');
+                                    xfLeftWrap.setAttribute('applyBorder', '1');
 
                                     let alignLeftWrap = styles.createElement('alignment');
                                     alignLeftWrap.setAttribute('horizontal', 'left');
@@ -1357,7 +1396,7 @@
                                     cellXfs.appendChild(xfLeftWrap);
                                     let leftMiddleWrapStyleIndex = xfs.length - 1;
 
-                                    // Update cellXfs count attribute (Required by Excel to recognize newly added styles)
+                                    // Update cellXfs count attribute so Excel registers all custom styles
                                     cellXfs.setAttribute('count', xfs.length);
 
                                     // --- 3. TOP HEADER ROWS ---
@@ -1401,27 +1440,40 @@
                                             let nextCellRef = cellRef.replace(/[0-9]+$/, newRowIndex);
                                             cells[j].setAttribute('r', nextCellRef);
 
-                                            // Get column letter from cellRef (e.g., "L6" -> "L")
+                                            // Extract column letter (e.g. "A", "B", "C", "L")
                                             let colLetter = cellRef.replace(/[0-9]/g, '');
 
-                                            // TRUNCATE TABLE HEADER DATES (Row 5) TO DD
+                                            // ==========================================
+                                            // ROW 5: TABLE HEADERS (NO, CATEGORY, DATES...)
+                                            // ==========================================
                                             if (newRowIndex === 5) {
                                                 let textNode = cells[j].getElementsByTagName('t')[0];
                                                 if (textNode) {
                                                     textNode.textContent = getDD(textNode.textContent);
                                                 }
+                                                cells[j].setAttribute('s', headerStyleIndex);
                                             }
-
-                                            if (!isSummarySection && !isEmptyRow) {
-                                                // MATCH COLUMN BY LETTER "L" OR INDEX 11 (REMARKS COLUMN)
-                                                if (newRowIndex > 5 && (colLetter === 'L' || j === 11)) {
-                                                    cells[j].setAttribute('s', leftMiddleWrapStyleIndex);
-                                                } else if (newRowIndex > 5 && (colLetter === 'C' || j === 2)) {
-                                                    // Work Description (Col C) -> Left Aligned
+                                            // ==========================================
+                                            // DATA ROWS (ROW 6 AND BELOW)
+                                            // ==========================================
+                                            else if (!isSummarySection && !isEmptyRow && newRowIndex > 5) {
+                                                if (colLetter === 'A' || j === 0) {
+                                                    // Column A ('NO') -> Centered, Plain Format (No 2 DP)
+                                                    cells[j].setAttribute('s', centerPlainStyleIndex);
+                                                } else if (colLetter === 'B' || j === 1 || colLetter === 'C' || j === 2) {
+                                                    // Category & Work Description -> Left Aligned Text
                                                     cells[j].setAttribute('s', leftMiddleStyleIndex);
+                                                } else if (colLetter === 'L' || j === 11) {
+                                                    // REMARKS Column (Col L) -> Left Aligned + Text Wrapped
+                                                    cells[j].setAttribute('s', leftMiddleWrapStyleIndex);
                                                 } else {
-                                                    // All other cells -> Center Aligned
-                                                    cells[j].setAttribute('s', centerMiddleStyleIndex);
+                                                    // All other Data/Numeric Columns -> Center Aligned + 2 Decimal Places (0.00)
+                                                    cells[j].setAttribute('s', center2DPStyleIndex);
+
+                                                    let cellVal = cells[j].getElementsByTagName('v')[0];
+                                                    if (cellVal && !isNaN(parseFloat(cellVal.textContent))) {
+                                                        cells[j].removeAttribute('t'); // Remove string type to treat as number
+                                                    }
                                                 }
                                             } else {
                                                 cells[j].removeAttribute('s');
