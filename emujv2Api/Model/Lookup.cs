@@ -535,6 +535,7 @@ namespace emujv2Api.Model
             SqlStr.Append(" from[HR_MAIN].[dbo].[HR_MAIN] as a, staff_login as b, Ref_userlevel as c ");
             SqlStr.Append(" where a.Emplid = b.staff_id ");
             SqlStr.Append(" and b.usrlevel = c.ref_level_no ");
+            SqlStr.Append(" and b.staff_status = 'active' ");
             SqlStr.Append(" order by a.Emplid asc ");
 
 

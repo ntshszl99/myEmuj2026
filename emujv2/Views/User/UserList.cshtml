@@ -846,7 +846,6 @@
                             { data: "LocDesc" },
                             { data: "section" },
                             { data: "ref_level_name" },
-                            { data: "staff_status" },
                             { data: "Emplid" },
                         ],
                         columnDefs: [
@@ -866,57 +865,41 @@
                             },
                             {
                                 targets: -2,
-                                title: "Status",
-                                render: function (data, type, full, meta) {
-                                    var status = '';
-                                    if (data == 'active') {
-                                        status = '<span class="text-success fw-semibold me-1">' + 'Active ' + '</span> ' +
-                                            '<i class="fe fe-check-circle text-success font-16"></i>';
-                                    }
-                                    else {
-                                        status = '<span class="text-danger">' + 'Inactive ' + '<i class="fe fe-x-circle font-16"></i></span>';
-
-                                    }
-                                    return status;
-                                },
-                            },
-                            {
-                                targets: -3,
                                 title: "Level",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -4,
+                                targets: -3,
                                 title: "Region",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -5,
+                                targets: -4,
                                 title: "Location",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -6,
+                                targets: -5,
                                 title: "Designation",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -7,
+                                targets: -6,
                                 title: "Name",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -8,
+                                targets: -7,
                                 title: "Staff ID",
                                 render: function (data, type, full, meta) {
                                     return data;
