@@ -159,38 +159,34 @@ namespace emujv2Api.Model
             string Salah = "";
             CommonFunc Conn = new CommonFunc();
 
-            SqlStr.Append(" select a.staff_id, a.kmuj, a.muj, c.section_id, c.section_name, b.kmuj_id, b.kmuj_name, d.region_id, d.region_name, d.region_nameE  ");
-            SqlStr.Append(" from staff_login as a, kmuj as b, section as c, region as d ");
-            SqlStr.Append(" where a.muj = b.kmuj_value ");
-            SqlStr.Append(" and a.kmuj = c.section_val ");
-            SqlStr.Append(" and b.region_id = d.region_id ");
-            SqlStr.Append(" and a.staff_id = @Emplid ");
+            // Use LEFT JOINs so missing sections or KMUJs don't discard the entire row
+            SqlStr.Append(" SELECT a.staff_id, a.kmuj, a.muj, ");
+            SqlStr.Append("        c.section_id, c.section_name, ");
+            SqlStr.Append("        b.kmuj_id, b.kmuj_name, ");
+            SqlStr.Append("        d.region_id, d.region_name, d.region_nameE ");
+            SqlStr.Append(" FROM staff_login AS a ");
+            SqlStr.Append(" LEFT JOIN kmuj AS b ON a.muj = b.kmuj_value ");
+            SqlStr.Append(" LEFT JOIN section AS c ON a.kmuj = c.section_val ");
+            SqlStr.Append(" LEFT JOIN region AS d ON b.region_id = d.region_id ");
+            SqlStr.Append(" WHERE a.staff_id = @Emplid ");
 
             ParamTmp.Add("@Emplid", User.Userid);
 
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
-            if (Recc.Rows.Count > 0)
+
+            if (Recc != null && Recc.Rows.Count > 0)
             {
-                foreach (DataRow row in Recc.Rows)
-                {
-                    User.Region = row["region_name"].ToString();
-                    User.RegionEng = row["region_nameE"].ToString();
-                    User.Section = row["section_name"].ToString();
-                    User.KMUJ = row["kmuj_name"].ToString();
+                DataRow row = Recc.Rows[0];
 
-                    User.SectionVal = row["kmuj"].ToString();
-                    User.KMUJVal = row["muj"].ToString();
+                User.Region = row["region_name"] != DBNull.Value ? row["region_name"].ToString() : "";
+                User.RegionEng = row["region_nameE"] != DBNull.Value ? row["region_nameE"].ToString() : "";
+                User.Section = row["section_name"] != DBNull.Value ? row["section_name"].ToString() : "";
+                User.KMUJ = row["kmuj_name"] != DBNull.Value ? row["kmuj_name"].ToString() : "";
 
-                    User.RegionID = row["region_id"].ToString();
-                }
+                User.SectionVal = row["kmuj"] != DBNull.Value ? row["kmuj"].ToString() : "";
+                User.KMUJVal = row["muj"] != DBNull.Value ? row["muj"].ToString() : "";
+                User.RegionID = row["region_id"] != DBNull.Value ? row["region_id"].ToString() : "";
             }
-            else
-            {
-                User.Region = "null";
-                User.Section = "null";
-                User.KMUJ = "null";
-            }
-
         }
 
         private void TempatEng(ref UserCons User)
@@ -966,7 +962,7 @@ namespace emujv2Api.Model
 
 
             SqlStr.Append("SELECT ");
-            SqlStr.Append("    a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, m.staff_name AS validated_name, c.validated_at, v.staff_name AS verifier_name, c.verified_at, ");
+            SqlStr.Append("    a.work_cat_id, a.work_cat_name, b.work_name, c.daily_additional, f.staff_name, wp.rpt_code, m.staff_name AS validated_name, c.validated_at, v.staff_name AS verifier_name, c.verified_at, ");
             SqlStr.Append(string.Join(", ", caseStatements));
             SqlStr.Append(", ");
             SqlStr.Append(sumColumn);
@@ -981,7 +977,7 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN staff_login AS v ON v.staff_id = c.verified_by ");
             SqlStr.Append("LEFT JOIN staff_login AS m ON m.staff_id = c.validated_by ");
 
-            SqlStr.Append("GROUP BY a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, wp.rpt_code, m.staff_name, v.staff_name, c.validated_at, c.verified_at ");
+            SqlStr.Append("GROUP BY a.work_cat_id, a.work_cat_name, b.work_name, f.staff_name, c.daily_additional, wp.rpt_code, m.staff_name, v.staff_name, c.validated_at, c.verified_at ");
             SqlStr.Append("ORDER BY CAST(a.work_cat_id AS INT) ASC;");
 
             ParamTmp.Add("@Kmuj", Kmuj);

@@ -112,9 +112,6 @@
                         url: linkDepan + 'validateuser?userid=' + encodeURIComponent(usr) + '&password=' + encodeURIComponent(pwd),
                         type: 'GET',
                         dataType: "json",
-                        beforeSend: function () {
-                            $('#masukkk').hide(); // Hide submit button while processing
-                        },
                         success: function (data) {
                             // 2. Validate that data exists before trying to read properties
                             if (data && data.Nama) {

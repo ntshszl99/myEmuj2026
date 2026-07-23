@@ -860,14 +860,12 @@
                     function formatToCustomDateTime(rawDate) {
                         if (!rawDate) return "";
                         const d = new Date(rawDate);
-                        if (isNaN(d.getTime())) return ""; // Check for invalid date
+                        if (isNaN(d.getTime())) return "";
 
-                        // Extract day, month, and year
                         const day = String(d.getDate()).padStart(2, '0');
-                        const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
                         const year = d.getFullYear();
 
-                        // Extract hours and minutes
                         const hours = String(d.getHours()).padStart(2, '0');
                         const minutes = String(d.getMinutes()).padStart(2, '0');
 
@@ -910,15 +908,12 @@
                     $('#htmlVerifiedByPWCI').text(verifierName);
 
                     if (isVerified) {
-                        // If already verified, hide the button and show the timestamp
                         $('#btnVerifyCI').hide();
                         $('#htmlVerifiedAtCI_Display').text(verifiedAtDate).show();
                     } else if (isValidated) {
-                        // If NOT verified but HAS BEEN validated, enable the verify button
                         $('#btnVerifyCI').prop('disabled', false).show();
                         $('#htmlVerifiedAtCI_Display').hide();
                     } else {
-                        // If NOT validated yet, disable the verify button
                         $('#btnVerifyCI').prop('disabled', true).show();
                         $('#htmlVerifiedAtCI_Display').hide();
                     }
@@ -942,38 +937,94 @@
                     $('#btnVerifyCI, #btnValidateNormal').data('rpt-codes', uniqueReportCodes);
 
                     // ==========================================
-                    // 4. PREPARE DATA
+                    // 4. PREPARE & GROUP DATA (CHRONOLOGICAL NOTES)
                     // ==========================================
                     let finalData = [];
+                    let groupedMap = new Map();
                     let uniqueDates = new Set();
-                    let overallTimeSum = 0; // Tracks if there is ANY logged data in the entire payload
+                    let overallTimeSum = 0;
 
                     const validStaffRow = data.find(i => (i.staff_name || i.Staff_Name || i.staffName));
                     const updatedByPerson = validStaffRow ? (validStaffRow.staff_name || validStaffRow.Staff_Name || validStaffRow.staffName).trim() : "-";
 
                     data.forEach(item => {
-                        let row = {
-                            work_cat_id: item.work_cat_id,
-                            work_cat_name: item.work_cat_name,
-                            work_name: item.work_name,
-                            TotalTime: 0
-                        };
+                        let key = `${item.work_cat_id}_${item.work_name}`;
 
-                        Object.keys(item).forEach(key => {
-                            const ignoredKeys = ["work_cat_id", "work_cat_name", "work_name", "TotalTime", "staff_name", "Staff_Name", "staffName", "rpt_code", "rptCode", "Rpt_Code", "verified_by", "Verified_By", "verifiedBy", "verifier_name", "Verifier_Name", "verifierName", "verified_at", "Verified_At", "validated_name", "Validated_Name", "validated_at", "Validated_At", "validated_by"];
-                            if (!ignoredKeys.some(k => key.toLowerCase() === k.toLowerCase())) {
-                                let val = (parseFloat(item[key]) || 0);
-                                let calculatedValue = 0;
-                                if (val > 0) {
-                                    const parts = key.split('/');
-                                    const multiplier = (new Date(parts[2], parts[1] - 1, parts[0]).getDay() >= 1 && new Date(parts[2], parts[1] - 1, parts[0]).getDay() <= 4) ? 8.75 : 5;
-                                    calculatedValue = val * multiplier;
+                        if (!groupedMap.has(key)) {
+                            groupedMap.set(key, {
+                                work_cat_id: item.work_cat_id,
+                                work_cat_name: item.work_cat_name,
+                                work_name: item.work_name,
+                                notesList: [], // Store objects: { date: Date, text: string }
+                                TotalTime: 0
+                            });
+                        }
+
+                        let existingRow = groupedMap.get(key);
+
+                        // Process all keys inside item
+                        Object.keys(item).forEach(dateKey => {
+                            const ignoredKeys = [
+                                "work_cat_id", "work_cat_name", "work_name", "TotalTime",
+                                "daily_additional", "Daily_Additional", "staff_name", "Staff_Name",
+                                "staffName", "rpt_code", "rptCode", "Rpt_Code", "verified_by",
+                                "Verified_By", "verifiedBy", "verifier_name", "Verifier_Name",
+                                "verifierName", "verified_at", "Verified_At", "validated_name",
+                                "Validated_Name", "validated_at", "Validated_At", "validated_by"
+                            ];
+
+                            // Check if key is a Date column (e.g., "05/07/2026")
+                            if (!ignoredKeys.some(k => dateKey.toLowerCase() === k.toLowerCase())) {
+                                let val = (parseFloat(item[dateKey]) || 0);
+
+                                // Collect daily_additional and associate it with this dateKey entry
+                                let rawNote = item.daily_additional || item.Daily_Additional;
+                                if (val > 0 && rawNote && typeof rawNote === 'string' && rawNote.trim() !== '') {
+                                    const parts = dateKey.split('/');
+                                    const dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+
+                                    // Avoid duplicate identical notes for the same date entry
+                                    let exists = existingRow.notesList.some(n => n.text === rawNote.trim() && n.date.getTime() === dateObj.getTime());
+                                    if (!exists) {
+                                        existingRow.notesList.push({
+                                            date: dateObj,
+                                            text: rawNote.trim()
+                                        });
+                                    }
                                 }
-                                row[key] = calculatedValue === 0 ? '' : calculatedValue.toFixed(2);
-                                row.TotalTime += calculatedValue;
-                                overallTimeSum += calculatedValue; // Add to global check
-                                uniqueDates.add(key);
+
+                                if (val > 0) {
+                                    const parts = dateKey.split('/');
+                                    const multiplier = (new Date(parts[2], parts[1] - 1, parts[0]).getDay() >= 1 && new Date(parts[2], parts[1] - 1, parts[0]).getDay() <= 4) ? 8.75 : 5;
+                                    let calculatedValue = val * multiplier;
+
+                                    let existingDateVal = parseFloat(existingRow[dateKey]) || 0;
+                                    existingRow[dateKey] = existingDateVal + calculatedValue;
+
+                                    existingRow.TotalTime += calculatedValue;
+                                    overallTimeSum += calculatedValue;
+                                }
+                                uniqueDates.add(dateKey);
                             }
+                        });
+                    });
+
+                    // Format grouped data for DataTables
+                    groupedMap.forEach(row => {
+                        // Sort notes chronologically (Ascending by Date)
+                        row.notesList.sort((a, b) => a.date - b.date);
+
+                        // Extract ordered text strings and join them with ', '
+                        let orderedNotes = row.notesList.map(n => n.text);
+                        row.daily_additional = orderedNotes.length > 0 ? orderedNotes.join(', ') : '';
+
+                        // Remove temporary array before passing to DataTables
+                        delete row.notesList;
+
+                        // Format calculated values to 2 decimal places
+                        uniqueDates.forEach(dateKey => {
+                            let dateVal = row[dateKey];
+                            row[dateKey] = (dateVal && dateVal > 0) ? dateVal.toFixed(2) : '';
                         });
 
                         row.TotalTime = row.TotalTime.toFixed(2);
@@ -992,7 +1043,7 @@
                     if (overallTimeSum === 0) {
                         initializeEmptyTables(sortedDates);
                         resetSummaryLabels(updatedByPerson);
-                        return; // Stop execution here
+                        return;
                     }
 
                     // ==========================================
@@ -1020,7 +1071,6 @@
                     // ==========================================
                     const updateText = (id, val) => { if (document.getElementById(id)) document.getElementById(id).innerText = val; };
 
-                    // Dynamic calculation of the combined percentages total
                     let dynamicTotalPercentage = (parseFloat(perOnTrack) + parseFloat(perOffTrack) + parseFloat(perOthers)).toFixed(2);
                     if (isNaN(dynamicTotalPercentage)) {
                         dynamicTotalPercentage = "0.00";
@@ -1069,27 +1119,51 @@
                     updateText("htmlPreparedByPWINormal", updatedByPerson);
 
                     // ==========================================
-                    // 8. DATATABLE INITIALIZATION WITH EXPORT HOOKS
+                    // 8. DATATABLE INITIALIZATION (CORRECT COLUMN ORDER)
                     // ==========================================
                     let columns = [
-                        { data: "work_cat_id", title: "NO", className: "text-center" },
-                        { data: "work_cat_name", title: "CATEGORY" },
-                        { data: "work_name", title: "WORK DESCRIPTION" }
+                        { data: "work_cat_id", title: "NO", className: "text-center align-middle" },
+                        { data: "work_cat_name", title: "CATEGORY", className: "text-center align-middle" },
+                        { data: "work_name", title: "WORK DESCRIPTION", className: "align-middle" }
                     ];
-                    sortedDates.forEach(date => columns.push({ data: date, title: date, className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d }));
-                    columns.push({ data: "TotalTime", title: "GRAND TOTAL", className: "text-center", render: d => (d == 0 || d === "0.00" || d === "") ? "" : d });
 
-                    // Shared utility to append calculation metrics matrix at the bottom
+                    // 1. Add the 7 date columns
+                    sortedDates.forEach(date => {
+                        columns.push({
+                            data: date,
+                            title: date,
+                            className: "text-center align-middle",
+                            render: d => (d == 0 || d === "0.00" || d === "" || d == null) ? "" : d
+                        });
+                    });
+
+                    // 3. GRAND TOTAL Column (Last Column)
+                    columns.push({
+                        data: "TotalTime",
+                        title: "GRAND TOTAL",
+                        className: "text-center align-middle",
+                        render: d => (d == 0 || d === "0.00" || d === "" || d == null) ? "" : d
+                    });
+
+                    // 2. DAILY ADDITIONAL Column (Before Grand Total)
+                    columns.push({
+                        data: "daily_additional",
+                        title: "REMARKS",
+                        className: "text-center align-middle",
+                        defaultContent: "",
+                        render: function (data) {
+                            if (!data || data == 0) return "";
+                            return data;
+                        }
+                    });
+
                     function appendBottomSummaryRows(customData) {
-                        // 1. Insert a blank row spacing separator after data grid row lists
                         customData.body.push(new Array(customData.header.length).fill(""));
 
-                        // 2. Insert Table Section Header Title
                         let summaryHeader = new Array(customData.header.length).fill("");
                         summaryHeader[0] = "SUMMARY CALCULATIONS";
                         customData.body.push(summaryHeader);
 
-                        // 3. Insert Data Column Labels structure
                         let labelRow = new Array(customData.header.length).fill("");
                         labelRow[0] = "Description";
                         labelRow[1] = "Value";
@@ -1104,7 +1178,6 @@
                             return r;
                         };
 
-                        // 4. Inject runtime variables collected from scope calculations context
                         customData.body.push(makeSummaryRow("Total Man-Hours for the Gangs", totalManHoursForGangs.toFixed(2) + " Mhrs", "-"));
                         customData.body.push(makeSummaryRow("On Track Works", totalOnTrackWorks.toFixed(2) + " Mhrs", perOnTrack + " % Mhrs"));
                         customData.body.push(makeSummaryRow("Off Track Works", offTrackWorksTotal.toFixed(2) + " Mhrs", perOffTrack + " % Mhrs"));
@@ -1123,64 +1196,309 @@
                         columns: columns,
                         buttons: [
                             {
-                                extend: 'csv',
-                                customizeData: function (customData) {
-                                    appendBottomSummaryRows(customData);
-                                },
-                                customize: function (csvText) {
-                                    // Prepend metadata completely ahead of DataTables internal output
-                                    let topMeta = `KTM BERHAD - WEEKLY PROGRESS (R2) - ${sdate} TO ${edate}\n`;
-                                    topMeta += `KMUJ:,${kmuj}\n`;
-                                    topMeta += `Section:,${section}\n\n`;
-                                    return topMeta + csvText;
-                                }
-                            },
-                            {
                                 extend: 'excel',
-                                title: '', // Clear native automatic titles to prevent duplicates
+                                title: '',
                                 messageTop: null,
+                                createEmptyCells: true,
+                                exportOptions: {
+                                    columns: ':visible'
+                                },
                                 customizeData: function (customData) {
+                                    window.excelMergeRanges = [];
+                                    let rowOffset = 6; // Data starts at row 6 in Excel
+
+                                    // --- 1. MERGE 'NO' COLUMN (Col A) & 'CATEGORY' COLUMN (Col B) ---
+                                    let startRowNo = 0;
+                                    let lastNoValue = "";
+                                    let startRowCat = 0;
+                                    let lastCatValue = "";
+
+                                    for (let i = 0; i < customData.body.length; i++) {
+                                        let currentNo = customData.body[i][0];
+                                        let currentCat = customData.body[i][1];
+
+                                        // Merge NO Column
+                                        if (currentNo !== lastNoValue) {
+                                            if (i > startRowNo) {
+                                                let fromRow = startRowNo + rowOffset;
+                                                let toRow = (i - 1) + rowOffset;
+                                                if (fromRow < toRow) {
+                                                    window.excelMergeRanges.push(`A${fromRow}:A${toRow}`);
+                                                }
+                                            }
+                                            startRowNo = i;
+                                            lastNoValue = currentNo;
+                                        } else {
+                                            customData.body[i][0] = ""; // Clear duplicate text
+                                        }
+
+                                        // Merge CATEGORY Column
+                                        if (currentCat !== lastCatValue) {
+                                            if (i > startRowCat) {
+                                                let fromRow = startRowCat + rowOffset;
+                                                let toRow = (i - 1) + rowOffset;
+                                                if (fromRow < toRow) {
+                                                    window.excelMergeRanges.push(`B${fromRow}:B${toRow}`);
+                                                }
+                                            }
+                                            startRowCat = i;
+                                            lastCatValue = currentCat;
+                                        } else {
+                                            customData.body[i][1] = ""; // Clear duplicate text
+                                        }
+                                    }
+
+                                    // Finalize merging for remaining rows
+                                    if (customData.body.length > startRowNo) {
+                                        let fromRow = startRowNo + rowOffset;
+                                        let toRow = (customData.body.length - 1) + rowOffset;
+                                        if (fromRow < toRow) window.excelMergeRanges.push(`A${fromRow}:A${toRow}`);
+                                    }
+                                    if (customData.body.length > startRowCat) {
+                                        let fromRow = startRowCat + rowOffset;
+                                        let toRow = (customData.body.length - 1) + rowOffset;
+                                        if (fromRow < toRow) window.excelMergeRanges.push(`B${fromRow}:B${toRow}`);
+                                    }
+
+                                    // --- 2. APPEND & SHIFT SUMMARY ROWS ---
                                     appendBottomSummaryRows(customData);
+
+                                    let inSummary = false;
+                                    for (let i = 0; i < customData.body.length; i++) {
+                                        let row = customData.body[i];
+                                        let firstCell = (row[0] || "").toString();
+
+                                        if (firstCell.includes("SUMMARY CALCULATIONS")) {
+                                            inSummary = true;
+                                        }
+
+                                        if (inSummary) {
+                                            let val = row[1] || row[2] || "";
+                                            let pct = (row[1] !== val && row[1]) || (row[2] !== val && row[2]) || row[3] || "";
+
+                                            while (row.length < 4) {
+                                                row.push("");
+                                            }
+
+                                            row[1] = "";   // Clear Col B for merged A:B description
+                                            row[2] = val;  // Col C (Value)
+                                            row[3] = pct;  // Col D (Percentage)
+                                        }
+                                    }
                                 },
                                 customize: function (xlsx) {
                                     let sheet = xlsx.xl.worksheets['sheet1.xml'];
+                                    let styles = xlsx.xl['styles.xml'];
 
-                                    // Define metadata row entries explicitly to inject into Excel XML stream structure
+                                    // --- 1. HELPER FUNCTION TO EXTRACT DD ONLY FOR TABLE HEADERS ---
+                                    let getDD = function (dateStr) {
+                                        if (!dateStr) return '';
+                                        let str = dateStr.toString().trim();
+
+                                        let m1 = str.match(/^(\d{2})[\/\-]\d{2}[\/\-]\d{4}$/);
+                                        if (m1) return m1[1];
+
+                                        let m2 = str.match(/^\d{4}[\/\-]\d{2}[\/\-](\d{2})$/);
+                                        if (m2) return m2[1];
+
+                                        return str;
+                                    };
+
+                                    // --- 2. CREATE CUSTOM ALIGNMENT STYLES ---
+                                    let cellXfs = styles.getElementsByTagName('cellXfs')[0];
+                                    let xfs = cellXfs.getElementsByTagName('xf');
+
+                                    // Style A: Center-Horizontal + Center-Vertical
+                                    let xfCenter = styles.createElement('xf');
+                                    xfCenter.setAttribute('numFmtId', '0');
+                                    xfCenter.setAttribute('fontId', '0');
+                                    xfCenter.setAttribute('fillId', '0');
+                                    xfCenter.setAttribute('borderId', '1');
+                                    xfCenter.setAttribute('xfId', '0');
+                                    xfCenter.setAttribute('applyAlignment', '1');
+
+                                    let alignCenter = styles.createElement('alignment');
+                                    alignCenter.setAttribute('horizontal', 'center');
+                                    alignCenter.setAttribute('vertical', 'center');
+                                    xfCenter.appendChild(alignCenter);
+                                    cellXfs.appendChild(xfCenter);
+                                    let centerMiddleStyleIndex = xfs.length - 1;
+
+                                    // Style B: Left-Horizontal + Center-Vertical (No Wrap)
+                                    let xfLeft = styles.createElement('xf');
+                                    xfLeft.setAttribute('numFmtId', '0');
+                                    xfLeft.setAttribute('fontId', '0');
+                                    xfLeft.setAttribute('fillId', '0');
+                                    xfLeft.setAttribute('borderId', '1');
+                                    xfLeft.setAttribute('xfId', '0');
+                                    xfLeft.setAttribute('applyAlignment', '1');
+
+                                    let alignLeft = styles.createElement('alignment');
+                                    alignLeft.setAttribute('horizontal', 'left');
+                                    alignLeft.setAttribute('vertical', 'center');
+                                    xfLeft.appendChild(alignLeft);
+                                    cellXfs.appendChild(xfLeft);
+                                    let leftMiddleStyleIndex = xfs.length - 1;
+
+                                    // Style C: Left-Horizontal + Center-Vertical + WRAP TEXT
+                                    let xfLeftWrap = styles.createElement('xf');
+                                    xfLeftWrap.setAttribute('numFmtId', '0');
+                                    xfLeftWrap.setAttribute('fontId', '0');
+                                    xfLeftWrap.setAttribute('fillId', '0');
+                                    xfLeftWrap.setAttribute('borderId', '1');
+                                    xfLeftWrap.setAttribute('xfId', '0');
+                                    xfLeftWrap.setAttribute('applyAlignment', '1');
+
+                                    let alignLeftWrap = styles.createElement('alignment');
+                                    alignLeftWrap.setAttribute('horizontal', 'left');
+                                    alignLeftWrap.setAttribute('vertical', 'center');
+                                    alignLeftWrap.setAttribute('wrapText', '1');
+                                    xfLeftWrap.appendChild(alignLeftWrap);
+                                    cellXfs.appendChild(xfLeftWrap);
+                                    let leftMiddleWrapStyleIndex = xfs.length - 1;
+
+                                    // Update cellXfs count attribute (Required by Excel to recognize newly added styles)
+                                    cellXfs.setAttribute('count', xfs.length);
+
+                                    // --- 3. TOP HEADER ROWS ---
                                     let row1 = `<row r="1"><c t="inline"><is><t>KTM BERHAD - WEEKLY PROGRESS - ${sdate} - ${edate}</t></is></c></row>`;
-                                    let row2 = `<row r="2"><c t="inline"><is><t>KMUJ:</t></is></c><c t="inline"><is><t>${kmuj}</t></is></c></row>`;
-                                    let row3 = `<row r="3"><c t="inline"><is><t>Section:</t></is></c><c t="inline"><is><t>${section}</t></is></c></row>`;
-                                    let row4 = `<row r="4"></row>`; // Blank row separator spacer
+                                    let row2 = `<row r="2"><c t="inline"><is><t>KMUJ:</t></is></c><c t="inline" r="B2"><is><t>${kmuj}</t></is></c></row>`;
+                                    let row3 = `<row r="3"><c t="inline"><is><t>Section:</t></is></c><c t="inline" r="B3"><is><t>${section}</t></is></c></row>`;
+                                    let row4 = `<row r="4"></row>`;
 
-                                    // Find the <sheetData> tag node where Excel keeps standard grid cells
                                     let sheetData = sheet.getElementsByTagName('sheetData')[0];
-
-                                    // Re-index every existing row down by 4 to accommodate the headers
                                     let rows = sheetData.getElementsByTagName('row');
+
+                                    let isSummarySection = false;
+
+                                    if (!window.excelMergeRanges) window.excelMergeRanges = [];
+
+                                    window.excelMergeRanges.push('A1:E1');
+                                    window.excelMergeRanges.push('B2:E2');
+                                    window.excelMergeRanges.push('B3:E3');
+
+                                    // --- 4. PROCESS ROWS ---
                                     for (let i = 0; i < rows.length; i++) {
                                         let oldRowIndex = parseInt(rows[i].getAttribute('r'));
                                         let newRowIndex = oldRowIndex + 4;
                                         rows[i].setAttribute('r', newRowIndex);
 
-                                        // Also fix nested individual cell references inside each adjusted row (e.g., A1 -> A5)
                                         let cells = rows[i].getElementsByTagName('c');
+                                        let rowText = (rows[i].textContent || "").trim();
+
+                                        if (rowText.includes("SUMMARY CALCULATIONS")) {
+                                            isSummarySection = true;
+                                        }
+
+                                        if (isSummarySection && rowText.length > 0) {
+                                            window.excelMergeRanges.push(`A${newRowIndex}:B${newRowIndex}`);
+                                        }
+
+                                        let isEmptyRow = rowText === "";
+
                                         for (let j = 0; j < cells.length; j++) {
                                             let cellRef = cells[j].getAttribute('r');
                                             let nextCellRef = cellRef.replace(/[0-9]+$/, newRowIndex);
                                             cells[j].setAttribute('r', nextCellRef);
+
+                                            // Get column letter from cellRef (e.g., "L6" -> "L")
+                                            let colLetter = cellRef.replace(/[0-9]/g, '');
+
+                                            // TRUNCATE TABLE HEADER DATES (Row 5) TO DD
+                                            if (newRowIndex === 5) {
+                                                let textNode = cells[j].getElementsByTagName('t')[0];
+                                                if (textNode) {
+                                                    textNode.textContent = getDD(textNode.textContent);
+                                                }
+                                            }
+
+                                            if (!isSummarySection && !isEmptyRow) {
+                                                // MATCH COLUMN BY LETTER "L" OR INDEX 11 (REMARKS COLUMN)
+                                                if (newRowIndex > 5 && (colLetter === 'L' || j === 11)) {
+                                                    cells[j].setAttribute('s', leftMiddleWrapStyleIndex);
+                                                } else if (newRowIndex > 5 && (colLetter === 'C' || j === 2)) {
+                                                    // Work Description (Col C) -> Left Aligned
+                                                    cells[j].setAttribute('s', leftMiddleStyleIndex);
+                                                } else {
+                                                    // All other cells -> Center Aligned
+                                                    cells[j].setAttribute('s', centerMiddleStyleIndex);
+                                                }
+                                            } else {
+                                                cells[j].removeAttribute('s');
+                                            }
                                         }
                                     }
 
-                                    // Prepend rows 1, 2, 3, and 4 to sheetData
                                     sheetData.innerHTML = row1 + row2 + row3 + row4 + sheetData.innerHTML;
+
+                                    // --- 5. INJECT ALL MERGE RANGES ---
+                                    if (window.excelMergeRanges && window.excelMergeRanges.length > 0) {
+                                        let mergeCellsTag = sheet.getElementsByTagName('mergeCells')[0];
+
+                                        if (!mergeCellsTag) {
+                                            mergeCellsTag = sheet.createElement('mergeCells');
+                                            sheet.getElementsByTagName('worksheet')[0].appendChild(mergeCellsTag);
+                                        }
+
+                                        window.excelMergeRanges.forEach(range => {
+                                            let mergeCell = sheet.createElement('mergeCell');
+                                            mergeCell.setAttribute('ref', range);
+                                            mergeCellsTag.appendChild(mergeCell);
+                                        });
+
+                                        let currentCount = parseInt(mergeCellsTag.getAttribute('count') || 0);
+                                        mergeCellsTag.setAttribute('count', currentCount + window.excelMergeRanges.length);
+                                    }
                                 }
                             }
                         ],
+
+                        // ===================================================
+                        // DYNAMICALLY MERGE BOTH "NO" AND "CATEGORY" CELLS
+                        // ===================================================
+                        drawCallback: function (settings) {
+                            var api = this.api();
+                            var rows = api.rows({ page: 'current' }).nodes();
+                            var lastCategory = null;
+                            var rowspan = 1;
+                            var targetCatCell = null;
+                            var targetNoCell = null;
+
+                            api.column(1, { page: 'current' }).data().each(function (categoryName, i) {
+                                var currentRow = $(rows[i]);
+                                var currentNoCell = currentRow.find('td').eq(0);  // Column Index 0 = NO
+                                var currentCatCell = currentRow.find('td').eq(1); // Column Index 1 = CATEGORY
+
+                                // Ignore the bottom TOTAL row or empty categories
+                                if (!categoryName || categoryName === 'TOTAL') {
+                                    lastCategory = null;
+                                    return;
+                                }
+
+                                if (lastCategory === categoryName) {
+                                    // Consecutive matching category found: increment rowspan & hide repeated cells
+                                    rowspan++;
+                                    targetNoCell.attr('rowspan', rowspan);
+                                    targetCatCell.attr('rowspan', rowspan);
+
+                                    currentNoCell.hide();
+                                    currentCatCell.hide();
+                                } else {
+                                    // New category encounter: reset counters and store target cells
+                                    lastCategory = categoryName;
+                                    rowspan = 1;
+                                    targetNoCell = currentNoCell;
+                                    targetCatCell = currentCatCell;
+                                }
+                            });
+                        },
+
                         rowCallback: function (row, data, index) {
                             const catCell = $('td', row).eq(1);
                             const noCell = $('td', row).eq(0);
                             if (data.work_cat_name === 'TOTAL') {
                                 $(row).css('font-weight', 'bold').addClass('table-info');
-                                catCell.attr('colspan', 2).css('text-align', 'center');
+                                catCell.attr('colspan', 2).css('text-align', 'center').show();
                                 noCell.hide();
                             }
                         }
@@ -1222,8 +1540,6 @@
                 });
             }
         }
-
-
 
     </script>
     }
