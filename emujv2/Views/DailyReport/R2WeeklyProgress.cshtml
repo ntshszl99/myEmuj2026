@@ -1197,7 +1197,14 @@
                         buttons: [
                             {
                                 extend: 'excel',
-                                title: '',
+                                filename: function () {
+                                    let fileKmuj = typeof kmuj !== 'undefined' ? kmuj : '';
+                                    let fileSection = typeof section !== 'undefined' ? section : '';
+                                    let fileSdate = typeof sdate !== 'undefined' ? sdate : '';
+                                    let fileEdate = typeof edate !== 'undefined' ? edate : '';
+                                    return 'WeeklyProgress(R2) ' + fileKmuj + '-' + fileSection + '_' + fileSdate + '_to_' + fileEdate;
+                                },
+                                title: null,
                                 messageTop: null,
                                 createEmptyCells: true,
                                 exportOptions: {
@@ -1401,8 +1408,8 @@
 
                                     // --- 3. TOP HEADER ROWS ---
                                     let row1 = `<row r="1"><c t="inline"><is><t>KTM BERHAD - WEEKLY PROGRESS - ${sdate} - ${edate}</t></is></c></row>`;
-                                    let row2 = `<row r="2"><c t="inline"><is><t>KMUJ:</t></is></c><c t="inline" r="B2"><is><t>${kmuj}</t></is></c></row>`;
-                                    let row3 = `<row r="3"><c t="inline"><is><t>Section:</t></is></c><c t="inline" r="B3"><is><t>${section}</t></is></c></row>`;
+                                    let row2 = `<row r="2"><c t="inline"><is><t>DISTRICT: KMUJ</t></is></c><c t="inline" r="B2"><is><t>${kmuj}</t></is></c></row>`;
+                                    let row3 = `<row r="3"><c t="inline"><is><t>Section: MUJ</t></is></c><c t="inline" r="B3"><is><t>${section}</t></is></c></row>`;
                                     let row4 = `<row r="4"></row>`;
 
                                     let sheetData = sheet.getElementsByTagName('sheetData')[0];
