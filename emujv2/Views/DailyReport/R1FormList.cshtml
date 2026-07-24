@@ -1366,7 +1366,7 @@
                         responsive: true,
                         data: data,
                         columns: [
-                            { data: "no" },
+                            { data: "Emplid" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
                             { data: "kmuj_name" },
@@ -1491,7 +1491,7 @@
                         responsive: true,
                         data: data,
                         columns: [
-                            { data: "no" },
+                            { data: "Emplid" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
                             { data: "kmuj_name" },
@@ -1615,7 +1615,7 @@
                         responsive: true,
                         data: data,
                         columns: [
-                            { data: "no" },
+                            { data: "Emplid" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
                             { data: "kmuj_name" },
@@ -1761,7 +1761,7 @@
                         responsive: true,
                         data: data,
                         columns: [
-                            { data: "no" },
+                            { data: "Emplid" },
                             { data: "rpt_code" },
                             { data: "daily_date" },
                             { data: "kmuj_name" },
@@ -1782,7 +1782,6 @@
                                 title: "Action",
                                 render: function (data, type, full, meta) {
                                     return '<a class="modal-effect btn btn-success" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-eye font-10"></i></a>' +
-                                        //' <a class="btn btn-primary" href="/DailyReport/Form?id=' + data + '"><i class="fe fe-edit font-10"></i></a>' +
                                         ' <a class="btn btn-danger" data-id="' + data + '" data-bs-target="#modalDelete" data-bs-effect="effect-sign" data-bs-toggle="modal"><i class="fe fe-trash font-10"></i></a>';
                                 },
                             },
@@ -1816,42 +1815,42 @@
                                 },
                             },
                             {
-                                targets: -4,
+                                targets: -5,
                                 title: "Submitted By",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -5,
-                                title: "Section",
-                                render: function (data, type, full, meta) { 
-                                    return data;
-                                },
-                            },
-                            {
                                 targets: -6,
-                                title: "KMUJ",
+                                title: "Section",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
                                 targets: -7,
+                                title: "KMUJ",
+                                render: function (data, type, full, meta) {
+                                    return data;
+                                },
+                            },
+                            {
+                                targets: -8,
                                 title: "Work Date",
                                 render: function (data, type, full, meta) {
                                     return moment(data).format('DD/MM/YYYY');
                                 },
                             },
                             {
-                                targets: -8,
+                                targets: -9,
                                 title: "Report ID",
                                 render: function (data, type, full, meta) {
                                     return data;
                                 },
                             },
                             {
-                                targets: -9,
+                                targets: -10,
                                 title: "No",
                                 render: function (data, type, full, meta) {
                                     return counter++;
