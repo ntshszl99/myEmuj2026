@@ -213,64 +213,58 @@
             listReportsAdmin();
             listReportsNormal();
 
-            if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5" ) {
+            console.log("Current value of lvlI:", localStorage.getItem("lvlI"));
+
+            //CHECK USER LEVEL
+            //user level == 1 & 5
+            var lvl = localStorage.getItem("lvlI");
+
+            $("#contentNormal, #contentAdmin, #contentOthers").hide();
+
+            if (lvl === "4") {
+
+                $("#contentNormal").show();
+
+                $("#gangNormal").on('change', function () {
+                    checkStore();
+
+                    gng = $("#gangNormal option:selected").text();
+                    localStorage.setItem("selGng", gng, this.value);
+
+                    scn = localStorage.getItem("scn");
+                    localStorage.setItem("selScn", scn, this.value);
+
+                    listReportsNormal(localStorage.getItem("selScn", this.value),
+                        localStorage.getItem("selGng", this.value));
+                });
+            }
+
+            else if (lvl === "1") {
+
                 $("#contentAdmin").show();
-                $("#contentNormal").hide();
-                $("#contentOthers").hide();
-            }
-            else if (localStorage.getItem("lvlI") === "2" ||
-                localStorage.getItem("lvlI") === "3" ||
-                localStorage.getItem("lvlI") === "4" ||
-                localStorage.getItem("lvlI") === "6") {
 
-                scn = localStorage.getItem("scn");
-                localStorage.setItem("selScn", scn, this.value);
-                console.log(scn);
+                $('#btnSearchAdmin').on('click', function () {
+                    var scn = $("#section option:selected").text();
+                    var kmj = $("#kmuj option:selected").text();
+                    var gng = $("#gangAdmin option:selected").text();
 
-                if (scn == 'null' || scn == ' ') {
-                    $("#contentOthers").show();
-                    $("#contentNormal").hide();
-                    $("#contentAdmin").hide();
-                }
-                else {
-                    $("#contentNormal").show();
-                    $("#contentOthers").hide();
-                    $("#contentAdmin").hide();
+                    localStorage.setItem("selRgn", scn);
+                    localStorage.setItem("selKmj", kmj);
+                    localStorage.setItem("selGng", gng);
 
-                    $("#gangNormal").on('change', function () {
-                        checkStore();
+                    listReportsAdmin(kmj, scn, gng);
 
-                        gng = $("#gangNormal option:selected").text();
-                        localStorage.setItem("selGng", gng, this.value);
-
-                        scn = localStorage.getItem("scn");
-                        localStorage.setItem("selScn", scn, this.value);
-
-                        listReportsNormal(localStorage.getItem("selScn", this.value),
-                            localStorage.getItem("selGng", this.value));
-                    });
-                }
+                    if (scn !== "" || kmj !== "" || gng !== "") {
+                        salertSave('Searching for: ' + kmj + ' and ' + scn + ' for ' + gng);
+                    } else {
+                        salertSave('Searching all dates for ' + gng);
+                    }
+                });
             }
 
-
-
-            $('#btnSearchAdmin').on('click', function () {
-                var scn = $("#section option:selected").text();
-                var kmj = $("#kmuj option:selected").text();
-                var gng = $("#gangAdmin option:selected").text();
-
-                localStorage.setItem("selRgn", scn);
-                localStorage.setItem("selKmj", kmj);
-                localStorage.setItem("selGng", gng);
-
-                listReportsAdmin(kmj, scn, gng);
-
-                if (scn !== "" || kmj !== "" || gng !== "") {
-                    salertSave('Searching for: ' + kmj + ' and ' + scn + ' for ' + gng);
-                } else {
-                    salertSave('Searching all dates for ' + gng);
-                }
-            });
+            else {
+                $("#contentOthers").show();
+            }
 
         });
 
