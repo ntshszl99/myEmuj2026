@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("emujv2Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8949c98c91951b52c3c19fb101d9b2cf5e05e9d5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b1cf0d4c0683f88cd854a4954ad91c63fc301296")]
 [assembly: System.Reflection.AssemblyProductAttribute("emujv2Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("emujv2Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

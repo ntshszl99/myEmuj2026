@@ -28,8 +28,8 @@ namespace emujv2Api.Model
             CommonFunc Conn = new CommonFunc();
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-            SqlStr.Append(" DELETE FROM gang_desc WHERE staff_no = @StaffId AND gang_id = @Gang ");
-            SqlStr.Append(" DELETE FROM staff_section WHERE no_perkh = @StaffId AND no_muj = @Kmuj AND no_section = @Section");
+            SqlStr.Append(" DELETE FROM gang_desc WHERE staff_no = @StaffId  ");
+            SqlStr.Append(" DELETE FROM staff_section WHERE no_perkh = @StaffId AND gang_id = @Gang AND no_muj = @Kmuj AND no_section = @Section");
 
             ParamTmp.Add("@StaffId", StaffId);
             ParamTmp.Add("@Section", Section);
@@ -631,44 +631,60 @@ namespace emujv2Api.Model
             {
                 string Salah = "";
 
+                // 1. Check if staff exists in gang_desc
                 StringBuilder CheckGangSql = new StringBuilder();
                 CheckGangSql.Append(" SELECT COUNT(1) FROM gang_desc WHERE [staff_no] = @StaffId ");
 
-                Dictionary<string, Object> ParamGangCheck = new Dictionary<string, Object>();
-                ParamGangCheck.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
+                Dictionary<string, Object> ParamGangCheck = new Dictionary<string, Object>
+        {
+            { "@StaffId", userCons.StaffId ?? (object)DBNull.Value }
+        };
 
                 object gangResult = DbCon.ExecuteScalar(CheckGangSql.ToString(), ParamGangCheck, Conn.emujConn, ref Salah);
-                if (!string.IsNullOrEmpty(Salah)) return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
+                if (!string.IsNullOrEmpty(Salah))
+                {
+                    return "{\"status\":\"99\", \"message\":\"" + Salah.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"}";
+                }
 
+                // 2. Insert into gang_desc if staff does not exist
                 if (Convert.ToInt32(gangResult) == 0)
                 {
                     StringBuilder SqlStr = new StringBuilder();
                     Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
                     SqlStr.Append(" INSERT INTO gang_desc ([staff_no], [staff_name], [section_id], [upd_by], [upd_date], [position], [staff_status]) ");
-                    SqlStr.Append(" VALUES (@GangId, @StaffId, @Nama, @Grade, @UpdBy, GETDATE(), @Designation, 'VALID') ");
+                    SqlStr.Append(" VALUES (@StaffId, @Nama, @Grade, @UpdBy, GETDATE(), @Designation, 'VALID') ");
 
                     ParamTmp.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
                     ParamTmp.Add("@Nama", userCons.Nama ?? (object)DBNull.Value);
                     ParamTmp.Add("@Grade", userCons.Grade ?? (object)DBNull.Value);
-                    ParamTmp.Add("@UpdBy", userCons.UpdBy);
+                    ParamTmp.Add("@UpdBy", userCons.UpdBy ?? (object)DBNull.Value);
                     ParamTmp.Add("@Designation", userCons.Designation ?? (object)DBNull.Value);
 
                     bool isSuccess = DbCon.ExecuteNonQuery(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
-                    if (!isSuccess) return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
+                    if (!isSuccess || !string.IsNullOrEmpty(Salah))
+                    {
+                        return "{\"status\":\"99\", \"message\":\"" + Salah.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"}";
+                    }
                 }
 
+                // 3. Check if staff section assignment exists
                 StringBuilder CheckSectionSql = new StringBuilder();
                 CheckSectionSql.Append(" SELECT COUNT(1) FROM staff_section WHERE [no_perkh] = @StaffId AND [no_muj] = @Kmuj AND [no_section] = @Section AND [gang_id] = @GangId ");
 
-                Dictionary<string, Object> ParamSectionCheck = new Dictionary<string, Object>();
-                ParamSectionCheck.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
-                ParamSectionCheck.Add("@Kmuj", userCons.KMUJ ?? (object)DBNull.Value);
-                ParamSectionCheck.Add("@Section", userCons.Section ?? (object)DBNull.Value);
-                ParamSectionCheck.Add("@GangId", userCons.GangId ?? (object)DBNull.Value);
+                Dictionary<string, Object> ParamSectionCheck = new Dictionary<string, Object>
+        {
+            { "@StaffId", userCons.StaffId ?? (object)DBNull.Value },
+            { "@Kmuj", userCons.KMUJ ?? (object)DBNull.Value },
+            { "@Section", userCons.Section ?? (object)DBNull.Value },
+            { "@GangId", userCons.GangId ?? (object)DBNull.Value }
+        };
 
                 object sectionResult = DbCon.ExecuteScalar(CheckSectionSql.ToString(), ParamSectionCheck, Conn.emujConn, ref Salah);
-                if (!string.IsNullOrEmpty(Salah)) return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
+                if (!string.IsNullOrEmpty(Salah))
+                {
+                    return "{\"status\":\"99\", \"message\":\"" + Salah.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"}";
+                }
 
                 if (Convert.ToInt32(sectionResult) > 0)
                 {
@@ -680,6 +696,7 @@ namespace emujv2Api.Model
                     continue;
                 }
 
+                // 4. Insert into staff_section
                 StringBuilder SqlStrNew = new StringBuilder();
                 Dictionary<string, Object> ParamTmpNew = new Dictionary<string, Object>();
 
@@ -687,16 +704,16 @@ namespace emujv2Api.Model
                 SqlStrNew.Append(" VALUES (@StaffId, @Kmuj, @Section, @GangId) ");
 
                 ParamTmpNew.Add("@StaffId", userCons.StaffId ?? (object)DBNull.Value);
-                ParamTmpNew.Add("@Kmuj", userCons.KMUJ);
-                ParamTmpNew.Add("@Section", userCons.Section);
-                ParamTmpNew.Add("@GangId", userCons.GangId);
+                ParamTmpNew.Add("@Kmuj", userCons.KMUJ ?? (object)DBNull.Value);
+                ParamTmpNew.Add("@Section", userCons.Section ?? (object)DBNull.Value);
+                ParamTmpNew.Add("@GangId", userCons.GangId ?? (object)DBNull.Value);
 
                 Salah = "";
-                DbCon.ExecuteNonQuery(SqlStrNew.ToString(), ParamTmpNew, Conn.emujConn, ref Salah);
+                bool isInsertSuccess = DbCon.ExecuteNonQuery(SqlStrNew.ToString(), ParamTmpNew, Conn.emujConn, ref Salah);
 
-                if (!string.IsNullOrEmpty(Salah))
+                if (!isInsertSuccess || !string.IsNullOrEmpty(Salah))
                 {
-                    return "{\"status\":\"99\", \"message\":\"" + Salah + "\"}";
+                    return "{\"status\":\"99\", \"message\":\"" + Salah.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"}";
                 }
             }
 
