@@ -884,52 +884,27 @@
                 success: function (response) {
                     var data;
                     try {
-                        data = JSON.parse(response);
+                        // Handle raw strings or pre-parsed objects from ASP.NET / WebAPI
+                        data = typeof response === 'string' ? JSON.parse(response) : response;
+                        if (data && data.d) {
+                            data = typeof data.d === 'string' ? JSON.parse(data.d) : data.d;
+                        }
                     } catch (error) {
                         console.error("Error parsing JSON:", error);
                         swarning();
                         return;
                     }
+
                     if (data && data.status === "00") {
                         $('#modalDelete').modal('hide');
-                        swal.fire('Success!', 'Report has been deleted.', 'success');
+
+                        // Reload the table only after the user acknowledges the deletion modal
+                        swal.fire('Success!', 'Report has been deleted.', 'success').then((result) => {
+                            reloadReportData();
+                        });
                     } else {
                         $('#modalDelete').modal('hide');
                         swarning();
-                    }
-                    if (localStorage.getItem("lvlI") === "1" || localStorage.getItem("lvlI") === "5") {
-                        listReports(
-                            localStorage.getItem("selRgn"),
-                            localStorage.getItem("selKmj"),
-                            localStorage.getItem("selScn"),
-                            localStorage.getItem("selHar"),
-                            localStorage.getItem("selHarE")
-                        );
-                    } else if (localStorage.getItem("lvlI") === "2" || localStorage.getItem("lvlI") === "6") {
-                        listReportsEngineer(
-                            localStorage.getItem("seRgn"),
-                            localStorage.getItem("selKmj"),
-                            localStorage.getItem("selHar"),
-                            localStorage.getItem("selHarE")
-                        );
-                    } else if (localStorage.getItem("lvlI") === "3") {
-                        listReportsCI(
-                            localStorage.getItem("selScn"),
-                            localStorage.getItem("selHar"),
-                            localStorage.getItem("selHarE")
-                        );
-                    } else if (localStorage.getItem("lvlI") === "4") {
-                        listReportsNormal(
-                            localStorage.getItem("selScn"),
-                            localStorage.getItem("selHar"),
-                            localStorage.getItem("selHarE")
-                        );
-                    } else {
-                        $("#contentAdmin").hide();
-                        $("#contentEngineer").hide();
-                        $("#contentNormal").hide();
-                        $("#contentCI").hide();
-                        $("#contentOthers").show();
                     }
                 },
                 error: function (xhr, status, error) {
@@ -942,6 +917,47 @@
                     console.log("Request completed");
                 }
             });
+        }
+
+        // Unified helper function using exact parameters from search handlers
+        function reloadReportData() {
+            // Read level from localStorage safely
+            var lvl = localStorage.getItem("lvlI") || localStorage.getItem("lvl");
+            var sdate = localStorage.getItem("selHar") || "";
+            var edate = localStorage.getItem("selHarE") || "";
+
+            if (lvl === "1" || lvl === "5") {
+                var rgn = localStorage.getItem("selRgn") || $("#region option:selected").text();
+                var kmj = localStorage.getItem("selKmj") || $("#kmuj option:selected").text();
+                var scn = localStorage.getItem("selScn") || $("#section option:selected").text();
+
+                listReportsAdmin(rgn, kmj, scn, sdate, edate);
+
+            } else if (lvl === "2" || lvl === "6") {
+                var rgn = localStorage.getItem("usrR");
+                var kmj = localStorage.getItem("selKmj") || $("#kmujEng option:selected").text();
+
+                listReportsEngineer(rgn, kmj, sdate, edate);
+
+            } else if (lvl === "3") {
+                var kmj = localStorage.getItem("kmuj");
+                var scn = localStorage.getItem("selKmj") || $("#sectionCI option:selected").text();
+
+                listReportsCI(kmj, scn, sdate, edate);
+
+            } else if (lvl === "4") {
+                var kmj = localStorage.getItem("kmuj");
+                var scn = localStorage.getItem("scn");
+
+                listReportsMuj(kmj, scn, sdate, edate);
+
+            } else {
+                $("#contentAdmin").hide();
+                $("#contentEngineer").hide();
+                $("#contentNormal,#contentMuj").hide();
+                $("#contentCI").hide();
+                $("#contentOthers").show();
+            }
         }
 
         function listSection() {
