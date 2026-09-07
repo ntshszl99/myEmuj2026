@@ -820,20 +820,27 @@
                 url: linkDepan + "GetUser",
                 type: 'GET',
                 dataType: 'json',
-                data: {},
                 beforeSend: function (request) {
                     request.setRequestHeader("Token", localStorage.getItem('main'));
                 },
                 success: function (data) {
+                    console.log("Raw Response:", data); // Check layout in browser console
+
+                    // Handle double-serialization and .d wrapping safely
+                    var responseData = data.d ? data.d : data;
+                    if (typeof responseData === 'string') {
+                        responseData = JSON.parse(responseData);
+                    }
+
                     $.fn.dataTable.ext.errMode = 'throw';
                     if ($.fn.dataTable.isDataTable('#tableRep')) {
                         $('#tableRep').DataTable().destroy();
                     }
-                    $.fn.dataTable.ext.errMode = 'throw';
-                    var counter = 1, countStf = 0, countID = 0;
+
+                    var countID = 0;
                     $('#tableRep').DataTable({
                         responsive: true,
-                        data: data,
+                        data: responseData,
                         columns: [
                             { data: "Emplid" },
                             { data: "Nama" },
@@ -841,79 +848,45 @@
                             { data: "LocDesc" },
                             { data: "section" },
                             { data: "ref_level_name" },
-                            { data: "Emplid" },
+                            { data: "Emplid" }
                         ],
                         columnDefs: [
                             {
                                 targets: "_all",
-                                className: "text-center align-middle" 
+                                className: "text-center align-middle"
                             },
                             {
                                 targets: -1,
                                 title: "Actions",
                                 visible: localStorage.getItem("lvlI") !== "5",
-                                render: function (data, type, full, meta) {
-                                    countStf++;
+                                render: function (data) {
                                     return '<a class="btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-toggle="modal"><i class="fe fe-edit font-16"></i></a>';
-                                },
+                                }
                             },
-                            {
-                                targets: -2,
-                                title: "Levellllll",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -3,
-                                title: "Region",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -4,
-                                title: "Location",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -5,
-                                title: "Designation",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -6,
-                                title: "Name",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
-                            {
-                                targets: -7,
-                                title: "Staff ID",
-                                render: function (data, type, full, meta) {
-                                    return data;
-                                },
-                            },
+                            { targets: -2, title: "Level" },
+                            { targets: -3, title: "Region" },
+                            { targets: -4, title: "Location" },
+                            { targets: -5, title: "Designation" },
+                            { targets: -6, title: "Name" },
+                            { targets: -7, title: "Staff ID" }
                         ],
-                        rowId: function (a) {
+                        rowId: function () {
                             return countID++;
                         },
-                        createdRow: function (row, data, dataIndex) {
+                        createdRow: function (row) {
                             $('td', row).addClass('text-nowrap align-middle');
                         }
                     });
                 },
                 error: function (xhr) {
+                    console.error(xhr);
                     swarning();
-                },
-                complete: function () {
                 }
             });
         }
+
+
+
+
     </script>
 }
