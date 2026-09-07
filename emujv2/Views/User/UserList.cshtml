@@ -816,216 +816,104 @@
         }
 
         function listReports() {
-
             $.ajax({
-
                 url: linkDepan + "GetUser",
-
                 type: 'GET',
-
                 dataType: 'json',
-
                 data: {},
-
                 beforeSend: function (request) {
-
                     request.setRequestHeader("Token", localStorage.getItem('main'));
-
                 },
-
                 success: function (data) {
-
                     $.fn.dataTable.ext.errMode = 'throw';
-
                     if ($.fn.dataTable.isDataTable('#tableRep')) {
-
                         $('#tableRep').DataTable().destroy();
-
                     }
-
                     $.fn.dataTable.ext.errMode = 'throw';
-
                     var counter = 1, countStf = 0, countID = 0;
-
                     $('#tableRep').DataTable({
-
-                        //dom: 'Bfrtip',
-
-                        //buttons: [
-
-                        //    'copy', 'csv', 'excel', 'pdf', 'print'
-
-                        //],
-
                         responsive: true,
-
                         data: data,
-
                         columns: [
-
                             { data: "Emplid" },
-
                             { data: "Nama" },
-
                             { data: "JobDesc" },
-
                             { data: "LocDesc" },
-
                             { data: "section" },
-
                             { data: "ref_level_name" },
-
                             { data: "Emplid" },
-
                         ],
-
                         columnDefs: [
-
                             {
-
                                 targets: "_all",
-
-                                className: "text-center align-middle" // Centers text horizontally & vertically
-
+                                className: "text-center align-middle" 
                             },
-
                             {
-
                                 targets: -1,
-
                                 title: "Actions",
-
-                                // Add this line to hide the column if level is 5
-
                                 visible: localStorage.getItem("lvlI") !== "5",
-
                                 render: function (data, type, full, meta) {
-
                                     countStf++;
-
                                     return '<a class="btn btn-primary" data-id="' + data + '" data-bs-target="#modalDetails" data-bs-toggle="modal"><i class="fe fe-edit font-16"></i></a>';
-
                                 },
-
                             },
-
                             {
-
                                 targets: -2,
-
-                                title: "Level",
-
+                                title: "Levellllll",
                                 render: function (data, type, full, meta) {
-
                                     return data;
-
                                 },
-
                             },
-
                             {
-
                                 targets: -3,
-
                                 title: "Region",
-
                                 render: function (data, type, full, meta) {
-
                                     return data;
-
                                 },
-
                             },
-
                             {
-
                                 targets: -4,
-
                                 title: "Location",
-
                                 render: function (data, type, full, meta) {
-
                                     return data;
-
                                 },
-
                             },
-
                             {
-
                                 targets: -5,
-
                                 title: "Designation",
-
                                 render: function (data, type, full, meta) {
-
                                     return data;
-
                                 },
-
                             },
-
                             {
-
                                 targets: -6,
-
                                 title: "Name",
-
                                 render: function (data, type, full, meta) {
-
                                     return data;
-
                                 },
-
                             },
-
                             {
-
                                 targets: -7,
-
                                 title: "Staff ID",
-
                                 render: function (data, type, full, meta) {
-
                                     return data;
-
                                 },
-
                             },
-
                         ],
-
                         rowId: function (a) {
-
                             return countID++;
-
                         },
-
                         createdRow: function (row, data, dataIndex) {
-
                             $('td', row).addClass('text-nowrap align-middle');
-
                         }
-
-
-
                     });
-
                 },
-
                 error: function (xhr) {
-
                     swarning();
-
                 },
-
                 complete: function () {
-
                 }
-
             });
-
         }
-
     </script>
 }
