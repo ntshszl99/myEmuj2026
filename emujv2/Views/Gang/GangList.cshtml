@@ -397,7 +397,7 @@
             };
             $.ajax({
                 url: linkDepan + "DeleteGangDetails?StaffId=" + ids + "&Section=" + section + "&Kmuj=" + kmuj + "&Gang=" + gang,
-                type: 'DELETE',
+                type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 beforeSend: function (request) {

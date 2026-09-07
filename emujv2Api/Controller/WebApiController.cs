@@ -33,7 +33,8 @@ namespace emujv2Api.Controller
 
         //----------------------------DELETE------------------------------------//
 
-        [HttpDelete]
+
+        [HttpPost]
         public string DeleteGangDetails(string StaffId, string Section, string Kmuj, string Gang)
         {
             TokenFunc Token = new TokenFunc();
@@ -73,7 +74,7 @@ namespace emujv2Api.Controller
             }
         }
 
-        [HttpDelete]
+        [HttpPost]
         public string DeleteReport(string RptCode)
         {
             TokenFunc Token = new TokenFunc();
@@ -324,7 +325,6 @@ namespace emujv2Api.Controller
 
 
 
-        [HttpPost]
         [HttpPost]
         public string UpdateWorkPlan([FromBody] List<StaffInfo> staffConsList)
         {

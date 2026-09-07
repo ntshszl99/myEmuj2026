@@ -686,7 +686,7 @@
             };
             $.ajax({
                 url: linkDepan + "DeleteReport?RptCode=" + ids,
-                type: 'DELETE',
+                type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 beforeSend: function (request) {
