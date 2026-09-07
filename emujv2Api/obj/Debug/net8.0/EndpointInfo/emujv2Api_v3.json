@@ -11,7 +11,7 @@
   },
   "paths": {
     "/api/WebApi/DeleteGangDetails": {
-      "delete": {
+      "post": {
         "tags": [
           "WebApi"
         ],
@@ -70,7 +70,7 @@
       }
     },
     "/api/WebApi/DeleteReport": {
-      "delete": {
+      "post": {
         "tags": [
           "WebApi"
         ],

@@ -81,7 +81,7 @@
     "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "DeleteGangDetails",
     "RelativePath": "api/WebApi/DeleteGangDetails",
-    "HttpMethod": "DELETE",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
@@ -122,7 +122,7 @@
     "ContainingType": "emujv2Api.Controller.WebApiController",
     "Method": "DeleteReport",
     "RelativePath": "api/WebApi/DeleteReport",
-    "HttpMethod": "DELETE",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
