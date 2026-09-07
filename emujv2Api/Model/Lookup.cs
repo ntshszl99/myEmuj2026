@@ -530,18 +530,18 @@ namespace emujv2Api.Model
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
             SqlStr.Append(" SELECT ");
-            SqlStr.Append("     a.Emplid, ");
-            SqlStr.Append("     a.Nama, ");
-            SqlStr.Append("     CONCAT(a.JobDesc, ' | ', a.Grade) AS JobDesc, ");
-            SqlStr.Append("     a.LocDesc, ");
-            SqlStr.Append("     b.section, ");
-            SqlStr.Append("     c.ref_level_name, ");
-            SqlStr.Append("     b.staff_status ");
+            SqlStr.Append(" a.Emplid, ");
+            SqlStr.Append(" a.Nama, ");
+            SqlStr.Append(" CONCAT(a.JobDesc, ' | ', a.Grade) AS JobDesc, ");
+            SqlStr.Append(" a.LocDesc, ");
+            SqlStr.Append(" b.section, ");
+            SqlStr.Append(" c.ref_level_name, ");
+            SqlStr.Append(" b.staff_status ");
             SqlStr.Append(" FROM [HR_MAIN].[dbo].[HR_MAIN] AS a ");
             SqlStr.Append(" INNER JOIN staff_login AS b ");
-            SqlStr.Append("     ON LTRIM(RTRIM(CAST(a.Emplid AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(b.staff_id AS VARCHAR(50)))) ");
+            SqlStr.Append(" ON LTRIM(RTRIM(CAST(a.Emplid AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(b.staff_id AS VARCHAR(50)))) ");
             SqlStr.Append(" INNER JOIN Ref_userlevel AS c ");
-            SqlStr.Append("     ON LTRIM(RTRIM(CAST(b.usrlevel AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(c.ref_level_no AS VARCHAR(50)))) ");
+            SqlStr.Append(" ON LTRIM(RTRIM(CAST(b.usrlevel AS VARCHAR(50)))) = LTRIM(RTRIM(CAST(c.ref_level_no AS VARCHAR(50)))) ");
             SqlStr.Append(" WHERE LOWER(LTRIM(RTRIM(b.staff_status))) = 'active' ");
             SqlStr.Append(" ORDER BY a.Emplid ASC ");
 
