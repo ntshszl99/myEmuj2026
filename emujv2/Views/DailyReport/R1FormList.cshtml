@@ -815,13 +815,11 @@
                     console.log('kmuj:', kmuj);  // Should now have correct value
                     console.log('section:', section);  // Should now have correct value
 
-                    var kmuj = data[0].kmuj_name;
-                    var section = data[0].section_name;
-                    var gang = data[0].Gang;
+                    var rptcode = data[0].rpt_code
 
 
                     // Call listReports2 with the fetched values
-                    listReports2(kmuj, section, gang);
+                    listReports2(rptcode);
                 },
                 error: function (xhr) {
                     swarning();
@@ -1277,73 +1275,57 @@
 
 
         //view modal --  show list staff yang kerja
-        function listReports2(kmuj, section, gang) {
-            var gangString = "";
+        function listReports2(rptcode) {
+            $.ajax({
+                url: linkDepan + "GetAttdList?RptCode=" + rptcode,
+                type: 'GET',
+                dataType: 'json',
+                data: {},
+                beforeSend: function (request) {
+                    request.setRequestHeader("Token", localStorage.getItem('main'));
+                },
+                success: function (response) {
+                    try {
+                        console.log("Server Response:", response);
 
-            if (typeof gang === "string") {
-                var cleanNumbers = gang.replace(/Gang/gi, '');
-                var numberArray = cleanNumbers.split(',');
-                var formattedGangs = numberArray.map(function (num) {
-                    return "Gang " + num.trim();
-                });
-
-                gangString = formattedGangs.join(",");
-            } else if (Array.isArray(gang)) {
-                gangString = gang.join(",");
-            }
-
-            if (gangString && gangString.length > 0) {
-                $.ajax({
-                    url: linkDepan + "GetGListNormal?Kmuj=" + kmuj + "&Section=" + section + "&Gang=" + gangString,
-                    type: 'GET',
-                    dataType: 'json',
-                    data: {},
-                    beforeSend: function (request) {
-                        request.setRequestHeader("Token", localStorage.getItem('main'));
-                    },
-                    success: function (response) {
-                        try {
-                            console.log("Server Response:", response);
-
-                            var counter = 1;
-                            $.fn.dataTable.ext.errMode = 'throw';
-                            if ($.fn.dataTable.isDataTable('#tableRep2')) {
-                                $('#tableRep2').DataTable().destroy();
-                                $('#tableRep2').empty();
-                            }
-
-                            $('#tableRep2').DataTable({
-                                responsive: true,
-                                data: response,
-                                columns: [
-                                    { data: "Emplid" },
-                                    { data: "Emplid" },
-                                    { data: "Nama" },
-                                    { data: "JobGrade" },
-                                    { data: "JobDesc" },
-                                    { data: "Gang" },
-                                ],
-                                columnDefs: [
-                                    { targets: -1, title: "Gang", render: function (data) { return data; } },
-                                    { targets: -2, title: "Position", render: function (data) { return data; } },
-                                    { targets: -3, title: "Grade", render: function (data) { return data; } },
-                                    { targets: -4, title: "Name", render: function (data) { return data; } },
-                                    { targets: -5, title: "Staff ID", render: function (data) { return data; } },
-                                    { targets: -6, title: "No", render: function () { return counter++; } }
-                                ],
-                                createdRow: function (row, data, dataIndex) {
-                                    $('td', row).addClass('text-nowrap align-middle');
-                                }
-                            });
-                        } catch (error) {
-                            console.error("Error parsing/binding table data:", error);
+                        var counter = 1;
+                        $.fn.dataTable.ext.errMode = 'throw';
+                        if ($.fn.dataTable.isDataTable('#tableRep2')) {
+                            $('#tableRep2').DataTable().destroy();
+                            $('#tableRep2').empty();
                         }
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.error("AJAX request failed:", textStatus, errorThrown);
+
+                        $('#tableRep2').DataTable({
+                            responsive: true,
+                            data: response,
+                            columns: [
+                                { data: "Emplid" },
+                                { data: "Emplid" },
+                                { data: "Nama" },
+                                { data: "JobGrade" },
+                                { data: "JobDesc" },
+                                { data: "Gang" },
+                            ],
+                            columnDefs: [
+                                { targets: -1, title: "Gang", render: function (data) { return data; } },
+                                { targets: -2, title: "Position", render: function (data) { return data; } },
+                                { targets: -3, title: "Grade", render: function (data) { return data; } },
+                                { targets: -4, title: "Name", render: function (data) { return data; } },
+                                { targets: -5, title: "Staff ID", render: function (data) { return data; } },
+                                { targets: -6, title: "No", render: function () { return counter++; } }
+                            ],
+                            createdRow: function (row, data, dataIndex) {
+                                $('td', row).addClass('text-nowrap align-middle');
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Error parsing/binding table data:", error);
                     }
-                });
-            }
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX request failed:", textStatus, errorThrown);
+                }
+            });        
         }
 
 

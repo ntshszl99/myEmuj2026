@@ -747,6 +747,48 @@ namespace emujv2Api.Model
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);
         }
 
+
+        //view staff_attd_id
+        public string GetAttdList(string RptCode)
+        {
+            StringBuilder SqlStr = new StringBuilder();
+            Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
+            DataTable Recc = new DataTable();
+            MsSql DbCon = new MsSql();
+            string Salah = "";
+            CommonFunc Conn = new CommonFunc();
+
+            SqlStr.Append(" SELECT DISTINCT ");
+            SqlStr.Append("     b.Emplid, ");
+            SqlStr.Append("     b.Nama, ");
+            SqlStr.Append("     b.JobGrade, ");
+            SqlStr.Append("     UPPER(b.JobDesc) AS JobDesc, ");
+            SqlStr.Append("     CONCAT('Gang ', c.gang_id) AS Gang ");
+            SqlStr.Append(" FROM [HR_MAIN].[dbo].[HR_MAIN] AS b ");
+            SqlStr.Append(" INNER JOIN staff_section AS c ");
+            SqlStr.Append("     ON b.Emplid = c.no_perkh ");
+            SqlStr.Append(" INNER JOIN section AS d ");
+            SqlStr.Append("     ON c.no_section = d.section_val ");
+            SqlStr.Append(" INNER JOIN kmuj AS e ");
+            SqlStr.Append("     ON c.no_muj = e.kmuj_value AND d.section_kmuj = e.kmuj_value ");
+            SqlStr.Append(" INNER JOIN gang_desc AS a ");
+            SqlStr.Append("     ON a.staff_no = b.Emplid ");
+            SqlStr.Append(" INNER JOIN Gang AS g ");
+            SqlStr.Append("     ON c.gang_id = g.id ");
+            SqlStr.Append(" INNER JOIN [mujDev].[dbo].[daily_form_attendancelist] AS att ");
+            SqlStr.Append("     ON CONCAT(',', att.staff_attd_no, ',') LIKE CONCAT('%,', b.Emplid, ',%') ");
+            SqlStr.Append(" WHERE b.Status = 'A' ");
+            SqlStr.Append(" AND att.rpt_code = @RptCode ");
+
+            ParamTmp.Add("@RptCode", RptCode);
+
+            Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
+            return JsonConvert.SerializeObject(Recc, Formatting.Indented);
+        }
+
+
+
+
         public string GetCheckList(string SDate, string EDate)
         {
             StringBuilder SqlStr = new StringBuilder();
