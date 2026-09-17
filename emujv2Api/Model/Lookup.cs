@@ -288,7 +288,7 @@ namespace emujv2Api.Model
         }
 
 
-        public string GetR1(string Kmuj, string Section, string SDate, string EDate)
+        public string GetR1(string Kmuj, string Section, string Gang, string SDate, string EDate)
         {
             StringBuilder SqlStr = new StringBuilder();
             DataTable Recc = new DataTable();
@@ -336,10 +336,18 @@ namespace emujv2Api.Model
             SqlStr.Append("LEFT JOIN work_plan wp ON p.staff_id = wp.staff_no AND a.daily_date = wp.work_date ");
             SqlStr.Append("WHERE a.daily_date >= @MulaTarikh AND a.daily_date <= @AkhirTarikh ");
             SqlStr.Append("  AND c.kmuj_name = @Kmuj AND d.section_name = @Section ");
+            SqlStr.Append("  AND ',' + CAST(a.daily_gang AS VARCHAR(50)) + ',' LIKE '%,' + LTRIM(RTRIM(CAST(REPLACE(@Gang, 'Gang', '') AS VARCHAR(50)))) + ',%' ");
+            SqlStr.Append("  AND EXISTS ( ");
+            SqlStr.Append("      SELECT 1 ");
+            SqlStr.Append("      FROM staff_section ss ");
+            SqlStr.Append("      WHERE ss.no_perkh = p.staff_id ");
+            SqlStr.Append("        AND ',' + CAST(a.daily_gang AS VARCHAR(50)) + ',' LIKE '%,' + CAST(ss.gang_id AS VARCHAR(50)) + ',%' ");
+            SqlStr.Append("  ) ");
             SqlStr.Append("ORDER BY p.staff_id, a.daily_date, b.work_name; ");
 
             ParamTmp.Add("@Kmuj", Kmuj);
             ParamTmp.Add("@Section", Section);
+            ParamTmp.Add("@Gang", Gang);
             ParamTmp.Add("@MulaTarikh", SDate);
             ParamTmp.Add("@AkhirTarikh", EDate);
 

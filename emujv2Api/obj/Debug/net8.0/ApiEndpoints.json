@@ -864,6 +864,11 @@
         "IsRequired": false
       },
       {
+        "Name": "Gang",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
         "Name": "SDate",
         "Type": "System.String",
         "IsRequired": false

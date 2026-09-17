@@ -969,7 +969,7 @@ namespace emujv2Api.Controller
         }
 
         [HttpGet]
-        public string GetR1(string Kmuj, string Section, string SDate, string EDate)
+        public string GetR1(string Kmuj, string Section, string Gang, string SDate, string EDate)
         {
             TokenFunc Token = new TokenFunc();
             PublicCons RetDat = new PublicCons();
@@ -987,7 +987,7 @@ namespace emujv2Api.Controller
 
             if (!string.IsNullOrEmpty(User.Userid))
             {
-                return ret.GetR1(Kmuj, Section, SDate, EDate);
+                return ret.GetR1(Kmuj, Section, Gang, SDate, EDate);
             }
             else
             {
