@@ -814,7 +814,9 @@ namespace emujv2Api.Model
             SqlStr.Append("      c.kmuj_name AS KMUJ, ");
             SqlStr.Append("      d.section_name AS MUJ, ");
             SqlStr.Append("      a.daily_date, ");
+            SqlStr.Append("      w.work_name, ");
             SqlStr.Append("      a.rpt_code, ");
+            SqlStr.Append("      a.daily_gang, ");
             SqlStr.Append("      ISNULL(p.work_dp, 0) AS Work_DP, ");
             SqlStr.Append("      ISNULL(p.work_up, 0) AS Work_UP, ");
             SqlStr.Append("      ISNULL(p.work_pl, 0) AS Work_PL ");
@@ -825,8 +827,8 @@ namespace emujv2Api.Model
             SqlStr.Append("      AND a.daily_kmuj = c.kmuj_value ");
             SqlStr.Append("      AND a.daily_date >= @MulaTarikh ");
             SqlStr.Append("      AND a.daily_date <= @AkhirTarikh ");
+            SqlStr.Append(" LEFT JOIN kerja w ON a.daily_worktype = w.id ");
             SqlStr.Append(" LEFT JOIN work_plan_total_pax p ON a.rpt_code = p.rpt_code AND a.daily_date = p.work_date ");
-            // CRITICAL FIX: Ordered directly by names instead of IDs to keep identical strings tightly grouped together
             SqlStr.Append(" ORDER BY r.region_name DESC, c.kmuj_name ASC, d.section_name ASC, a.daily_date ASC ");
 
             ParamTmp.Add("@MulaTarikh", MulaTarikh);

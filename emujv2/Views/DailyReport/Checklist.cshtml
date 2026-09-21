@@ -336,13 +336,28 @@
                                         return recordTimestamp === currentCellTimestamp;
                                     });
 
-                                    var locationHeader = "Wilayah: " + wilayah + " | KMUJ: " + kmuj + " | MUJ: " + muj;
+                                    var locationHeader = "Region: " + wilayah + " | KMUJ: " + kmuj + " | MUJ: " + muj;
 
                                     if (matchedRecord) {
-                                        var dp = parseInt(matchedRecord.Work_DP) || 0;
-                                        var up = parseInt(matchedRecord.Work_UP) || 0;
-                                        var pl = parseInt(matchedRecord.Work_PL) || 0;
-                                        var tooltipText = locationHeader + " \nReport: " + matchedRecord.rpt_code + " \nDP: " + dp + " | UP: " + up + " | PL: " + pl;
+                                        var dp = parseInt(matchedRecord.Work_DP) || parseInt(matchedRecord.work_dp) || 0;
+                                        var up = parseInt(matchedRecord.Work_UP) || parseInt(matchedRecord.work_up) || 0;
+                                        var pl = parseInt(matchedRecord.Work_PL) || parseInt(matchedRecord.work_pl) || 0;
+
+                                        // Safely check multiple possible casing variations for work name and gang
+                                        var workName = matchedRecord.work_name;
+                                        workName = (workName && workName.toString().trim() !== "") ? workName.toString().trim() : "-";
+
+                                        var dailyGang = matchedRecord.daily_gang
+                                        dailyGang = (dailyGang && dailyGang.toString().trim() !== "") ? dailyGang.toString().trim() : "-";
+
+                                        var rptCode = matchedRecord.rpt_code || matchedRecord.Rpt_Code || matchedRecord.RPT_CODE || "-";
+
+                                        // Include them in the tooltip text
+                                        var tooltipText = locationHeader +
+                                            " \nReport: " + rptCode +
+                                            " \nWork Name: " + workName +
+                                            " \nGang: " + dailyGang +
+                                            " \nDP: " + dp + " | UP: " + up + " | PL: " + pl;
 
                                         if (dp === 0 && up === 0 && pl === 0) {
                                             rowObject["day_" + d] = { status: 'zero-values', tooltip: tooltipText };
