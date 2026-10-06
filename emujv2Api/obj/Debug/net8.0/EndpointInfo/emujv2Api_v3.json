@@ -1356,6 +1356,13 @@
             }
           },
           {
+            "name": "Gang",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "SDate",
             "in": "query",
             "schema": {

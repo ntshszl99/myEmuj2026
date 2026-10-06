@@ -528,10 +528,6 @@
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
                     $('#txtDate').val('');
-
-                    var drp = $('#txtDate').data('daterangepicker');
-                    drp.setStartDate(moment());
-                    drp.setEndDate(moment());
                 });
 
                 $('#kmuj').on('change', function (e, selectedSectionValue) {
@@ -662,10 +658,6 @@
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
                     $('#txtDateCI').val('');
-
-                    var drp = $('#txtDateCI').data('daterangepicker');
-                    drp.setStartDate(moment());
-                    drp.setEndDate(moment());
                 });
 
                 $('#btnSearchCI').on('click', function () {
@@ -752,6 +744,12 @@
                         $table.find(`tr.summary-row .summary-att-cell[data-day="${dayIndex}"][data-key="${f.attKey}"]`).text(displayVal);
                     });
                 }
+
+                $("#gangNormal").on('change', function () {
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDateNormal').val('');
+                });
 
                 // --- SEARCH BUTTON EVENT ---
                 $('#btnSearchNormal').off('click').on('click', function () {

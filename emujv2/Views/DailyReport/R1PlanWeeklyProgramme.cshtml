@@ -495,10 +495,6 @@
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
                     $('#txtDate').val('');
-
-                    var drp = $('#txtDate').data('daterangepicker');
-                    drp.setStartDate(moment());
-                    drp.setEndDate(moment());
                 });
 
                 $('#kmuj').on('change', function (e, selectedSectionValue) {
@@ -615,12 +611,6 @@
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
 
-                    var drp = $('#txtDateEng').data('daterangepicker');
-                    if (drp) {
-                        drp.setStartDate(moment());
-                        drp.setEndDate(moment());
-                    }
-
                     if (selectedKmujVal && selectedKmujVal !== "-0" && !selectedKmujText.includes("Select KMUJ")) {
                         $('#sectionEng').prop('disabled', false).trigger('change.select2');
                         listSection(selectedKmujText, selectedSectionValue);
@@ -675,10 +665,6 @@
                     localStorage.removeItem("selHar");
                     localStorage.removeItem("selHarE");
                     $('#txtDateCI').val('');
-
-                    var drp = $('#txtDateCI').data('daterangepicker');
-                    drp.setStartDate(moment());
-                    drp.setEndDate(moment());
                 });
 
                 $('#btnSearchCI').on('click', function () {
@@ -703,6 +689,12 @@
 
             else if (lvl === "4") {
                 $("#contentNormal").show();
+
+                $("#gangNormal").on('change', function () {
+                    localStorage.removeItem("selHar");
+                    localStorage.removeItem("selHarE");
+                    $('#txtDateNormal').val('');
+                });
 
                 $('#btnSearchNormal').on('click', function () {
                     var scn = localStorage.getItem("scn");
