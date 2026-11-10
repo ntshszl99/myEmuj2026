@@ -368,6 +368,8 @@
                         $("#branchdet").prop('disabled', false);
                     } else {
                         $("#branchdet").prop('disabled', true);
+
+                        $("#branchdet").val('-').trigger('change');
                     }
                 });
 
