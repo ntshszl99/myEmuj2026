@@ -1550,7 +1550,7 @@
                                             let mergeCells = sheet.getElementsByTagName('mergeCells')[0];
                                             if (!mergeCells) {
                                                 mergeCells = sheet.createElement('mergeCells');
-                                                sheet.appendChild(mergeCells);
+                                                sheet.documentElement.appendChild(mergeCells);
                                             } else {
                                                 while (mergeCells.firstChild) {
                                                     mergeCells.removeChild(mergeCells.firstChild);

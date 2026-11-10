@@ -510,7 +510,8 @@
                 parentEl: "#workDateContainer",
                 opens: 'left',
                 minYear: 2021,
-                maxDate: nextWeekSaturday, // Everything after July 18th will be disabled
+                minDate: moment().startOf('year'), // Restrict to Jan 1st of the current year
+                maxDate: moment().endOf('year'),   // Restrict to Dec 31st of the current year
                 locale: {
                     format: 'DD/MM/YYYY'
                 }
