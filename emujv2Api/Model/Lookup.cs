@@ -376,7 +376,7 @@ namespace emujv2Api.Model
             SqlStr.Append(") ");
 
             // Main Query
-            SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, wp.work_plan_type_code, h.staff_name, a.upd_user ");
+            SqlStr.Append("SELECT p.rpt_code, a.daily_date, a.daily_additional, ls.Nama, p.staff_id AS Emplid, ls.JobDesc, b.work_name, gd.staff_status, sl.leaveType_id, sl.remarks, wp.work_plan_type_code, h.staff_name, a.upd_user ");
             SqlStr.Append("FROM daily_form a ");
             SqlStr.Append("JOIN kerja b ON a.daily_worktype = b.id ");
             SqlStr.Append("JOIN kmuj c ON a.daily_kmuj = c.kmuj_value ");

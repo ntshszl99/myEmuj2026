@@ -946,6 +946,7 @@
                     uniquework_name.forEach(desc => {
                         headerRow1.push(desc, '', '', '', '', '', '');
                     });
+                    headerRow1.push('Remarks'); // Remarks pushed to the far right
 
                     // =========================================================================
                     // 1. GENERATE STRUCTURAL COMPONENTS FOR THE WEB TABLE (theadHtml)
@@ -953,7 +954,6 @@
                     const baseDayInitials = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; // Standard Mon-Sun sequence
 
                     // Get the correct starting offset based on your startDate
-                    // Moment .day(): 0=Sun, 1=Mon, 2=Tue... We shift it so Monday = index 0
                     let startDayOfWeek = startDate.isValid() ? (startDate.day() + 6) % 7 : 0;
 
                     let theadHtml = '<tr>';
@@ -965,18 +965,17 @@
                     uniquework_name.forEach(desc => {
                         theadHtml += `<th colspan="7">${desc}</th>`;
                     });
+                    theadHtml += '<th rowspan="2" class="align-middle">Remarks</th>'; // Remarks header on right
 
                     theadHtml += '</tr><tr>';
 
-                    // Loop through columns to assign sub-headers (Row 7 equivalent)
+                    // Loop through columns to assign sub-headers
                     for (let i = 0; i < (1 + uniquework_name.length); i++) {
                         for (let j = 0; j < 7; j++) {
                             if (i === 0) {
-                                // Shift the day initial according to the starting day of the week offset
                                 let dayIndex = (startDayOfWeek + j) % 7;
                                 theadHtml += `<th>${baseDayInitials[dayIndex]}</th>`;
                             } else {
-                                // Subsequent work blocks -> 7-day calendar dates (11, 12, etc.)
                                 theadHtml += `<th>${moment(startDate).add(j, 'days').format('DD')}</th>`;
                             }
                         }
@@ -984,7 +983,7 @@
                     theadHtml += '</tr>';
 
                     // =========================================================================
-                    // 2. BUILD headerRow2 ARRAY FOR THE EXCEL EXPORTER (Single Declaration)
+                    // 2. BUILD headerRow2 ARRAY FOR THE EXCEL EXPORTER
                     // =========================================================================
                     let headerRow2 = ['', '', ''];
                     for (let i = 0; i < (1 + uniquework_name.length); i++) {
@@ -997,6 +996,7 @@
                             }
                         }
                     }
+                    headerRow2.push('Remarks');
 
                     // =========================================================================
                     // 3. STATISTICS & DATA GROUPING INITIALIZERS
@@ -1017,7 +1017,20 @@
                             dailyAdditionalMap[`${dateKey}_${item.work_name}`] = item.daily_additional;
                         }
                         if (!acc[empId]) {
-                            acc[empId] = { Nama: item.Nama, JobDesc: item.JobDesc, work_data: {}, attendance_data: {} };
+                            acc[empId] = {
+                                Nama: item.Nama,
+                                JobDesc: item.JobDesc,
+                                work_data: {},
+                                attendance_data: {},
+                                remarks_list: []
+                            };
+                        }
+
+                        if (item.remarks && String(item.remarks).trim() !== "") {
+                            let trimmedRem = String(item.remarks).trim();
+                            if (!acc[empId].remarks_list.includes(trimmedRem)) {
+                                acc[empId].remarks_list.push(trimmedRem);
+                            }
                         }
 
                         acc[empId].attendance_data[dateKey] = { leave: item.leaveType_id };
@@ -1057,6 +1070,7 @@
 
                     let tbodyHtml = '';
                     for (let staffNo in groupedData) {
+                        let staffRemarks = groupedData[staffNo].remarks_list.join(', ');
                         tbodyHtml += `<tr><td>${staffNo}</td><td>${groupedData[staffNo].Nama}</td><td>${groupedData[staffNo].JobDesc}</td>`;
 
                         for (let i = 0; i < 7; i++) {
@@ -1095,15 +1109,15 @@
                             let cursorStyle = isClickable ? "cursor:pointer;" : "cursor:not-allowed; opacity: 0.65; pointer-events: none;";
 
                             tbodyHtml += `<td>
-                        <a class="btn attendance-toggle" 
-                           data-emplid="${staffNo}" 
-                           data-date="${d}" 
-                           data-leavetype="${leaveTypeTracking}"
-                           ${disabledAttr}
-                           style="display:block; ${cursorStyle}">
-                           <span class="attendance-text">${displayValue}</span>
-                        </a>
-                    </td>`;
+                                <a class="btn attendance-toggle" 
+                                   data-emplid="${staffNo}" 
+                                   data-date="${d}" 
+                                   data-leavetype="${leaveTypeTracking}"
+                                   ${disabledAttr}
+                                   style="display:block; ${cursorStyle}">
+                                   <span class="attendance-text">${displayValue}</span>
+                                </a>
+                            </td>`;
                         }
 
                         uniquework_name.forEach(wn => {
@@ -1120,6 +1134,7 @@
                                 }
                             }
                         });
+                        tbodyHtml += `<td>${staffRemarks}</td>`; // Remarks rendered at the end of the row
                         tbodyHtml += `</tr>`;
                     }
 
@@ -1131,24 +1146,20 @@
                         { label: 'TOTAL CUTI EHSAN', attKey: 'cs', type: 'leave' }
                     ];
 
-                  footerMapping.forEach(rowConfig => {
+                    footerMapping.forEach(rowConfig => {
                         tbodyHtml += `<tr class="summary-row" style="font-weight:bold; background-color:#ffffff !important;">` +
                             `<td class="merged-style-left">${rowConfig.label}</td>` +
                             `<td class="merged-style-middle"></td>` +
                             `<td class="merged-style-right"></td>`;
 
-                        // 1. Render the Attendance section cells (Columns 3 to 9)
                         attStats[rowConfig.attKey].forEach((val, i) => {
-                            // --- CHANGED: Leave 'TOTAL ATTENDANCE' empty for the attendance columns ---
                             let attDisplayVal = (rowConfig.label === 'TOTAL ATTENDANCE') ? '' : (val === 0 ? '' : val);
                             tbodyHtml += `<td class="summary-att-cell" data-day="${i}" data-key="${rowConfig.attKey}">${attDisplayVal}</td>`;
                         });
 
-                        // 2. Render the Work Plan section cells (Columns 10+)
                         uniquework_name.forEach(wn => {
                             for (let i = 0; i < 7; i++) {
                                 let displayVal = "";
-                                // --- REMAINING UNCHANGED: Keep calculation active for work plan blocks ---
                                 if (rowConfig.label === 'TOTAL ATTENDANCE') {
                                     let total = (workStats[wn].dp[i] || 0) + (workStats[wn].up[i] || 0);
                                     displayVal = total > 0 ? total : "";
@@ -1156,6 +1167,7 @@
                                 tbodyHtml += `<td class="total-cell" data-rowtype="${rowConfig.type}" data-workname="${wn}" data-day="${i}">${displayVal}</td>`;
                             }
                         });
+                        tbodyHtml += `<td></td>`; // Empty cell for Remarks column in summary rows
                         tbodyHtml += '</tr>';
                     });
 
@@ -1172,15 +1184,14 @@
                             tbodyHtml += `<td><div class="vertical-text">${info}</div></td>`;
                         }
                     });
+                    tbodyHtml += `<td></td>`; // Empty cell for Remarks column in additional info row
                     tbodyHtml += '</tr>';
 
-                    // 2. Safely apply headers and content to BOTH separate tables explicitly
                     targetTableIds.forEach(id => {
                         $(id).find('thead').html(theadHtml);
                         $(id).find('tbody').html(tbodyHtml);
                     });
 
-                    // Injection of CSS Rules
                     const whiteRowStylePatch = `
                     <style id="forceWhiteTableLayout">
                         #tableRep, #tableRepNormal, #tableRepEng, #tableRepCI,
@@ -1204,18 +1215,16 @@
                     $('#forceWhiteTableLayout').remove();
                     $('head').append(whiteRowStylePatch);
 
-                   function getFooterDataArray() {
+                    function getFooterDataArray() {
                         let rows = [];
                         footerMapping.forEach(rowConfig => {
                             let fullRow = [rowConfig.label, '', ''];
-        
-                            // Update CSV/Excel generation for attendance columns
-                            attStats[rowConfig.attKey].forEach(val => { 
-                                // --- CHANGED: Keep it empty on export for TOTAL ATTENDANCE ---
+
+                            attStats[rowConfig.attKey].forEach(val => {
                                 let exportAttVal = (rowConfig.label === 'TOTAL ATTENDANCE') ? '' : (val === 0 ? '' : String(val));
-                                fullRow.push(exportAttVal); 
+                                fullRow.push(exportAttVal);
                             });
-        
+
                             uniquework_name.forEach(wn => {
                                 for (let i = 0; i < 7; i++) {
                                     let displayVal = "";
@@ -1226,6 +1235,7 @@
                                     fullRow.push(displayVal);
                                 }
                             });
+                            fullRow.push(''); // Empty string for remarks cell on export
                             rows.push(fullRow);
                         });
 
@@ -1237,6 +1247,7 @@
                                 addInfoRow.push(dailyAdditionalMap[`${d}_${wn}`] || "");
                             }
                         });
+                        addInfoRow.push(''); // Empty string for remarks cell on export
                         rows.push(addInfoRow);
                         return rows;
                     }
@@ -1245,11 +1256,10 @@
                         let $node = $(node);
                         let $toggleBtn = $node.find('.workplan-toggle');
                         if ($toggleBtn.length > 0) {
-                            // Use .attr() instead of .data() to avoid missing cache on cloned/exported DOM nodes
                             let code = $toggleBtn.attr('data-code');
                             if (code === 'dp') return '+';
                             if (code === 'up') return '-';
-                            if (code === 'pl' || !code) return '|'; // Defaults missing/pl codes to '|'
+                            if (code === 'pl' || !code) return '|';
                             return '';
                         }
                         let $span = $node.find('span');
@@ -1298,9 +1308,6 @@
                                                 return sheet.importNode(parser.parseFromString(xmlStr, "text/xml").documentElement, true);
                                             }
 
-                                            // =========================================================================
-                                            // 1. INJECT THIN BORDER DEFINITION INTO STYLESHEET
-                                            // =========================================================================
                                             let borders = styleSheet.getElementsByTagName('borders')[0];
                                             let newBorderXml = `<border>` +
                                                 `<left style="thin"><color indexed="64"/></left>` +
@@ -1311,9 +1318,6 @@
                                             borders.appendChild(styleSheet.importNode(parser.parseFromString(newBorderXml, "text/xml").documentElement, true));
                                             let borderIdx = borders.childNodes.length - 1;
 
-                                            // =========================================================================
-                                            // 2. CREATE CUSTOM CELL STYLES
-                                            // =========================================================================
                                             let cellXfs = styleSheet.getElementsByTagName('cellXfs')[0];
 
                                             function addStyle(border, horizontal, vertical, textRotation) {
@@ -1342,9 +1346,6 @@
                                             let leftLabelStyleIdx = addStyle(true, 'left', 'center', null);
                                             let rightAlignStyleIdx = addStyle(false, 'right', 'center', null);
 
-                                            // =========================================================================
-                                            // 3. DETERMINE COLUMN BOUNDS & SPANS DYNAMICALLY
-                                            // =========================================================================
                                             let maxBodyCols = 0;
                                             $('row', sheet).each(function () {
                                                 let count = $(this).find('c').length;
@@ -1371,9 +1372,6 @@
                                             let titleWeekNo = typeof weekNo !== 'undefined' ? weekNo : '';
                                             let titleWeekEndingDate = typeof weekEndingDate !== 'undefined' ? weekEndingDate : '';
 
-                                            // =========================================================================
-                                            // 4. BUILD TOP HEADER ROWS (1 TO 7)
-                                            // =========================================================================
                                             let row1Xml = `<row r="1"><c t="inlineStr" r="A1"><is><t><![CDATA[KTM BERHAD - WEEKLY PROGRAMME (R1) - ${titleReportDateRange}]]></t></is></c></row>`;
                                             let row2Xml = `<row r="2"><c t="inlineStr" r="A2"><is><t><![CDATA[DISTRICT: KMUJ ${titleKmuj}]]></t></is></c><c t="inlineStr" r="${startLabelColLetter}2" s="${rightAlignStyleIdx}"><is><t><![CDATA[WEEK NO:]]></t></is></c><c t="inlineStr" r="${startValColLetter}2" s="${rightAlignStyleIdx}"><is><t><![CDATA[${titleWeekNo}]]></t></is></c></row>`;
                                             let row3Xml = `<row r="3"><c t="inlineStr" r="A3"><is><t><![CDATA[SECTION: MUJ ${titleSection}]]></t></is></c><c t="inlineStr" r="${startLabelColLetter}3" s="${rightAlignStyleIdx}"><is><t><![CDATA[WEEK ENDING:]]></t></is></c><c t="inlineStr" r="${startValColLetter}3" s="${rightAlignStyleIdx}"><is><t><![CDATA[${titleWeekEndingDate}]]></t></is></c></row>`;
@@ -1394,9 +1392,6 @@
                                             row6Xml += '</row>';
                                             row7Xml += '</row>';
 
-                                            // =========================================================================
-                                            // 5. SHIFT BODY ROWS & REBUILD ALL CELLS
-                                            // =========================================================================
                                             let finalBodyRowIdx = 8;
 
                                             $('row', sheet).each(function () {
@@ -1441,9 +1436,6 @@
                                                 }
                                             });
 
-                                            // =========================================================================
-                                            // 6. GENERATE SUMMARY FOOTERS
-                                            // =========================================================================
                                             let currentExcelRow = (finalBodyRowIdx - (footerMappingLen + 1)) + 1;
                                             let footerRowsData = typeof getFooterDataArray === 'function' ? getFooterDataArray() : [];
                                             let summaryMergeRows = [];
@@ -1480,9 +1472,6 @@
                                                 currentExcelRow++;
                                             });
 
-                                            // =========================================================================
-                                            // 7. LEGEND & FOOTER SIGNATURES
-                                            // =========================================================================
                                             sheetData.appendChild(parseXmlNode(`<row r="${currentExcelRow}"></row>`));
                                             currentExcelRow++;
 
@@ -1535,7 +1524,6 @@
                                             currentExcelRow++;
                                             sheetData.appendChild(parseXmlNode(`<row r="${currentExcelRow}"><c t="inlineStr" r="A${currentExcelRow}"><is><t><![CDATA[RECEIVED BY GANGER]]></t></is></c></row>`));
 
-                                            // Prepend top header rows safely
                                             sheetData.insertBefore(parseXmlNode(row7Xml), sheetData.firstChild);
                                             sheetData.insertBefore(parseXmlNode(row6Xml), sheetData.firstChild);
                                             sheetData.insertBefore(parseXmlNode(row5Xml), sheetData.firstChild);
@@ -1544,9 +1532,6 @@
                                             sheetData.insertBefore(parseXmlNode(row2Xml), sheetData.firstChild);
                                             sheetData.insertBefore(parseXmlNode(row1Xml), sheetData.firstChild);
 
-                                            // =========================================================================
-                                            // 8. MERGE CELLS
-                                            // =========================================================================
                                             let mergeCells = sheet.getElementsByTagName('mergeCells')[0];
                                             if (!mergeCells) {
                                                 mergeCells = sheet.createElement('mergeCells');
@@ -1557,18 +1542,19 @@
                                                 }
                                             }
 
-                                            let mergeRanges = ['A6:A7', 'B6:B7', 'C6:C7', `A1:${lastColLetter}1`, `A2:${distSecEndColLetter}2`, `A3:${distSecEndColLetter}3`, `${startLabelColLetter}2:${endLabelColLetter}2`, `${startLabelColLetter}3:${endLabelColLetter}3`, `${startValColLetter}2:${lastColLetter}2`, `${startValColLetter}3:${lastColLetter}3`];
+                                            let remarksColLetter = getExcelColumnName(numCols - 1);
+                                            let mergeRanges = ['A6:A7', 'B6:B7', 'C6:C7', `${remarksColLetter}6:${remarksColLetter}7`, `A1:${lastColLetter}1`, `A2:${distSecEndColLetter}2`, `A3:${distSecEndColLetter}3`, `${startLabelColLetter}2:${endLabelColLetter}2`, `${startLabelColLetter}3:${endLabelColLetter}3`, `${startValColLetter}2:${lastColLetter}2`, `${startValColLetter}3:${lastColLetter}3`];
 
                                             let categoryStartCols = [];
                                             if (typeof headerRow1 !== 'undefined' && headerRow1) {
-                                                for (let c = 3; c < numCols; c++) {
+                                                for (let c = 3; c < numCols - 1; c++) {
                                                     if (headerRow1[c] != null && String(headerRow1[c]).trim() !== '') categoryStartCols.push(c);
                                                 }
                                             }
 
                                             for (let i = 0; i < categoryStartCols.length; i++) {
                                                 let startIdx = categoryStartCols[i];
-                                                let nextStartIdx = (i + 1 < categoryStartCols.length) ? categoryStartCols[i + 1] : numCols;
+                                                let nextStartIdx = (i + 1 < categoryStartCols.length) ? categoryStartCols[i + 1] : numCols - 1;
                                                 let endIdx = Math.min(startIdx + 6, nextStartIdx - 1);
                                                 if (endIdx > startIdx) mergeRanges.push(`${getExcelColumnName(startIdx)}6:${getExcelColumnName(endIdx)}6`);
                                             }
@@ -1589,7 +1575,7 @@
                                 autoWidth: false,
                                 paging: false,
                                 ordering: false,
-                                fixedColumns: { left: 3 },
+                                fixedColumns: { left: 3 }, // Kept left freeze to first 3 columns (Staff No, Name, Designation)
                                 columnDefs: [
                                     { targets: '_all', className: 'dt-center head-center' }
                                 ],
@@ -1610,7 +1596,6 @@
                         }
                     });
 
-                    // Metadata UI Attachment
                     let topMetadataHtml = `
                     <div id="tableMetadataViewTop" class="mt-2 mb-3 p-2" style="font-size: 15px; border-radius: 0 4px 4px 0;">
                         <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%;">
@@ -1623,13 +1608,6 @@
                         </div>
                     </div>`;
                     $('.selected-values').first().after(topMetadataHtml);
-
-               
-
-                    // ==========================================
-                    // Event delegation triggers (Stay unchanged)
-                    // ==========================================
-
                 },
                 error: function () { swarning("Failed to load reports."); }
             });
