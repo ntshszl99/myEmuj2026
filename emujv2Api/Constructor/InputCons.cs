@@ -75,6 +75,7 @@ namespace emujv2Api.Constructor
         public string PlanCode { get; set; }
         public string RptCode { get; set; }
         public string CutiCode { get; set; }
+        public string Remarks { get; set; }
         public string UpdBy { get; set; }
     }
 

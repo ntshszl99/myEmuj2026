@@ -865,17 +865,18 @@ namespace emujv2Api.Model
                 StringBuilder SqlStr = new StringBuilder();
                 Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
-                SqlStr.Append(" INSERT INTO staff_leave ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code]) ");
-                SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode); ");
+                SqlStr.Append(" INSERT INTO staff_leave ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code], [remarks]) ");
+                SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode, @Remarks); ");
 
-                SqlStr.Append(" INSERT INTO staff_leave_plan ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code]) ");
-                SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode); ");
+                SqlStr.Append(" INSERT INTO staff_leave_plan ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code], [remarks]) ");
+                SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode, @Remarks); ");
 
                 ParamTmp.Add("@StaffNo", staff.StaffNo ?? (object)DBNull.Value);
                 ParamTmp.Add("@Date", formCons.Date ?? (object)DBNull.Value);
                 ParamTmp.Add("@LeaveTypeId", staff.LeaveTypeId ?? (object)DBNull.Value);
                 ParamTmp.Add("@CreatedBy", formCons.UpdBy ?? (object)DBNull.Value);
                 ParamTmp.Add("@RptCode", formCons.RptCode ?? (object)DBNull.Value);
+                ParamTmp.Add("@Remarks", staff.Remarks ?? (object)DBNull.Value);
 
                 DbCon.ExecuteNonQuery(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
                 if (!string.IsNullOrEmpty(Salah)) return Salah;

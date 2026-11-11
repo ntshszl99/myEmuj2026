@@ -639,6 +639,14 @@
 
             // 1. Get ALL rows from DataTable across all pages
             var table = $('#tableRep').DataTable();
+            table.rows().every(function () {
+                var rowNode = this.node();
+                var remarkVal = $(rowNode).find('.remark-input').val();
+                var d = this.data();
+                d.Remarks = remarkVal; // update data model with current input value
+                this.data(d);
+            });
+
             var attValues = table.rows().data().toArray();
 
             // 2. Extract Emplids and remove duplicates automatically
@@ -767,14 +775,25 @@
             });
         }
 
-        function submitLeave(rptCode, formData) {
+          function submitLeave(rptCode, formData) {
             var table = $("#tableRep").DataTable();
             var list = [];
+    
             table.rows().every(function () {
                 var d = this.data();
-                list.push({ StaffNo: d.Emplid, LeaveTypeId: d.cuti_code, RptCode: rptCode });
+                var rowNode = this.node();
+                var currentRemark = $(rowNode).find('.remark-input').val();
+
+                list.push({ 
+                    StaffNo: d.Emplid, 
+                    LeaveTypeId: d.cuti_code, 
+                    RptCode: rptCode,
+                    Remarks: currentRemark 
+                });
             });
+
             var payload = { RptCode: rptCode, Date: formData.Date, UpdBy: formData.UpdBy, StaffList: list };
+    
             return $.ajax({
                 url: linkDepan + "DailyLeave",
                 type: 'POST',
@@ -881,46 +900,59 @@
                                     { data: "JobDesc" },
                                     { data: "Gang" },
                                     { data: "Emplid" },
+                                    { data: "Remarks" },
                                 ],
                                 columnDefs: [
+                                    {
+                                        // Target all columns to center-align content
+                                        targets: '_all',
+                                        className: 'text-center align-middle'
+    },
                                     {
                                         targets: 0,
                                         visible: false
                                     },
                                     {
                                         targets: -1,
+                                        title: "Remarks",
+                                        render: function (data, type, full, meta) {
+                                            return '<input type="text" class="form-control form-control-sm remark-input" data-emplid="' + full.Emplid + '" value="' + (data || '') + '">';
+                                        },
+                                    },
+                                    {
+                                        targets: -2,
                                         title: "Actions",
                                         render: function (data, type, full, meta) {
                                             return '<a class="modal-effect btn btn-danger btn-remove-row" data-id="' + data + '">Remove <i class="fe fe-x font-16 ms-1"></i></a>';
                                         },
                                     },
                                     {
-                                        targets: -2,
+                                        targets: -3,
                                         title: "Gang",
                                         render: function (data, type, full, meta) { return data; },
                                     },
                                     {
-                                        targets: -3,
+                                        targets: -4,
                                         title: "Position",
                                         render: function (data, type, full, meta) { return data; },
                                     },
                                     {
-                                        targets: -4,
+                                        targets: -5,
                                         title: "Grade",
                                         render: function (data, type, full, meta) { return data; },
                                     },
                                     {
-                                        targets: -5,
+                                        targets: -6,
                                         title: "Name",
                                         render: function (data, type, full, meta) { return data; },
                                     },
                                     {
-                                        targets: -6,
+                                        targets: -7,
                                         title: "Staff ID",
                                         render: function (data, type, full, meta) { return data; },
                                     },
                                     {
-                                        targets: -7,
+                                        targets: -8,
                                         title: "No",
                                         render: function (data, type, full, meta) {
                                             return meta.row + 1; 
