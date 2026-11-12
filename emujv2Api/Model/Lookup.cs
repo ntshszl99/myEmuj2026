@@ -321,6 +321,7 @@ namespace emujv2Api.Model
             SqlStr.Append("    b.work_name, ");
             SqlStr.Append("    gd.staff_status, ");
             SqlStr.Append("    sl.leaveType_id, ");
+            SqlStr.Append("    sl.remarks, ");
             SqlStr.Append("    wp.work_plan_type_code, ");
             SqlStr.Append("    h.staff_name, ");
             SqlStr.Append("    a.upd_user ");
