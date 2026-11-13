@@ -668,16 +668,19 @@ namespace emujv2Api.Model
                     }
                 }
 
-                // 3. Check if staff section assignment exists
+                // 3. CHECK IF STAFF ALREADY EXISTS IN ANY GANG (Removed [gang_id] from the check)
                 StringBuilder CheckSectionSql = new StringBuilder();
-                CheckSectionSql.Append(" SELECT COUNT(1) FROM staff_section WHERE [no_perkh] = @StaffId AND [no_muj] = @Kmuj AND [no_section] = @Section AND [gang_id] = @GangId ");
+                // If you want to restrict per section/KMUJ:
+                CheckSectionSql.Append(" SELECT COUNT(1) FROM staff_section WHERE [no_perkh] = @StaffId AND [no_muj] = @Kmuj AND [no_section] = @Section ");
+
+                // Note: If you want to restrict the staff member globally across ALL sections/KMUJ, use this instead:
+                // CheckSectionSql.Append(" SELECT COUNT(1) FROM staff_section WHERE [no_perkh] = @StaffId ");
 
                 Dictionary<string, Object> ParamSectionCheck = new Dictionary<string, Object>
         {
             { "@StaffId", userCons.StaffId ?? (object)DBNull.Value },
             { "@Kmuj", userCons.KMUJ ?? (object)DBNull.Value },
-            { "@Section", userCons.Section ?? (object)DBNull.Value },
-            { "@GangId", userCons.GangId ?? (object)DBNull.Value }
+            { "@Section", userCons.Section ?? (object)DBNull.Value }
         };
 
                 object sectionResult = DbCon.ExecuteScalar(CheckSectionSql.ToString(), ParamSectionCheck, Conn.emujConn, ref Salah);
@@ -693,7 +696,7 @@ namespace emujv2Api.Model
                     {
                         duplicateStaffNames.Add(ident);
                     }
-                    continue;
+                    continue; // Skip inserting this user and proceed to the next
                 }
 
                 // 4. Insert into staff_section
@@ -720,12 +723,11 @@ namespace emujv2Api.Model
             if (duplicateStaffNames.Count > 0)
             {
                 string names = string.Join("<br> ", duplicateStaffNames);
-                return "{\"status\":\"01\", \"message\":\"The following section assignments already exist:<br>" + names + "\"}";
+                return "{\"status\":\"01\", \"message\":\"The following staff are already assigned to a gang:<br>" + names + "\"}";
             }
 
             return "{\"status\":\"00\", \"message\":\"Success\"}";
         }
-
 
         //generate rptcode
         public (int latestDailyId, string formattedRptCode) GenerateFormattedRptCode()
