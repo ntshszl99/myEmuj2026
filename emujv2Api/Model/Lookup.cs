@@ -392,6 +392,10 @@ namespace emujv2Api.Model
             SqlStr.Append("WHERE a.daily_date >= @MulaTarikh AND a.daily_date <= @AkhirTarikh ");
             SqlStr.Append("AND c.kmuj_name = @Kmuj AND d.section_name = @Section ");
             SqlStr.Append("AND ',' + CAST(a.daily_gang AS VARCHAR(50)) + ',' LIKE '%,' + LTRIM(RTRIM(CAST(REPLACE(@Gang, 'Gang', '') AS VARCHAR(50)))) + ',%' ");
+
+            // Exclusion filter for Miscellaneous / work type ID = 60
+            SqlStr.Append("AND b.id <> 60 AND UPPER(LTRIM(RTRIM(b.work_name))) NOT IN ('MISCELLANEOUS', 'MISCELLINIOUS') ");
+
             SqlStr.Append("AND EXISTS ( ");
             SqlStr.Append("    SELECT 1 ");
             SqlStr.Append("    FROM staff_section ss ");
@@ -409,7 +413,6 @@ namespace emujv2Api.Model
             Recc = DbCon.ExecuteReader(SqlStr.ToString(), ParamTmp, Conn.emujConn, ref Salah);
             return JsonConvert.SerializeObject(Recc, Formatting.Indented);
         }
-
 
         public string GetTotalKM(string Kmuj, string Section, string SDate, string EDate)
         {

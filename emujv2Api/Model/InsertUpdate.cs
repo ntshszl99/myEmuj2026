@@ -862,16 +862,25 @@ namespace emujv2Api.Model
                 .Select(g => g.First())
                 .ToList();
 
+            // Check if WorkType ID is "60"
+            string workTypeStr = formCons.WorkType?.ToString() ?? "";
+            bool isMiscellaneous = (workTypeStr == "60");
+
             foreach (var staff in uniqueStaffList)
             {
                 StringBuilder SqlStr = new StringBuilder();
                 Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
+                // 1. Always insert into staff_leave
                 SqlStr.Append(" INSERT INTO staff_leave ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code], [remarks]) ");
                 SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode, @Remarks); ");
 
-                SqlStr.Append(" INSERT INTO staff_leave_plan ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code], [remarks]) ");
-                SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode, @Remarks); ");
+                // 2. Conditionally insert into staff_leave_plan ONLY if WorkType ID is NOT 60
+                if (!isMiscellaneous)
+                {
+                    SqlStr.Append(" INSERT INTO staff_leave_plan ([staff_no], [leave_date], [leaveType_id], [created_by], [created_at], [rpt_code], [remarks]) ");
+                    SqlStr.Append(" VALUES (@StaffNo, @Date, @LeaveTypeId, @CreatedBy, GETDATE(), @RptCode, @Remarks); ");
+                }
 
                 ParamTmp.Add("@StaffNo", staff.StaffNo ?? (object)DBNull.Value);
                 ParamTmp.Add("@Date", formCons.Date ?? (object)DBNull.Value);
@@ -903,16 +912,25 @@ namespace emujv2Api.Model
                 .Select(g => g.First())
                 .ToList();
 
+            // Check if WorkType is 60 (as a string or int depending on your model definition)
+            string workTypeStr = formCons.WorkType?.ToString() ?? "";
+            bool isMiscellaneous = (workTypeStr == "60");
+
             foreach (var staff in uniqueStaffList)
             {
                 StringBuilder SqlStr = new StringBuilder();
                 Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
 
+                // 1. Always insert into work_plan
                 SqlStr.Append(" INSERT INTO work_plan ([work_date], [staff_no], [rpt_code], [created_by], [created_at]) ");
                 SqlStr.Append(" VALUES (@Date, @StaffNo, @RptCode, @CreatedBy, GETDATE()); ");
 
-                SqlStr.Append(" INSERT INTO work_plan_plan ([work_date], [staff_no], [rpt_code], [created_by], [created_at]) ");
-                SqlStr.Append(" VALUES (@Date, @StaffNo, @RptCode, @CreatedBy, GETDATE()); ");
+                // 2. Conditionally insert into work_plan_plan ONLY if WorkType is NOT 60
+                if (!isMiscellaneous)
+                {
+                    SqlStr.Append(" INSERT INTO work_plan_plan ([work_date], [staff_no], [rpt_code], [created_by], [created_at]) ");
+                    SqlStr.Append(" VALUES (@Date, @StaffNo, @RptCode, @CreatedBy, GETDATE()); ");
+                }
 
                 ParamTmp.Add("@Date", formCons.Date ?? (object)DBNull.Value);
                 ParamTmp.Add("@StaffNo", staff.StaffNo ?? (object)DBNull.Value);
@@ -934,11 +952,20 @@ namespace emujv2Api.Model
             Dictionary<string, Object> ParamTmp = new Dictionary<string, Object>();
             StringBuilder SqlStr = new StringBuilder();
 
-            SqlStr.Append(" INSERT INTO work_plan_total_pax ([work_date], [rpt_code], [work_dp], [work_up], [work_pl], [created_by], [created_at]) ");
-            SqlStr.Append(" VALUES (@Date, @RptCode, @WorkDp, @WorkUp, @WorkPl, @CreatedBy, GETDATE())");
+            // Check if WorkType ID is 60 (Miscellaneous)
+            string workTypeStr = workplantotalCons.WorkType?.ToString() ?? "";
+            bool isMiscellaneous = (workTypeStr == "60");
 
-            SqlStr.Append(" INSERT INTO work_plan_total_pax_plan ([work_date], [rpt_code], [work_dp], [work_up], [work_pl], [created_by], [created_at]) ");
-            SqlStr.Append(" VALUES (@Date, @RptCode, @WorkDp, @WorkUp, @WorkPl, @CreatedBy, GETDATE())");
+            // 1. Always insert into work_plan_total_pax
+            SqlStr.Append(" INSERT INTO work_plan_total_pax ([work_date], [rpt_code], [work_dp], [work_up], [work_pl], [created_by], [created_at]) ");
+            SqlStr.Append(" VALUES (@Date, @RptCode, @WorkDp, @WorkUp, @WorkPl, @CreatedBy, GETDATE()); ");
+
+            // 2. Conditionally insert into work_plan_total_pax_plan ONLY if WorkType ID is NOT 60
+            if (!isMiscellaneous)
+            {
+                SqlStr.Append(" INSERT INTO work_plan_total_pax_plan ([work_date], [rpt_code], [work_dp], [work_up], [work_pl], [created_by], [created_at]) ");
+                SqlStr.Append(" VALUES (@Date, @RptCode, @WorkDp, @WorkUp, @WorkPl, @CreatedBy, GETDATE()); ");
+            }
 
             ParamTmp.Add("@Date", workplantotalCons.Date ?? (object)DBNull.Value);
             ParamTmp.Add("@CreatedBy", workplantotalCons.CreatedBy ?? (object)DBNull.Value);
@@ -952,7 +979,6 @@ namespace emujv2Api.Model
         }
 
         // 5. ATTENDANCE LIST (VALID)
-        // 5. ATTENDANCE LIST (UPDATED)
         public string DailyAttendList([FromBody] MasukCons formCons)
         {
             MsSql DbCon = new MsSql();
@@ -973,17 +999,21 @@ namespace emujv2Api.Model
                 ? string.Join(",", formCons.Gang)
                 : string.Empty;
 
+            // Check if WorkType ID is 60 (Miscellaneous)
+            string workTypeStr = formCons.WorkType?.ToString() ?? "";
+            bool isMiscellaneous = (workTypeStr == "60");
+
             // 2. Setup parameters
             Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>
-            {
-                { "@AttId", string.Join(",", validAttIds) },
-                { "@UpdBy", formCons.UpdBy ?? (object)DBNull.Value },
-                { "@Gang", gangString },
-                { "@Workers", validAttIds.Count }, // Uses actual count of staff remaining in DataTable
-                { "@RptCode", formCons.RptCode ?? (object)DBNull.Value }
-            };
+    {
+        { "@AttId", string.Join(",", validAttIds) },
+        { "@UpdBy", formCons.UpdBy ?? (object)DBNull.Value },
+        { "@Gang", gangString },
+        { "@Workers", validAttIds.Count }, // Uses actual count of staff remaining in DataTable
+        { "@RptCode", formCons.RptCode ?? (object)DBNull.Value }
+    };
 
-            // 3. Insert into Main Table
+            // 3. Always insert into Main Table
             string SqlInsertActual = "INSERT INTO [dbo].[daily_form_attendancelist] " +
                                      "([staff_attd_no], [staff_attd_updatedate], [staff_attd_updby], [staff_attd_total], [staff_attd_gang], [rpt_code]) " +
                                      "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
@@ -991,16 +1021,18 @@ namespace emujv2Api.Model
             DbCon.ExecuteNonQuery(SqlInsertActual, ParamInsert, Conn.emujConn, ref Salah);
             if (!string.IsNullOrEmpty(Salah)) return Salah;
 
-            // 4. Insert into Plan Table
-            string SqlInsertPlan = "INSERT INTO [dbo].[daily_form_attendancelist_plan] " +
-                                   "([staff_attd_no], [staff_attd_updatedate], [staff_attd_updby], [staff_attd_total], [staff_attd_gang], [rpt_code]) " +
-                                   "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            // 4. Conditionally insert into Plan Table ONLY if WorkType ID is NOT 60
+            if (!isMiscellaneous)
+            {
+                string SqlInsertPlan = "INSERT INTO [dbo].[daily_form_attendancelist_plan] " +
+                                       "([staff_attd_no], [staff_attd_updatedate], [staff_attd_updby], [staff_attd_total], [staff_attd_gang], [rpt_code]) " +
+                                       "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
 
-            DbCon.ExecuteNonQuery(SqlInsertPlan, ParamInsert, Conn.emujConn, ref Salah);
+                DbCon.ExecuteNonQuery(SqlInsertPlan, ParamInsert, Conn.emujConn, ref Salah);
+            }
 
             return string.IsNullOrEmpty(Salah) ? "0" : Salah;
         }
-
 
         // 6. ATTENDANCE LIST (NOT VALID)
         public string DailyAttendListNo([FromBody] MasukCons formCons)
@@ -1020,15 +1052,20 @@ namespace emujv2Api.Model
                 ? string.Join(",", formCons.Gang)
                 : string.Empty;
 
-            Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>
-            {
-                { "@AttId", string.Join(",", removedAttIds) },
-                { "@UpdBy", formCons.UpdBy ?? (object)DBNull.Value },
-                { "@Gang", gangString },
-                { "@Workers", removedAttIds.Count }, 
-                { "@RptCode", formCons.RptCode ?? (object)DBNull.Value }
-            };
+            // Check if WorkType ID is 60 (Miscellaneous)
+            string workTypeStr = formCons.WorkType?.ToString() ?? "";
+            bool isMiscellaneous = (workTypeStr == "60");
 
+            Dictionary<string, Object> ParamInsert = new Dictionary<string, Object>
+    {
+        { "@AttId", string.Join(",", removedAttIds) },
+        { "@UpdBy", formCons.UpdBy ?? (object)DBNull.Value },
+        { "@Gang", gangString },
+        { "@Workers", removedAttIds.Count },
+        { "@RptCode", formCons.RptCode ?? (object)DBNull.Value }
+    };
+
+            // 1. Always insert into Actual Table
             string SqlInsertActual = "INSERT INTO [dbo].[daily_form_attendancelistno] " +
                                      "([staff_attdno_no], [staff_attdno_updatedate], [staff_attdno_updby], [staff_attdno_total], [staff_attdno_gang], [rpt_code]) " +
                                      "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
@@ -1036,11 +1073,15 @@ namespace emujv2Api.Model
             DbCon.ExecuteNonQuery(SqlInsertActual, ParamInsert, Conn.emujConn, ref Salah);
             if (!string.IsNullOrEmpty(Salah)) return Salah;
 
-            string SqlInsertPlan = "INSERT INTO [dbo].[daily_form_attendancelistno_plan] " +
-                                   "([staff_attdno_no], [staff_attdno_updatedate], [staff_attdno_updby], [staff_attdno_total], [staff_attdno_gang], [rpt_code]) " +
-                                   "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
+            // 2. Conditionally insert into Plan Table ONLY if WorkType ID is NOT 60
+            if (!isMiscellaneous)
+            {
+                string SqlInsertPlan = "INSERT INTO [dbo].[daily_form_attendancelistno_plan] " +
+                                       "([staff_attdno_no], [staff_attdno_updatedate], [staff_attdno_updby], [staff_attdno_total], [staff_attdno_gang], [rpt_code]) " +
+                                       "VALUES (@AttId, GETDATE(), @UpdBy, @Workers, @Gang, @RptCode)";
 
-            DbCon.ExecuteNonQuery(SqlInsertPlan, ParamInsert, Conn.emujConn, ref Salah);
+                DbCon.ExecuteNonQuery(SqlInsertPlan, ParamInsert, Conn.emujConn, ref Salah);
+            }
 
             return string.IsNullOrEmpty(Salah) ? "0" : Salah;
         }

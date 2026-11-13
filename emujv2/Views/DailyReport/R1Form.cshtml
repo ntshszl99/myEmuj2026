@@ -765,7 +765,15 @@
                 var d = this.data();
                 list.push({ StaffNo: d.Emplid, RptCode: rptCode });
             });
-            var payload = { RptCode: rptCode, Date: formData.Date, UpdBy: formData.UpdBy, StaffList: list };
+
+            var payload = {
+                RptCode: rptCode,
+                Date: formData.Date,
+                UpdBy: formData.UpdBy,
+                WorkType: formData.WorkType, 
+                StaffList: list
+            };
+
             return $.ajax({
                 url: linkDepan + "R1WorkPlan",
                 type: 'POST',
@@ -792,7 +800,13 @@
                 });
             });
 
-            var payload = { RptCode: rptCode, Date: formData.Date, UpdBy: formData.UpdBy, StaffList: list };
+              var payload = {
+                  RptCode: rptCode,
+                  Date: formData.Date,
+                  WorkType: formData.WorkType, 
+                  UpdBy: formData.UpdBy,
+                  StaffList: list
+              };
     
             return $.ajax({
                 url: linkDepan + "DailyLeave",
@@ -804,7 +818,15 @@
         }
 
         function submitR1WorkPlanTotal(rptCode, formData) {
-            var payload = { RptCode: rptCode, Date: formData.Date, CreatedBy: formData.UpdBy, WorkDp: formData.WorkDp, WorkUp: formData.WorkUp, WorkPl: formData.WorkPl };
+            var payload = {
+                RptCode: rptCode,
+                Date: formData.Date,
+                WorkType: formData.WorkType,
+                CreatedBy: formData.UpdBy,
+                WorkDp: formData.WorkDp,
+                WorkUp: formData.WorkUp,
+                WorkPl: formData.WorkPl
+            };
             return $.ajax({
                 url: linkDepan + "R1WorkPlanTotal",
                 type: 'POST',
@@ -819,6 +841,7 @@
                 RptCode: rptCode,
                 Gang: formData.Gang,
                 AttId: formData.AttId,
+                WorkType: formData.WorkType, 
                 UpdBy: formData.UpdBy
             };
             return $.ajax({
@@ -835,6 +858,7 @@
                 RptCode: rptCode,
                 Gang: formData.Gang,
                 AttId: removedStaffIds,
+                WorkType: formData.WorkType, 
                 UpdBy: formData.UpdBy
             };
             return $.ajax({

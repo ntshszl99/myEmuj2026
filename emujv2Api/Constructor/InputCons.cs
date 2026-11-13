@@ -11,6 +11,7 @@ namespace emujv2Api.Constructor
         public string TotalPax { get; set; }
         public List<string> Gang { get; set; }
         public string Workers { get; set; }
+        public string WorkType { get; set; }
         public string RptCode { get; set; }
 
     }
@@ -94,6 +95,7 @@ namespace emujv2Api.Constructor
         public string WorkUp { get; set; }
         public string WorkPl { get; set; }
         public string RptCode { get; set; }
+        public string WorkType { get; set; }
         public string UpdBy { get; set; }
     }
 

@@ -2882,6 +2882,10 @@
             "type": "string",
             "nullable": true
           },
+          "workType": {
+            "type": "string",
+            "nullable": true
+          },
           "rptCode": {
             "type": "string",
             "nullable": true
@@ -3216,6 +3220,10 @@
             "nullable": true
           },
           "rptCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "workType": {
             "type": "string",
             "nullable": true
           },
